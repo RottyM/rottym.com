@@ -4,7 +4,7 @@ import React from "react";
 import { useForm, ValidationError } from "@formspree/react";
 
 export function ExampleForm() {
-  const [state, handleSubmit] = useForm("https://formspree.io/f/xpwooewg");
+  const [state, handleSubmit] = useForm("xpwooewg");
 
   if (state.succeeded) {
     return <p>Thanks for joining!</p>;
