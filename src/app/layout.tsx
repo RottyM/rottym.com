@@ -1,20 +1,50 @@
-<script
-  dangerouslySetInnerHTML={{
-    __html: `
-      setTimeout(() => {
-        if (!localStorage.getItem('audit-shown')) {
-          const popup = document.createElement('div');
-          popup.innerHTML = \`
-            <div style="position:fixed;bottom:20px;right:20px;background:white;padding:24px;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,0.1);max-width:320px;z-index:9999;border:1px solid #e2e8f0;">
-              <h3 style="margin:0 0 8px;font-size:1.25rem;font-weight:bold;">Free WordPress Audit</h3>
-              <p style="margin:0 0 16px;font-size:0.875rem;color:#475569;">Get a 5-point speed, security & SEO report in 24h.</p>
-              <a href="/contact" style="display:inline-block;background:#0ea5e9;color:white;padding:8px 16px;border-radius:8px;text-decoration:none;font-weight:600;">Claim Audit →</a>
-              <button onclick="this.parentElement.parentElement.remove();localStorage.setItem('audit-shown','true')" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#94a3b8;">×</button>
-            </div>
-          \`;
-          document.body.appendChild(popup);
-        }
-      }, 3000);
-    `,
-  }}
-/>
+// src/app/layout.tsx
+import './globals.css';
+import { Inter } from 'next/font/google';
+import Link from 'next/link';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata = {
+  title: 'Rottman Mendez | Full-Stack Developer',
+  description: 'Java, React, AWS, WordPress to Modern Apps',
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        {/* Header */}
+        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <Link href="/" className="text-2xl font-bold text-sky-600">Rottman Mendez</Link>
+            <nav className="hidden md:flex gap-8 text-sm font-medium">
+              <Link href="/" className="text-slate-700 hover:text-sky-600">Home</Link>
+              <Link href="/services" className="text-slate-700 hover:text-sky-600">Services</Link>
+              <Link href="/portfolio" className="text-slate-700 hover:text-sky-600">Portfolio</Link>
+              <Link href="/about" className="text-slate-700 hover:text-sky-600">About</Link>
+              <Link href="/contact" className="text-slate-700 hover:text-sky-600">Contact</Link>
+            </nav>
+            <button className="md:hidden text-slate-700">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <main>{children}</main>
+
+        <footer className="bg-slate-900 text-white py-12 mt-20">
+          <div className="max-w-7xl mx-auto px-6 text-center text-sm">
+            <p>© {new Date().getFullYear()} Rottman Mendez. All rights reserved.</p>
+            <p className="mt-2">
+              <a href="mailto:rottym@gmail.com" className="hover:text-sky-400">rottym@gmail.com</a> · 
+              <a href="tel:+17034775169" className="ml-2 hover:text-sky-400">703.477.5169</a>
+            </p>
+          </div>
+        </footer>
+      </body>
+    </html>
+  );
+}
