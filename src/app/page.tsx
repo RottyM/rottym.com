@@ -60,7 +60,8 @@ export default function Home() {
 
           {/* RECTANGLE HERO IMAGE — NO CIRCLE */}
           <div className="relative">
-            <div className="rounded-3xl overflow-hidden shadow-2xl w-full max-w-md mx-auto border-[12px] border-white">              <img 
+            <div className="rounded-3xl overflow-hidden shadow-2xl w-full max-w-md mx-auto border-[12px] border-white">
+              <img 
                 src="/images/portfolio/rottman-hero.jpg" 
                 alt="Rottman Mendez" 
                 className="w-full h-auto object-cover"
