@@ -1,91 +1,51 @@
 // src/app/contact/page.tsx
 'use client';
-import { useForm } from '@formspree/react';
+import { useState } from 'react';
 
 export default function Contact() {
-  const [state, handleSubmit] = useForm('https://formspree.io/f/xpwooewg'); // ← REPLACE THIS
+  const [status, setStatus] = useState('');
 
-  if (state.succeeded) {
-    return (
-      <section className="py-20 px-6 max-w-md mx-auto text-center">
-        <h1 className="text-4xl font-bold mb-6">Thank You!</h1>
-        <p className="text-xl text-green-600">Message sent! I'll reply in 24h.</p>
-      </section>
-    );
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    formData.append('form-name', 'contact-form-rottym'); // ← REPLACE WITH YOUR NETLIFY FORM NAME
+
+    try {
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formData as any),
+      });
+      if (res.ok) {
+        setStatus('Message sent! I\'ll reply in 24h.');
+        (e.target as HTMLFormElement).reset();
+      } else {
+        setStatus('Error — email rottym@gmail.com');
+      }
+    } catch (error) {
+      setStatus('Error — email rottym@gmail.com');
+    }
+  };
 
   return (
     <section className="py-20 px-6 max-w-md mx-auto">
       <h1 className="text-4xl font-bold text-center mb-12">Get In Touch</h1>
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
-        <div className="fs-field">
-          <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="name">
-            Your Name
-          </label>
-          <input
-            id="name"
-            name="name"
-            required
-            className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none"
-          />
-        </div>
-
-        <div className="fs-field">
-          <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none"
-          />
-          <p className="text-xs text-slate-500 mt-1">I'll reply via email.</p>
-        </div>
-
-        <div className="fs-field">
-          <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="service">
-            Service
-          </label>
-          <select
-            id="service"
-            name="service"
-            className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none"
-          >
-            <option>WordPress Migration</option>
-            <option>E-Commerce</option>
-            <option>Subscriptions</option>
-            <option>Social Portals</option>
-            <option>Marketing</option>
-          </select>
-        </div>
-
-        <div className="fs-field">
-          <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="message">
-            Message
-          </label>
-          <textarea
-            id="message"
-            name="message"
-            rows={5}
-            required
-            className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none resize-none"
-          />
-          <p className="text-xs text-slate-500 mt-1">What would you like to discuss?</p>
-        </div>
-
-        <button
-          type="submit"
-          disabled={state.submitting}
-          className="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-4 rounded-lg transition shadow-md disabled:opacity-50"
-        >
-          {state.submitting ? 'Sending...' : 'Send Message'}
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-slate-100" name="contact-form-rottym" method="POST" data-netlify="true">
+        <input type="hidden" name="form-name" value="contact-form-rottym" />
+        <input name="name" placeholder="Name" required className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none" />
+        <input name="email" type="email" placeholder="Email" required className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none" />
+        <select name="service" className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none">
+          <option>WordPress Migration</option>
+          <option>E-Commerce</option>
+          <option>Subscriptions</option>
+          <option>Social Portals</option>
+          <option>Marketing</option>
+        </select>
+        <textarea name="message" rows={5} placeholder="Your project..." required className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none resize-none" />
+        <button type="submit" className="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-4 rounded-lg transition shadow-md">
+          Send Message
         </button>
-
-        {state.errors && (
-          <p className="text-red-600 text-center">Error — email rottym@gmail.com</p>
-        )}
+        {status && <p className={`text-center mt-4 font-medium ${status.includes('sent') ? 'text-green-600' : 'text-red-600'}`}>{status}</p>}
       </form>
     </section>
   );
