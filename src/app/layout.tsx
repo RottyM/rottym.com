@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'Rottman Mendez | Full-Stack Developer',
-  description: 'Java, React, AWS, WordPress → Modern Apps',
+  description: 'Java, React, AWS, WordPress to Modern Apps',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
