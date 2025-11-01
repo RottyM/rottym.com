@@ -1,6 +1,4 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';  // We'll create this
-import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Code2, Globe, ShoppingCart, Users, BarChart3 } from 'lucide-react';
 
 export default function Home() {

@@ -1,65 +1,78 @@
-import Image from "next/image";
+// src/app/page.tsx
+import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <>
+      {/* Hero */}
+      <section className="min-h-screen flex items-center px-6 bg-gradient-to-br from-slate-50 via-white to-sky-50">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <span className="inline-block px-4 py-1 bg-sky-100 text-sky-700 text-sm font-semibold rounded-full">
+              Full-Stack + UX | Virginia-Based
+            </span>
+            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 leading-tight">
+              Scalable Web Solutions<br />
+              <span className="text-amber-500">From WP to Microservices</span>
+            </h1>
+            <p className="text-xl text-slate-600">
+              Java, React/Redux, AWS expert. E-commerce, subscriptions, social portals + marketing. 
+              10+ years @ Disney, FAA, FEMA.
+            </p>
+            <div className="flex gap-4">
+              <Link
+                href="/contact"
+                className="inline-flex items-center bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-6 rounded-lg transition shadow-md hover:shadow-lg"
+              >
+                Start Project
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+              <Link
+                href="/portfolio"
+                className="inline-block border-2 border-sky-600 text-sky-600 hover:bg-sky-50 font-bold py-3 px-6 rounded-lg transition"
+              >
+                Portfolio
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap gap-6 pt-8 text-sm text-slate-600">
+              {[
+                { icon: "⚡", label: "Java · React · AWS" },
+                { icon: "🌐", label: "Scalable Platforms" },
+                { icon: "🛒", label: "E-Commerce" },
+                { icon: "👥", label: "Social Portals" },
+                { icon: "📈", label: "Marketing" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-2">
+                  <span className="text-2xl">{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="relative">
+            <img 
+              src="/images/portfolio/rottman-hero.jpg" 
+              alt="Rottman Mendez" 
+              className="rounded-3xl shadow-2xl w-full max-w-md mx-auto"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Clients */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h2 className="text-2xl font-bold mb-8 text-slate-800">Trusted By</h2>
+          <div className="flex flex-wrap justify-center gap-8 text-xl font-semibold text-slate-700">
+            {['Disney', 'FAA', 'FEMA', 'USA Today', 'Booz Allen', 'Leidos'].map((client) => (
+              <span key={client}>{client}</span>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
