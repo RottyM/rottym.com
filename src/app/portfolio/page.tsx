@@ -4,12 +4,12 @@ import Image from 'next/image';
 const projects = [
   { title: "USA Today – The Point", img: "/images/portfolio/usa-today-thepoint.jpg", role: "Lead Front-End", tech: "React, Redux, AWS" },
   { title: "Detroit Free Press", img: "/images/portfolio/detroit-freepress.jpg", role: "UX Developer", tech: "HTML5, CSS3, JS" },
-  { title: "WBIR.com", img: "/images/portfolio/wbir.jpg", role: "UX Developer", tech: "Responsive Design" },
   { title: "WWF Gift Center", img: "/images/portfolio/wwf-giftcenter.jpg", role: "UX Developer", tech: "E-commerce UX" },
   { title: "Reverb Networks", img: "/images/portfolio/reverb-performa.jpg", role: "UX Designer", tech: "Wireframes, Figma" },
-  { title: "Brevic Development", img: "/images/portfolio/brevic.jpg", role: "Freelance", tech: "WordPress, PHP" },
-  { title: "VB-Controls", img: "/images/portfolio/vbcontrols.jpg", role: "Freelance", tech: "Custom CMS" },
-  { title: "Tech24 Construction", img: "/images/portfolio/tech24.jpg", role: "Freelance", tech: "SEO, Analytics" },
+  { title: "Local Business Development", img: "/images/portfolio/brevic.jpg", role: "Freelance", tech: "WordPress, PHP" },
+  { title: "Custom CMS", img: "/images/portfolio/gov-sites.jpg", role: "Freelance", tech: "Custom CMS" },
+  { title: "Membership, Subscriber Portals", img: "/images/portfolio/club-sites.jpg", role: "Freelance", tech: "SEO, Analytics" },
+  { title: "Logos, Branding, Marketing", img: "/images/portfolio/logos.jpg", role: "Freelance", tech: "Marketing, Branding, SEO, Analytics" },
 ];
 
 export default function Portfolio() {
