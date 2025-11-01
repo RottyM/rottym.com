@@ -57,12 +57,14 @@ export default function Home() {
               ))}
             </div>
           </div>
+
+          {/* RECTANGLE HERO IMAGE — NO CIRCLE */}
           <div className="relative">
-            <div className="rounded-full overflow-hidden shadow-2xl w-80 h-80 mx-auto border-8 border-white">
+            <div className="rounded-3xl overflow-hidden shadow-2xl w-full max-w-lg mx-auto border-8 border-white">
               <img 
                 src="/images/portfolio/rottman-hero.jpg" 
                 alt="Rottman Mendez" 
-                className="w-full h-full object-cover"
+                className="w-full h-auto object-cover"
               />
             </div>
             <div className="absolute -bottom-4 -left-4 bg-sky-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
