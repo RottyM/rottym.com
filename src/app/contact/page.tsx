@@ -20,10 +20,10 @@ export default function Contact() {
         setStatus('Message sent! I\'ll reply in 24h.');
         (e.target as HTMLFormElement).reset();
       } else {
-        setStatus('Error — email rottym@gmail.com directly.');
+        setStatus('Error — email rottym@gmail.com');
       }
-    } catch (error) {
-      setStatus('Error — email rottym@gmail.com directly.');
+    } catch {
+      setStatus('Error — email rottym@gmail.com');
     }
   };
 
@@ -31,47 +31,20 @@ export default function Contact() {
     <section className="py-20 px-6 max-w-md mx-auto">
       <h1 className="text-4xl font-bold text-center mb-12">Get In Touch</h1>
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
-        <input
-          name="name"
-          placeholder="Your Name"
-          required
-          className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition"
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="Your Email"
-          required
-          className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition"
-        />
-        <select
-          name="service"
-          className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition"
-        >
+        <input name="name" placeholder="Name" required className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none" />
+        <input name="email" type="email" placeholder="Email" required className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none" />
+        <select name="service" className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none">
           <option>WordPress Migration</option>
           <option>E-Commerce</option>
           <option>Subscriptions</option>
           <option>Social Portals</option>
           <option>Marketing</option>
         </select>
-        <textarea
-          name="message"
-          rows={5}
-          placeholder="Your project..."
-          required
-          className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition resize-none"
-        />
-        <button
-          type="submit"
-          className="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
-        >
+        <textarea name="message" rows={5} placeholder="Your project..." required className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none resize-none" />
+        <button type="submit" className="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-4 rounded-lg transition shadow-md">
           Send Message
         </button>
-        {status && (
-          <p className={`text-center mt-4 font-medium ${status.includes('sent') ? 'text-green-600' : 'text-red-600'}`}>
-            {status}
-          </p>
-        )}
+        {status && <p className={`text-center mt-4 font-medium ${status.includes('sent') ? 'text-green-600' : 'text-red-600'}`}>{status}</p>}
       </form>
     </section>
   );
