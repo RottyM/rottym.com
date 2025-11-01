@@ -1,4 +1,4 @@
-// Make sure to run npm install @formspree/react
+//src/app/contact/page.tsx
 
 import React from "react";
 import { useForm, ValidationError } from "@formspree/react";
@@ -27,6 +27,13 @@ export function ExampleForm() {
           This will help me respond to your query via an email.
         </p>
       </div>
+      <select name="service" className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none">
+        <option>WordPress Migration</option>
+        <option>E-Commerce</option>
+        <option>Subscriptions</option>
+        <option>Social Portals</option>
+        <option>Marketing</option>
+      </select>
       <div className="fs-field">
         <label className="fs-label" htmlFor="message">
           Message
