@@ -13,6 +13,7 @@ export default function Services() {
   return (
     <section className="py-20 px-6 bg-slate-50">
       <div className="max-w-6xl mx-auto text-center">
+        <img src="/images/stock/wp-slow.jpg" alt="Slow WordPress" className="rounded-lg shadow-md" />
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Services</h1>
         <p className="text-xl text-slate-600 mb-16">End-to-end solutions that scale.</p>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
