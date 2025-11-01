@@ -1,5 +1,4 @@
 // src/app/page.tsx
-// forced it
 'use client';
 import Link from 'next/link';
 import { useEffect } from 'react';
@@ -61,8 +60,8 @@ export default function Home() {
 
           {/* RECTANGLE HERO IMAGE — NO CIRCLE */}
           <div className="relative">
-            <div className="border-[10px] border-white">
-              <img 
+            <div>
+              <img
                 src="/images/portfolio/rottman-hero.jpg" 
                 alt="Rottman Mendez" 
                 className="w-full h-auto object-cover"
