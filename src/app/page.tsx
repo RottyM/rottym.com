@@ -39,15 +39,14 @@ export default function Home() {
 
             <div className="flex flex-wrap gap-6 pt-8 text-sm text-slate-600">
               {[
-                { icon: "⚡", label: "Java · React · AWS" },
-                { icon: "🌐", label: "Scalable Platforms" },
-                { icon: "🛒", label: "E-Commerce" },
-                { icon: "👥", label: "Social Portals" },
-                { icon: "📈", label: "Marketing" },
-              ].map((item) => (
-                <div key={item.label} className="flex items-center gap-2">
-                  <span className="text-2xl">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
+                { icon: "Java · React · AWS" },
+                { icon: "Scalable Platforms" },
+                { icon: "E-Commerce" },
+                { icon: "Social Portals" },
+                { icon: "Marketing" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="font-medium">{item.icon}</span>
                 </div>
               ))}
             </div>
