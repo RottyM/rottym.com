@@ -38,10 +38,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="bg-slate-900 text-white py-12 mt-20">
           <div className="max-w-7xl mx-auto px-6 text-center text-sm">
             <p>© {new Date().getFullYear()} Rottman Mendez. All rights reserved.</p>
-            <p className="mt-2">
-              <a href="mailto:rottym@gmail.com" className="hover:text-sky-400">rottym@gmail.com</a> · 
-              <a href="tel:+17034775169" className="ml-2 hover:text-sky-400">703.477.5169</a>
-            </p>
           </div>
         </footer>
       </body>
