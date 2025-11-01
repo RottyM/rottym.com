@@ -1,5 +1,4 @@
 // src/app/page.tsx
-// update to force changes 
 'use client';
 import Link from 'next/link';
 import { useEffect } from 'react';
