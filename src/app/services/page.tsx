@@ -2,7 +2,7 @@
 import Link from 'next/link';
 
 const services = [
-  { title: "WordPress → Modern Stack Migration", desc: "Upgrade slow WP sites to Next.js + AWS.", tech: ["Next.js", "AWS", "Docker"] },
+  { title: "WordPress to Modern Stack Migration", desc: "Upgrade slow WP sites to Next.js + AWS.", tech: ["Next.js", "AWS", "Docker"] },
   { title: "E-Commerce Storefronts", desc: "Headless shops with Stripe, inventory sync.", tech: ["Stripe", "Medusa.js", "React"] },
   { title: "Subscription Platforms", desc: "Member portals, billing, analytics.", tech: ["Stripe Billing", "Auth0", "PostgreSQL"] },
   { title: "Social & Community Portals", desc: "Profiles, chat, moderation.", tech: ["Socket.io", "Supabase", "GraphQL"] },
