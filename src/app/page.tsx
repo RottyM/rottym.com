@@ -1,4 +1,5 @@
 // src/app/page.tsx
+// forced it
 'use client';
 import Link from 'next/link';
 import { useEffect } from 'react';
