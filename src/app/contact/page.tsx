@@ -8,7 +8,7 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget as HTMLFormElement);
-    formData.append('form-name', 'contact-form-rottym'); // ← REPLACE WITH YOUR NETLIFY FORM NAME
+    formData.append('form-name', 'contact-form-rottym');
 
     try {
       const res = await fetch('/__forms.html', {
@@ -42,7 +42,6 @@ export default function Contact() {
           <option>Marketing</option>
         </select>
         <textarea name="message" rows={5} placeholder="Your project..." required className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none resize-none" />
-        <div data-netlify-recaptcha="true"></div>
         <br />
         <button type="submit" className="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-4 rounded-lg transition shadow-md">
           Send Message
