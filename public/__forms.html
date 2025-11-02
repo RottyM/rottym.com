@@ -4,8 +4,13 @@
   <title>Forms</title>
 </head>
 <body>
-  <form name="contact-form-rottym" data-netlify="true" data-netlify-recaptcha="true" hidden>
+  <form name="contact-form-rottym" data-netlify="true" data-netlify-recaptcha="true" netlify-honeypot="bot-field" hidden>
     <input type="hidden" name="form-name" value="contact-form-rottym" />
+      <p class="hidden">
+    <label>
+      Don’t fill this out if you’re human: <input name="bot-field" type="text" />
+    </label>
+  </p>
     <input name="name" type="text" />
     <input name="email" type="email" />
     <select name="service">

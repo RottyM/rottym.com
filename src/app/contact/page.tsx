@@ -32,6 +32,11 @@ export default function Contact() {
       <h1 className="text-4xl font-bold text-center mb-12">Get In Touch</h1>
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-slate-100" name="contact-form-rottym" method="POST" data-netlify="true" data-netlify-recaptcha="true">
         <input type="hidden" name="form-name" value="contact-form-rottym" />
+          <p className="hidden">
+            <label>
+              Dont fill this out if youre human: <input name="bot-field" type="text" />
+            </label>
+          </p>
         <input name="name" placeholder="Name" required className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none" />
         <input name="email" type="email" placeholder="Email" required className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none" />
         <select name="service" className="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none">
