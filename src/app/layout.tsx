@@ -2,6 +2,7 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
 import Header from '@/components/header';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -12,15 +13,34 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('theme');
+                  var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                  document.documentElement.setAttribute('data-theme', theme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={inter.className}>
-        <Header />
-        <main>{children}</main>
-        <footer className="bg-slate-900 text-white py-12 mt-20">
-          <div className="max-w-7xl mx-auto px-6 text-center text-sm">
-            <p>© {new Date().getFullYear()} Rottman M. Mendez. All rights reserved.</p>
+        <ThemeProvider>
+          <Header />
+          <div className="min-h-screen transition-colors duration-300">
+            {children}
           </div>
-        </footer>
+          <footer className="bg-card text-foreground border-t border-border py-12 mt-20 transition-all">
+            <div className="max-w-7xl mx-auto px-6 text-center text-sm">
+              <p className="text-muted-foreground">© {new Date().getFullYear()} Rottman M. Mendez. All rights reserved.</p>
+            </div>
+          </footer>
+        </ThemeProvider>
       </body>
     </html>
   );
