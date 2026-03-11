@@ -3,7 +3,9 @@ import nodemailer from 'nodemailer';
 
 export async function POST(req: Request) {
     try {
+        console.log('--- Incoming Transmission ---');
         const { name, email, service, message } = await req.json();
+        console.log(`Vibe Inquiry from: ${name} (${email}) for ${service}`);
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',

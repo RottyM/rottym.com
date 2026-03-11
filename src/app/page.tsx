@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Rocket, Zap, Globe, Cpu, Sparkles } from 'lucide-react';
+import { ArrowRight, Rocket, Zap, Globe, Cpu, Sparkles, Users } from 'lucide-react';
 
 export default function Home() {
   useEffect(() => {
@@ -11,11 +11,13 @@ export default function Home() {
       if (!localStorage.getItem('audit-shown')) {
         const popup = document.createElement('div');
         popup.innerHTML = `
-          <div style="position:fixed;bottom:20px;right:20px;background:var(--card);color:var(--foreground);padding:24px;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,0.1);max-width:320px;z-index:9999;border:1px solid var(--border);">
-            <h3 style="margin:0 0 8px;font-size:1.25rem;font-weight:bold;">Digital Strategy Audit</h3>
-            <p style="margin:0 0 16px;font-size:0.875rem;color:var(--muted-foreground);">Get a free 15-min speed, security & scalability vibe check.</p>
-            <a href="/contact" style="display:inline-block;background:var(--accent);color:var(--accent-foreground);padding:8px 16px;border-radius:8px;text-decoration:none;font-weight:600;">Book Free Consult →</a>
-            <button onclick="this.parentElement.parentElement.remove();localStorage.setItem('audit-shown','true')" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted-foreground);">×</button>
+          <div style="position:fixed;bottom:24px;right:24px;background:var(--card);color:var(--foreground);padding:28px;border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);max-width:340px;z-index:9999;border:1px solid var(--border);backdrop-filter:blur(12px);">
+            <div style="position:absolute;top:12px;right:12px;">
+              <button onclick="this.parentElement.parentElement.remove();localStorage.setItem('audit-shown','true')" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted-foreground);opacity:0.6;transition:opacity 0.2s;">×</button>
+            </div>
+            <h3 style="margin:0 0 10px;font-size:1.4rem;font-weight:900;tracking-tight;color:var(--accent);">Strategic Consulting Vibe</h3>
+            <p style="margin:0 0 20px;font-size:0.95rem;line-height:1.6;color:var(--muted-foreground);font-weight:500;">Unlock a high-energy 15-min consulting session for your next big project. Let's map your 2026 vision.</p>
+            <a href="/contact" style="display:block;background:var(--accent);color:var(--accent-foreground);padding:14px 24px;border-radius:14px;text-decoration:none;font-weight:800;text-align:center;font-size:1rem;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);transition:transform 0.2s;">Claim Your Consult →</a>
           </div>
         `;
         document.body.appendChild(popup);
@@ -149,6 +151,13 @@ export default function Home() {
                 icon: <Sparkles className="w-6 h-6" />,
                 accent: 'text-purple-500',
                 bg: 'bg-purple-500/10'
+              },
+              {
+                title: 'Clubs & Communities',
+                desc: 'Membership platforms and portals for organizations, including expert WP Buddy Boss setup.',
+                icon: <Users className="w-6 h-6" />,
+                accent: 'text-pink-500',
+                bg: 'bg-pink-500/10'
               }
             ].map((service, idx) => (
               <motion.div

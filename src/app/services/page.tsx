@@ -2,7 +2,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Rocket, Cpu, Globe, Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Rocket, Cpu, Globe, Sparkles, ArrowRight, CheckCircle2, Users } from 'lucide-react';
 
 const services = [
   {
@@ -28,6 +28,12 @@ const services = [
     desc: "Building custom AI-integrated tools and workflows. Leveraging the absolute latest in AI vibes to ship faster.",
     icon: <Sparkles className="w-6 h-6" />,
     features: ["Custom AI Tools", "Vibe Coding", "Automation"]
+  },
+  {
+    title: "Clubs & Communities",
+    desc: "Custom portals and membership platforms for non-profits and organizations. Featuring WP Buddy Boss integrations and bespoke community centers.",
+    icon: <Users className="w-6 h-6" />,
+    features: ["WP Buddy Boss", "Member Portals", "Custom Dashboards"]
   }
 ];
 

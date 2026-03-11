@@ -6,6 +6,9 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Sparkles, Monitor, ArrowRight } from 'lucide-react';
 
 const projects = [
+  { title: "Northern Virginia Writers Club", img: "/images/portfolio/northernvirginiawriters-home.png", role: "Web Manager", tech: "WP Buddy Boss", vibe: "Community Portal" },
+  { title: "Found Archives", img: "/images/portfolio/found-archives-homepage.png", role: "Web Developer", tech: "Next.js, Sanity, Vercel", vibe: "Historical Focus" },
+  { title: "Lori Eaton Writer", img: "/images/portfolio/lori-eaton-writer-homepage.png", role: "Web Developer", tech: "Next.js, Sanity, Vercel", vibe: "Author Platform" },
   { title: "USA Today – The Point", img: "/images/portfolio/usa-today-thepoint.jpg", role: "Lead Front-End", tech: "React, Redux, AWS", vibe: "High Scale" },
   { title: "Detroit Free Press", img: "/images/portfolio/detroit-freepress.jpg", role: "UX Developer", tech: "HTML5, CSS3, JS", vibe: "Premium UI" },
   { title: "WWF Gift Center", img: "/images/portfolio/wwf-giftcenter.jpg", role: "UX Developer", tech: "E-commerce UX", vibe: "Conversion Focus" },
@@ -63,14 +66,14 @@ export default function Portfolio() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className="absolute inset-0 p-6"
+                className="absolute inset-0"
               >
-                <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden shadow-sm">
+                <div className="relative w-full h-full overflow-hidden shadow-sm">
                   <Image
                     src={projects[currentIndex].img}
                     alt={projects[currentIndex].title}
                     fill
-                    className="object-cover"
+                    className="object-cover object-top"
                     priority
                   />
                 </div>
