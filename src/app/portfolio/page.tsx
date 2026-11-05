@@ -43,12 +43,13 @@ export default function Portfolio() {
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-20 group-hover:opacity-0 transition-opacity" />
 
         {/* Top Badges Overlay */}
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 pointer-events-none">
-          <span className="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-card/90 text-foreground border border-border/80 backdrop-blur-md shadow-sm">
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none">
+          <span className="h-5 inline-flex items-center px-2 rounded-md text-[9px] font-black uppercase tracking-wider bg-card/90 text-foreground border border-border/80 backdrop-blur-md shadow-sm">
             {project.tag}
           </span>
-          <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-background/85 text-muted-foreground border border-border/70 backdrop-blur-md flex items-center gap-1">
-            <Monitor className="w-3 h-3 text-accent" /> {project.role}
+          <span className="h-5 inline-flex items-center gap-1 px-2 rounded-md text-[9px] font-bold uppercase tracking-wider bg-card/90 text-muted-foreground border border-border/80 backdrop-blur-md shadow-sm">
+            <Monitor className="w-2.5 h-2.5 text-accent shrink-0" />
+            <span>{project.role}</span>
           </span>
         </div>
       </Link>
