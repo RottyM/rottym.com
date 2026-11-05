@@ -71,6 +71,7 @@ export default function Portfolio() {
                     src={project.img}
                     alt={project.title}
                     fill
+                    unoptimized
                     sizes="(max-width: 768px) 100vw, 896px"
                     className="object-cover object-top"
                     priority={idx === 0}

@@ -5,10 +5,8 @@ const nextConfig = {
     eslint: {
         ignoreDuringBuilds: true,
     },
-    experimental: {
-        turbopack: {
-            root: '.',
-        },
+    images: {
+        unoptimized: true,
     },
 };
 
