@@ -15,8 +15,8 @@ export default function Home() {
             <div style="position:absolute;top:12px;right:12px;">
               <button onclick="this.parentElement.parentElement.remove();localStorage.setItem('audit-shown','true')" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted-foreground);opacity:0.6;transition:opacity 0.2s;">×</button>
             </div>
-            <h3 style="margin:0 0 10px;font-size:1.4rem;font-weight:900;tracking-tight;color:var(--accent);">Strategic Consulting Vibe</h3>
-            <p style="margin:0 0 20px;font-size:0.95rem;line-height:1.6;color:var(--muted-foreground);font-weight:500;">Unlock a high-energy 15-min consulting session for your next big project. Let's map your 2026 vision.</p>
+            <h3 style="margin:0 0 10px;font-size:1.4rem;font-weight:900;tracking-tight;color:var(--accent);">Strategic Consultation</h3>
+            <p style="margin:0 0 20px;font-size:0.95rem;line-height:1.6;color:var(--muted-foreground);font-weight:500;">Schedule a focused 15-minute consultation to review your platform architecture and project requirements.</p>
             <a href="/contact" style="display:block;background:var(--accent);color:var(--accent-foreground);padding:14px 24px;border-radius:14px;text-decoration:none;font-weight:800;text-align:center;font-size:1rem;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);transition:transform 0.2s;">Claim Your Consult →</a>
           </div>
         `;
@@ -36,7 +36,7 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
             className="space-y-8"
@@ -46,15 +46,15 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
               </span>
-              <span className="text-sm font-semibold tracking-wide uppercase">AI Vibe Coding · Early 2026 Apps</span>
+              <span className="text-sm font-semibold tracking-wide uppercase">Full-Stack Development · Reston, VA</span>
             </div>
 
-            <h1 className="text-6xl md:text-7xl font-extrabold text-foreground leading-[1.1] tracking-tight">
-              Building the <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500">Future</span> with Vibe
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-[1.1] tracking-tight">
+              Custom web platforms, <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500">client portals</span>, and modern applications.
             </h1>
 
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
-              I specialize in high-energy, full-stack cloud solutions. From **strategic launchpads** to scalable **custom apps**, I build with the speed of AI and the precision of a decade at Disney and USA Today.
+              I design and build high-performance websites and tools for organizations that need more than a template — from Northern Virginia service firms and non-profits to larger technical teams. Reston-based.
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -63,7 +63,7 @@ export default function Home() {
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link href="/portfolio" className="flex items-center gap-2 glass px-8 py-4 rounded-2xl font-bold text-lg hover:bg-muted transition-all text-foreground">
-                View Proof of Vibe
+                View Portfolio
               </Link>
             </div>
 
@@ -75,14 +75,14 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <p className="text-sm font-medium italic">
-                Teasing public apps coming in early 2026...
+              <p className="text-sm font-medium">
+                Serving local organizations and technical teams
               </p>
             </div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={false}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
             className="relative"
@@ -125,44 +125,37 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
-                title: 'Strategic Launchpads',
-                desc: 'Landing pages and quick-start presences designed to convert. WordPress escape plans included.',
+                title: 'Websites & Digital Platforms',
+                desc: 'High-performance sites and applications for service businesses, non-profits, and organizations moving off WordPress or template platforms. Built with modern stacks for speed, reliability, and easier long-term ownership.',
                 icon: <Rocket className="w-6 h-6" />,
                 accent: 'text-orange-500',
                 bg: 'bg-orange-500/10'
               },
               {
-                title: 'Full-Stack Apps',
-                desc: 'Scalable Next.js and React platforms with robust cloud logic, e-commerce, and subscription systems.',
+                title: 'Client Portals, Membership Systems & Internal Tools',
+                desc: 'Custom portals for client intake, member management, document sharing, and workflow automation. Designed for teams that have outgrown basic forms or off-the-shelf tools.',
+                icon: <Users className="w-6 h-6" />,
+                accent: 'text-pink-500',
+                bg: 'bg-pink-500/10'
+              },
+              {
+                title: 'Full-Stack Development',
+                desc: 'Next.js, React, and cloud-backed applications (Vercel, Firebase, AWS, GCP) with attention to performance, security, and maintainability. Includes work on subscription systems, e-commerce, and AI-assisted features where they create real value.',
                 icon: <Cpu className="w-6 h-6" />,
                 accent: 'text-blue-500',
                 bg: 'bg-blue-500/10'
               },
               {
-                title: 'Cloud & Hosting',
-                desc: 'Enterprise-grade solutions on Firebase, AWS, and GCP. Secure, fast, and fully managed deployment.',
+                title: 'Cloud & Deployment',
+                desc: 'Secure, managed hosting and deployment so platforms stay fast and stable after launch.',
                 icon: <Globe className="w-6 h-6" />,
                 accent: 'text-emerald-500',
                 bg: 'bg-emerald-500/10'
-              },
-              {
-                title: 'AI Vibe Engineering',
-                desc: 'Custom AI integration, vibe coding workflows, and intelligent automation for forward-thinking teams.',
-                icon: <Sparkles className="w-6 h-6" />,
-                accent: 'text-purple-500',
-                bg: 'bg-purple-500/10'
-              },
-              {
-                title: 'Clubs & Communities',
-                desc: 'Membership platforms and portals for organizations, including expert WP Buddy Boss setup.',
-                icon: <Users className="w-6 h-6" />,
-                accent: 'text-pink-500',
-                bg: 'bg-pink-500/10'
               }
             ].map((service, idx) => (
               <motion.div
                 key={service.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
@@ -181,7 +174,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* From the Lab Section */}
+      {/* Selected Work & Projects Section */}
       <section className="py-32 px-6 bg-accent/[0.03] transition-colors relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
@@ -189,42 +182,51 @@ export default function Home() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
-                <Sparkles className="w-3 h-3" /> Coming Early 2026
+                <Sparkles className="w-3 h-3" /> Platforms & Applications
               </div>
-              <h2 className="text-4xl md:text-6xl font-black tracking-tight">From the <span className="text-accent italic">Lab</span>.</h2>
-              <p className="text-muted-foreground text-xl max-w-xl font-medium">
-                A sneak peek at the custom-built platforms I'm releasing for public distribution. Sleek, proprietary, and powered by Vibe Engineering.
+              <h2 className="text-4xl md:text-6xl font-black tracking-tight">Selected Work & <span className="text-accent">Projects</span>.</h2>
+              <p className="text-muted-foreground text-xl max-w-2xl font-medium">
+                A mix of client platforms and self-initiated systems that demonstrate full-stack development, product thinking, and modern deployment practices.
               </p>
             </div>
-            <Link href="/contact" className="hidden md:flex items-center gap-2 text-foreground font-black hover:text-accent transition-colors group">
-              Early Access Inquiry <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <Link href="/portfolio" className="hidden md:flex items-center gap-2 text-foreground font-black hover:text-accent transition-colors group">
+              View All Work <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
                 name: "ThrottleLife",
-                tagline: "The Modern Rider's Operating System",
+                desc: "A custom operating system concept for motorcycle riders — built as a high-performance Next.js application with real-time data handling, user accounts, and cloud-backed features. Focused on clean architecture and mobile-first interaction.",
                 image: "/images/apps/throttlelife.png",
-                vibe: "High Octane"
+                badge: "Concept & Architecture",
+                icon: <Zap className="w-6 h-6" />
               },
               {
                 name: "Family OS",
-                tagline: "Your Family's Digital Command Center",
+                desc: "A digital command center for household coordination. Developed as a full-stack application emphasizing secure data handling, multi-user roles, and practical automation for everyday workflows.",
                 image: "/images/apps/familyos.png",
-                vibe: "Seamless Living"
+                badge: "Full-Stack System",
+                icon: <Globe className="w-6 h-6" />
+              },
+              {
+                name: "Client & Organizational Work",
+                desc: "Custom websites, client portals, and membership tools for service businesses, non-profits, and teams that needed more reliable systems than standard WordPress or template platforms. Work includes performance-focused rebuilds, intake automation, and scalable cloud deployments.",
+                image: "/images/portfolio/northernvirginiawriters-home.png",
+                badge: "Production Systems",
+                icon: <Users className="w-6 h-6" />
               }
             ].map((app, idx) => (
               <motion.div
                 key={app.name}
-                initial={{ opacity: 0, scale: 0.98 }}
+                initial={false}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.2 }}
-                className="group relative"
+                transition={{ delay: idx * 0.15 }}
+                className="group relative flex flex-col"
               >
-                <div className="relative aspect-[16/10] bg-card rounded-[3rem] border border-border overflow-hidden shadow-2xl group-hover:border-accent/30 transition-all duration-500">
+                <div className="relative aspect-[16/10] bg-card rounded-[2.5rem] border border-border overflow-hidden shadow-2xl group-hover:border-accent/30 transition-all duration-500">
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                   {/* App Screen Mockup */}
@@ -232,23 +234,23 @@ export default function Home() {
                     <img
                       src={app.image}
                       alt={app.name}
-                      className="w-full h-full object-cover object-top grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
+                      className="w-full h-full object-cover object-top grayscale-[15%] group-hover:grayscale-0 transition-all duration-700"
                     />
                   </div>
 
                   {/* App Info Overlay */}
                   <div className="absolute top-8 left-8 flex items-center gap-4">
                     <div className="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center text-accent-foreground shadow-lg">
-                      {idx === 0 ? <Zap className="w-6 h-6" /> : <Globe className="w-6 h-6" />}
+                      {app.icon}
                     </div>
                     <div>
                       <h3 className="text-xl font-black text-foreground">{app.name}</h3>
-                      <p className="text-xs font-black uppercase tracking-widest text-accent">{app.vibe}</p>
+                      <p className="text-xs font-black uppercase tracking-widest text-accent">{app.badge}</p>
                     </div>
                   </div>
                 </div>
-                <div className="mt-6 px-4">
-                  <p className="text-sm font-bold text-muted-foreground">{app.tagline}</p>
+                <div className="mt-6 px-2">
+                  <p className="text-sm font-medium text-muted-foreground leading-relaxed">{app.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -259,12 +261,12 @@ export default function Home() {
       {/* Teaser CTA */}
       <section className="py-24 px-6 bg-accent text-accent-foreground rounded-[3rem] mx-6 mb-24 overflow-hidden relative">
         <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight">Got a vibe? Let&apos;s build it.</h2>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight">Have a project in mind? Let&apos;s build it.</h2>
           <p className="text-xl font-medium opacity-90">
-            Currently accepting new projects for Q1 2026. Be the first to launch with the next wave of AI-driven tech.
+            Currently accepting new projects. Let&apos;s discuss your organization&apos;s goals and how to build a reliable, high-performance platform.
           </p>
           <Link href="/contact" className="inline-flex items-center gap-2 bg-accent-foreground text-accent px-10 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform shadow-2xl">
-            Secure Your Spot <ArrowRight className="w-6 h-6" />
+            Start the Conversation <ArrowRight className="w-6 h-6" />
           </Link>
         </div>
       </section>

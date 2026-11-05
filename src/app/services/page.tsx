@@ -6,34 +6,28 @@ import { Rocket, Cpu, Globe, Sparkles, ArrowRight, CheckCircle2, Users } from 'l
 
 const services = [
   {
-    title: "Strategic Launchpads",
-    desc: "Rapid-deployment landing pages and digital foundations. Perfect for escaping legacy WordPress setups and moving to the cloud.",
+    title: "Websites & Digital Platforms",
+    desc: "High-performance sites and applications for service businesses, non-profits, and organizations moving off WordPress or template platforms. Built with modern stacks for speed, reliability, and easier long-term ownership.",
     icon: <Rocket className="w-6 h-6" />,
-    features: ["WP Escape Plans", "Conversion Focused", "SEO Strategy"]
+    features: ["WP Escape Plans", "Speed & Reliability", "Long-Term Ownership"]
   },
   {
-    title: "Full-Stack Cloud Apps",
-    desc: "Custom, scalable applications built with Next.js, React, and robust backend logic. E-commerce and subscription experts.",
-    icon: <Cpu className="w-6 h-6" />,
-    features: ["Next.js/React", "Stripe Integration", "Scale-Ready"]
-  },
-  {
-    title: "Cloud & Hosting Solutions",
-    desc: "Managed deployment on Firebase, AWS, or GCP. High-availability infrastructure for mission-critical apps.",
-    icon: <Globe className="w-6 h-6" />,
-    features: ["Firebase/AWS", "Edge Deployment", "Security First"]
-  },
-  {
-    title: "AI Vibe Engineering",
-    desc: "Building custom AI-integrated tools and workflows. Leveraging the absolute latest in AI vibes to ship faster.",
-    icon: <Sparkles className="w-6 h-6" />,
-    features: ["Custom AI Tools", "Vibe Coding", "Automation"]
-  },
-  {
-    title: "Clubs & Communities",
-    desc: "Custom portals and membership platforms for non-profits and organizations. Featuring WP Buddy Boss integrations and bespoke community centers.",
+    title: "Client Portals, Membership Systems & Internal Tools",
+    desc: "Custom portals for client intake, member management, document sharing, and workflow automation. Designed for teams that have outgrown basic forms or off-the-shelf tools.",
     icon: <Users className="w-6 h-6" />,
-    features: ["WP Buddy Boss", "Member Portals", "Custom Dashboards"]
+    features: ["Client Intake & Portals", "Member Management", "Workflow Automation"]
+  },
+  {
+    title: "Full-Stack Development",
+    desc: "Next.js, React, and cloud-backed applications (Vercel, Firebase, AWS, GCP) with attention to performance, security, and maintainability. Includes work on subscription systems, e-commerce, and AI-assisted features where they create real value.",
+    icon: <Cpu className="w-6 h-6" />,
+    features: ["Next.js & React", "Cloud Backend Integration", "Subscriptions & E-Commerce"]
+  },
+  {
+    title: "Cloud & Deployment",
+    desc: "Secure, managed hosting and deployment so platforms stay fast and stable after launch.",
+    icon: <Globe className="w-6 h-6" />,
+    features: ["Managed Hosting", "High Availability", "Continuous Deployment"]
   }
 ];
 
@@ -42,7 +36,7 @@ export default function Services() {
     <section className="py-24 px-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="text-center space-y-4 mb-20"
         >
@@ -56,7 +50,7 @@ export default function Services() {
           {services.map((s, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={false}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
@@ -85,7 +79,7 @@ export default function Services() {
         </div>
 
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           whileInView={{ opacity: 1 }}
           className="mt-24 p-12 rounded-[3.5rem] glass border border-accent/20 text-center space-y-8"
         >

@@ -5,7 +5,7 @@ export async function POST(req: Request) {
     try {
         console.log('--- Incoming Transmission ---');
         const { name, email, service, message } = await req.json();
-        console.log(`Vibe Inquiry from: ${name} (${email}) for ${service}`);
+        console.log(`Project Inquiry from: ${name} (${email}) for ${service}`);
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
             from: '"RottyM Website" <no-reply@rottym.com>',
             to: 'rmendez@rottym.com', // Destination email
             replyTo: email,
-            subject: `[VIBE INQUIRY] ${service} from ${name}`,
+            subject: `[PROJECT INQUIRY] ${service} from ${name}`,
             text: `
         Name: ${name}
         Email: ${email}
@@ -33,12 +33,12 @@ export async function POST(req: Request) {
       `,
             html: `
         <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
-          <h2 style="color: #6366f1;">New Vibe Inquiry Received</h2>
+          <h2 style="color: #6366f1;">New Project Inquiry Received</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Email:</strong> ${email}</p>
           <p><strong>Service:</strong> ${service}</p>
           <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-          <h3 style="color: #444;">Message Vision:</h3>
+          <h3 style="color: #444;">Project Details:</h3>
           <p style="background: #fdfdfd; padding: 15px; border-left: 4px solid #6366f1; border-radius: 4px;">${message}</p>
         </div>
       `,
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
         await transporter.sendMail(mailOptions);
 
-        return NextResponse.json({ success: true, message: 'Vibe transmitted successfully.' });
+        return NextResponse.json({ success: true, message: 'Message sent successfully.' });
     } catch (error) {
         console.error('Email error:', error);
         return NextResponse.json({ success: false, message: 'Transmission failed.' }, { status: 500 });

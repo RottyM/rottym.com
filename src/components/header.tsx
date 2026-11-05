@@ -15,9 +15,9 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm transition-all">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-3 group transition-all" aria-label="Rottman M. Mendez Home">
+        <Link href="/" className="flex items-center gap-3.5 group transition-all" aria-label="Rottman M. Mendez Home">
           {/* Logo: RM Monogram - Geometric & Gradient */}
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="group-hover:scale-105 transition-transform duration-500">
+          <svg viewBox="6.5 8 30.5 27" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-12 md:h-14 w-auto shrink-0 group-hover:scale-105 transition-transform duration-500">
             <path d="M8 10H16C20.4183 10 24 13.5817 24 18V24H18V18C18 16.8954 17.1046 16 16 16H14V34H8V10Z" fill="url(#paint0_linear)" />
             <path d="M22 20L32 34H25L18 24H24V20H22Z" fill="url(#paint1_linear)" />
             <path d="M26 10L30 16L34 10" stroke="url(#paint2_linear)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
@@ -36,9 +36,9 @@ export default function Header() {
               </linearGradient>
             </defs>
           </svg>
-          <div className="flex flex-col justify-center">
-            <span className="text-xl font-black tracking-tight text-foreground leading-none group-hover:text-accent transition-colors">RottyM</span>
-            <span className="text-[10px] font-bold tracking-[0.25em] text-muted-foreground leading-none uppercase">Vibe Engineer</span>
+          <div className="flex flex-col justify-center translate-y-1 md:translate-y-1.5">
+            <span className="text-xl md:text-2xl font-black tracking-tight text-foreground leading-none group-hover:text-accent transition-colors">RottyM</span>
+            <span className="text-[10px] md:text-xs font-bold tracking-wider text-muted-foreground uppercase mt-1.5 leading-none">{"Full Stack & AI Software Engineer"}</span>
           </div>
         </Link>
         <nav className="hidden md:flex gap-8 text-sm font-medium items-center">

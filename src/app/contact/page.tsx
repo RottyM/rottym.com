@@ -33,7 +33,7 @@ export default function Contact() {
       const result = await res.json();
 
       if (res.ok) {
-        setStatus('Vibes received! Expect a reply within 24h.');
+        setStatus('Message received! Expect a reply within 24h.');
         (e.target as HTMLFormElement).reset();
       } else {
         setStatus(`Error — ${result.message}`);
@@ -46,20 +46,20 @@ export default function Contact() {
   };
 
   // Custom success state handling if needed, or stick with the inline logic
-  if (status.includes('Vibes received!')) {
+  if (status.includes('Message received!')) {
     return (
       <section className="py-24 px-6 min-h-screen flex items-center justify-center">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={false}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center space-y-6 max-w-2xl"
         >
           <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <Sparkles className="w-10 h-10" />
           </div>
-          <h2 className="text-4xl font-black tracking-tight">Transmission Received!</h2>
-          <p className="text-xl text-muted-foreground">Thanks for reaching out. I'll analyze the vibe and get back to you within 24 hours.</p>
-          <a href="/" className="inline-block mt-8 text-accent font-bold hover:underline">Return to HQ</a>
+          <h2 className="text-4xl font-black tracking-tight">Message Received!</h2>
+          <p className="text-xl text-muted-foreground">Thanks for reaching out. I'll review your project requirements and get back to you within 24 hours.</p>
+          <a href="/" className="inline-block mt-8 text-accent font-bold hover:underline">Return to Home</a>
         </motion.div>
       </section>
     );
@@ -69,17 +69,17 @@ export default function Contact() {
     <section className="py-24 px-6 min-h-screen">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
+          initial={false}
           animate={{ opacity: 1, x: 0 }}
           className="space-y-12"
         >
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
-              <Sparkles className="w-3 h-3" /> Connect with Vibe
+              <Sparkles className="w-3 h-3" /> Get in Touch
             </div>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1]">Let&apos;s Build Something <span className="text-accent">Legendary</span>.</h1>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1]">Let&apos;s Build Something <span className="text-accent">Exceptional</span>.</h1>
             <p className="text-xl text-muted-foreground max-w-md font-medium leading-relaxed">
-              Accepting high-impact projects for early 2026. Whether it&apos;s a strategic launch or a complex cloud app, I&apos;ve got the vibe and the code.
+              Accepting new projects. Whether it&apos;s a modern website, client portal, or full-stack cloud application, let&apos;s build a reliable system together.
             </p>
           </div>
 
@@ -129,7 +129,7 @@ export default function Contact() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={false}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
           className="relative"
@@ -150,21 +150,21 @@ export default function Contact() {
             <div className="space-y-2">
               <label htmlFor="service" className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Service Selection</label>
               <select id="service" name="service" className="w-full p-5 bg-muted/50 border border-border rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all font-medium appearance-none">
-                <option>Strategic Launchpad</option>
-                <option>Full-Stack Cloud App</option>
-                <option>Hosting & Infrastructure</option>
-                <option>AI Vibe Engineering</option>
+                <option>Websites & Digital Platforms</option>
+                <option>Client Portals, Membership Systems & Internal Tools</option>
+                <option>Full-Stack Development</option>
+                <option>Cloud & Deployment</option>
                 <option>Something Else</option>
               </select>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="message" className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Project Vision</label>
-              <textarea id="message" name="message" rows={4} placeholder="Tell me about the vibe..." required className="w-full p-5 bg-muted/50 border border-border rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium resize-none" />
+              <label htmlFor="message" className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Project Details</label>
+              <textarea id="message" name="message" rows={4} placeholder="Tell me about your project, goals, and timeline..." required className="w-full p-5 bg-muted/50 border border-border rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium resize-none" />
             </div>
 
             <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-3 bg-accent text-accent-foreground py-6 rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-xl shadow-accent/20 disabled:opacity-50 disabled:hover:scale-100">
-              {isSubmitting ? 'Transmitting...' : 'Send Transmission'} <Send className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              {isSubmitting ? 'Sending...' : 'Send Message'} <Send className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </button>
 
             {status && (
