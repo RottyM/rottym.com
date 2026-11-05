@@ -1,6 +1,6 @@
 // src/lib/analytics.ts
 
-export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID || '';
+export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-3HVHES29PX';
 
 // Track pageviews
 export const pageview = (url: string) => {
