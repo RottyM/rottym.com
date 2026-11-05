@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "dependencies": {
     "@formspree/react": "^3.0.0",
