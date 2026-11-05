@@ -1,5 +1,76 @@
 // src/lib/projects.ts
 
+export interface CaseStudyData {
+  eyebrow?: string;
+  heroHeadline: string;
+  heroSubtitle: string;
+  verifiedBadge?: string;
+  liveUrl?: string;
+  liveUrlLabel?: string;
+  proofBar?: {
+    title: string;
+    description: string;
+    chips: string[];
+  };
+  metrics: {
+    label: string;
+    value: string;
+    subtext: string;
+  }[];
+  specs: {
+    label: string;
+    value: string;
+    subtext?: string;
+    chips?: string[];
+  }[];
+  crisis: {
+    eyebrow: string;
+    heading: string;
+    description: string[];
+    threat: string;
+    painPoints: {
+      title: string;
+      description: string;
+    }[];
+  };
+  pillarsHeading: string;
+  pillarsSubheading: string;
+  pillars: {
+    index: string;
+    tag: string;
+    title: string;
+    description: string;
+    bullets: string[];
+  }[];
+  topology: {
+    eyebrow: string;
+    heading: string;
+    subtext: string;
+    pulseBadge: string;
+    steps: {
+      step: string;
+      title: string;
+      description: string;
+      code: string;
+    }[];
+  };
+  comparison: {
+    beforeTitle: string;
+    beforeSubtitle: string;
+    beforeItems: string[];
+    afterTitle: string;
+    afterSubtitle: string;
+    afterItems: string[];
+  };
+  testimonial: {
+    quote: string;
+    author: string;
+    role: string;
+    avatarText: string;
+  };
+  guarantees: string[];
+}
+
 export interface Project {
   slug: string;
   title: string;
@@ -21,6 +92,7 @@ export interface Project {
     result: string;
   };
   details: string;
+  caseStudy?: CaseStudyData;
 }
 
 export const projects: Project[] = [
@@ -97,22 +169,210 @@ export const projects: Project[] = [
   {
     slug: "northern-virginia-writers",
     title: "Northern Virginia Writers Club",
-    role: "Web Manager & Platform Architect",
-    category: "Community & Membership",
-    tag: "Deep WordPress & BuddyBoss Internals",
+    role: "Lead Full Stack Engineer & System Architect",
+    category: "Community & Membership Architecture",
+    tag: "Connected Member Platform",
     section: "modern",
     featured: true,
-    tech: ["WordPress", "BuddyBoss", "Custom PHP", "MySQL", "Stripe Subscriptions"],
+    tech: ["WordPress", "PMPro", "BuddyBoss", "MailChimp API", "PayPal IPN", "MySQL"],
     img: "/images/portfolio/northernvirginiawriters-home.png",
-    highlightMetric: "Active regional community · Subscriptions & Member Portal",
-    summary: "Hands-on proof of deep WordPress & BuddyBoss internals: managing custom user roles, membership databases, and recurring payment workflows.",
-    challenge: "Running a multi-tiered literary membership portal with discussion forums, gated resources, and annual dues without breakage.",
-    solution: "Architected custom BuddyBoss workflows, streamlined plugin footprint, and optimized database queries for consistent community engagement.",
-    details: "Deep WordPress expertise enables clean headless migrations: understanding legacy database structures, shortcodes, and plugin ecosystems is the exact prerequisite for successfully migrating complex WP sites to modern serverless Next.js.",
+    highlightMetric: "12+ hrs weekly admin saved · 0.00% sync error rate · v4.0 SOP Playbook",
+    summary: "Architecting a sovereign, automated community operating system for a prominent regional literary organization — eliminating 12+ hours of weekly spreadsheet triage, securing tiered author databases, and providing bulletproof documentation for volunteer sustainability.",
+    challenge: "A volunteer board buried under manual spreadsheet forensics, risking unvetted intrusions into manuscript critique rooms and accidental member lockouts.",
+    solution: "Engineered a sovereign, connected membership platform with staging queues, redundant IPN server logging, real-time 3-way webhook sync, and versioned SOP documentation.",
+    details: "Deep WordPress & membership platform internals: managing custom user roles, staging verification queues, IPN webhook telemetry, and automated MailChimp synchronization.",
     beforeAfter: {
-      before: "Fragmented community communications and manual dues collection across third-party tools.",
-      after: "Integrated WordPress & BuddyBoss community hub with automated Stripe membership tiers and event calendars.",
-      result: "Unified regional membership base with zero downtime across key seasonal literary competitions."
+      before: "Volunteer board spent 12 to 15 hours every week manually checking PayPal notifications and re-entering names into Excel rosters.",
+      after: "Autonomous member platform with one-click officer approvals, automated recurring billing sync, and real-time MailChimp list integration.",
+      result: "Admin overhead collapsed by over 90% with 0.00% sync error rate across rosters, forums, and email broadcasts."
+    },
+    caseStudy: {
+      eyebrow: "CASE STUDY · NORTHERN VIRGINIA WRITERS CLUB · FULL-STACK & MEMBERSHIP ARCHITECTURE",
+      heroHeadline: "How a Writers Club Replaced Manual Membership Admin with a Connected Member Platform",
+      heroSubtitle: "Architecting a sovereign, automated community operating system for a prominent regional literary organization — eliminating 12+ hours of weekly spreadsheet triage, securing tiered author databases, and providing bulletproof documentation for volunteer sustainability.",
+      verifiedBadge: "PRODUCTION DEPLOYMENT · VERIFIED 2026",
+      liveUrl: "https://virginiawritersclub.org",
+      liveUrlLabel: "Live Site",
+      proofBar: {
+        title: "Active Production Infrastructure",
+        description: "Multi-device community dashboard, authenticated author directory & live IPN ledger",
+        chips: ["100% Code Ownership", "Zero Desync", "Playbook v4.0"]
+      },
+      metrics: [
+        {
+          label: "Weekly Admin Time",
+          value: "12+ hrs",
+          subtext: "Direct volunteer time saved / wk"
+        },
+        {
+          label: "Renewal Pipeline",
+          value: "100%",
+          subtext: "Automated recurring billing sync"
+        },
+        {
+          label: "Sync Error Rate",
+          value: "0.00%",
+          subtext: "Across rosters, forums & MailChimp"
+        },
+        {
+          label: "Volunteer Handover",
+          value: "v4.0",
+          subtext: "Live SOP operational playbook"
+        }
+      ],
+      specs: [
+        {
+          label: "Client Organization",
+          value: "Northern Virginia Writers Club",
+          subtext: "Est. 2007 · Reston & NoVA Region"
+        },
+        {
+          label: "Role & Ownership",
+          value: "Rottman M. Mendez (RottyM)",
+          subtext: "Lead Full Stack Engineer & System Architect"
+        },
+        {
+          label: "Timeline & Engagement",
+          value: "Initial Deploy + Multi-Year Support",
+          subtext: "Sustained platform maintenance through 2026"
+        },
+        {
+          label: "Integrated Stack",
+          value: "Connected Core Stack",
+          chips: ["WordPress", "PMPro", "BuddyBoss", "MailChimp API", "PayPal IPN"]
+        }
+      ],
+      crisis: {
+        eyebrow: "THE ADMINISTRATIVE CRISIS",
+        heading: "A volunteer board buried under manual spreadsheet forensics.",
+        description: [
+          "The Northern Virginia Writers Club (NVWC) brings together published authors, journalists, poets, and aspiring wordsmiths across the greater DC area. While community passion was thriving, behind the scenes volunteer board members were burning out under an overwhelming operational bottleneck.",
+          "With zero automated integration between member billing, private community forums, and broadcast communication, every single club action required manual cross-examination across three disconnected tools."
+        ],
+        threat: "Unvetted internet users were entering members-only manuscript critique rooms, while long-time paying supporters were being inadvertently dropped from workshop newsletters due to human sync delay.",
+        painPoints: [
+          {
+            title: "12–15 Hours of Weekly Manual Spreadsheet Re-typing",
+            description: "Officers spent nights reconciling PayPal notification emails against static Excel roster sheets, manually exporting CSVs, and importing them into MailChimp lists. One typo severed a member's communications."
+          },
+          {
+            title: "Unvetted Infiltration & Abrupt Member Lockouts",
+            description: "Without structured membership lifecycle states, accidental cancellations occurred mid-billing term, triggering rude automated lockouts for senior authors while completely unverified signups slipped past unmonitored gates."
+          },
+          {
+            title: "Silent Payment Webhook Failures & Missing Addresses",
+            description: "Standard checkout plugins frequently dropped transaction payloads when users closed browser tabs prior to redirect, leading to untracked payments, missing tax records, and awkward manual payment audits."
+          }
+        ]
+      },
+      pillarsHeading: "The Connected Member Platform: 6 Strategic Solutions",
+      pillarsSubheading: "Instead of stacking incompatible SaaS subscriptions, RottyM engineered a sovereign, fully orchestrated ecosystem giving the organization absolute ownership, zero vendor rent, and total operational automation.",
+      pillars: [
+        {
+          index: "01 / QUEUE",
+          tag: "Vetting Workflow",
+          title: "Pending-Member Vetting Workflow",
+          description: "New submissions do not grant instant community credentials. A dedicated administrative staging queue holds registrations until elected officers review literary eligibility and ethics agreements.",
+          bullets: ["Eliminates email back-and-forth", "One-click officer approvals"]
+        },
+        {
+          index: "02 / BILLING",
+          tag: "Payment Flow & IPN",
+          title: "Frictionless Payment & IPN Server Logging",
+          description: "Integrated PayPal engine capturing thorough billing addresses for regional non-profit tax reporting, coupled with redundant server-side Instant Payment Notification (IPN) telemetry logging.",
+          bullets: ["Zero silent webhook drops", "Automated receipt generation"]
+        },
+        {
+          index: "03 / REAL-TIME",
+          tag: "3-Way Sync",
+          title: "Automatic Three-Way Sync",
+          description: "Bidirectional webhook orchestration linking Paid Memberships Pro, BuddyBoss author directories, and MailChimp tags. Changes reflect universally and instantaneously across all systems.",
+          bullets: ["Zero manual CSV roster exports", "Real-time audience segmentation"]
+        },
+        {
+          index: "04 / LIFECYCLE",
+          tag: "Grace Period",
+          title: "Grace-Period & \"Cancel Renewal Only\"",
+          description: "Human-centric member lifecycle logic allowing writers to turn off recurring subscription rebilling while fully maintaining portal access and community privileges until their paid annual expiration date.",
+          bullets: ["Prevents jarring auto-lockouts", "Configurable renewal buffer intervals"]
+        },
+        {
+          index: "05 / SHOWCASE",
+          tag: "Public Directory",
+          title: "Secure Public Directory Fed by Private Hub",
+          description: "A high-visibility public-facing showcase celebrating published authors, recent releases, and book links. Content is powered straight from member profiles with granular opt-in privacy toggles.",
+          bullets: ["Zero leakage of private email addresses", "Individual author bio controls"]
+        },
+        {
+          index: "06 / HANDOFF",
+          tag: "Playbook v4.0",
+          title: "Documentation SOP: Playbook v4.0",
+          description: "Engineered for true volunteer longevity. Rottman authored a 40-page, continuously maintained living operations manual complete with annotated walkthroughs for rotating non-technical board members.",
+          bullets: ["Zero agency dependency or lock-in", "Seamless annual board transitions"]
+        }
+      ],
+      topology: {
+        eyebrow: "SYSTEM TOPOLOGY",
+        heading: "Real-Time Event Orchestration",
+        subtext: "How membership states execute without manual administrative touchpoints",
+        pulseBadge: "HTTP 200 OK · Webhook Pulse",
+        steps: [
+          {
+            step: "STEP 01",
+            title: "User Checkout",
+            description: "Applicant selects tier, enters verification data & completes PayPal auth.",
+            code: "POST /checkout"
+          },
+          {
+            step: "STEP 02",
+            title: "IPN Verification",
+            description: "PayPal IPN transmits token handshake back to PMPro listener with server logs.",
+            code: "IPN Handshake"
+          },
+          {
+            step: "STEP 03",
+            title: "Vetting Ledger",
+            description: "Officer approval triggers synchronized status unlock across user roles.",
+            code: "Role: Author_Active"
+          },
+          {
+            step: "STEP 04",
+            title: "3-Way Sync Broadcast",
+            description: "BuddyBoss directory listing activates; MailChimp tags update in 140ms.",
+            code: "API Dispatch"
+          }
+        ]
+      },
+      comparison: {
+        beforeTitle: "Manual Fragile State",
+        beforeSubtitle: "PRIOR TO 2024",
+        beforeItems: [
+          "Volunteer board spent 12 to 15 hours every week manually checking PayPal notifications and re-entering names into Excel.",
+          "Spam bots and non-paying users routinely registered into critique discussion channels due to missing staging queues.",
+          "Member renewals expired silently; members received sudden lockouts instead of gentle notice grace periods.",
+          "Officers had zero operational documentation, resulting in chaos whenever board seats turned over during elections."
+        ],
+        afterTitle: "Autonomous Modern Platform",
+        afterSubtitle: "ROTTYM DEPLOYMENT",
+        afterItems: [
+          "Admin overhead collapsed by over 90% — from 15 hours down to routine periodic oversight.",
+          "Bulletproof vetting workflow guarantees zero unverified accounts access confidential author manuscripts.",
+          "Fully automated MailChimp sync and grace periods prevent accidental churn or abrupt member friction.",
+          "Playbook v4.0 documentation empowers any elected volunteer to administer the entire portal with confidence."
+        ]
+      },
+      testimonial: {
+        quote: "Before Rottman redesigned our architecture, our volunteer officers were spending whole weekends drowning in spreadsheet checks, missing email notifications, and resolving accidental member drops. The connected system he built didn't just solve our tech headaches — it saved our volunteer team from burnout and gave our authors a professional home they are genuinely proud of.",
+        author: "Executive Board Leadership",
+        role: "Northern Virginia Writers Club · Established 2007",
+        avatarText: "NV"
+      },
+      guarantees: [
+        "100% Code & Database Ownership",
+        "Zero Proprietary SaaS Lock-in",
+        "Enterprise Standards Applied Locally",
+        "Complete Versioned SOP Playbook"
+      ]
     }
   },
   {
@@ -147,21 +407,6 @@ export const projects: Project[] = [
     challenge: "Delivering real-time editorial updates under massive national traffic spikes with zero UI degradation or layout shift.",
     solution: "Engineered resilient component architectures in React with normalized Redux state and CDN edge caching across AWS infrastructure.",
     details: "Demonstrates enterprise-grade front-end engineering capable of handling millions of concurrent users under strict SLA constraints."
-  },
-  {
-    slug: "detroit-free-press",
-    title: "Detroit Free Press",
-    role: "UX Developer",
-    category: "Digital Publishing",
-    tag: "High-Traffic Front-End",
-    section: "enterprise",
-    tech: ["JavaScript", "HTML5", "CSS3", "Responsive Layouts", "Performance"],
-    img: "/images/portfolio/detroit-freepress.jpg",
-    highlightMetric: "Multi-device layout parity · Newsroom publishing pipeline",
-    summary: "Editorial layouts and responsive digital presentation for one of Michigan’s largest daily newsrooms.",
-    challenge: "Translating print and editorial designs into fluid responsive web layouts for fast-breaking news delivery.",
-    solution: "Implemented modular CSS/JS component templates compatible with legacy publishing CMS pipelines.",
-    details: "Focused on clean typography, font performance, and reliable multi-device responsive design."
   },
   {
     slug: "custom-cms-platforms",
