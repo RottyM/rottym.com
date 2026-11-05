@@ -97,7 +97,7 @@ export default function About() {
         </div>
 
         <p className="text-xs md:text-sm text-foreground/80 font-bold">
-          Looking for Full Stack &amp; AI Software Engineer roles.
+          Looking for Full Stack &amp; AI Software Engineer roles and technical partners.
         </p>
       </div>
 
@@ -185,10 +185,10 @@ export default function About() {
           <Sparkles className="w-3 h-3" /> Career Opportunities
         </div>
         <h2 className="text-3xl md:text-4xl font-black text-foreground">
-          Looking for a Full Stack &amp; AI Software Engineer?
+          Looking for a Full Stack &amp; AI Software Engineer or Technical Partner?
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base">
-          I&apos;m looking for Full Stack &amp; AI Software Engineer roles. If you&apos;re a recruiter, hiring manager, or technical lead looking for a senior contributor, let&apos;s connect.
+          I&apos;m looking for Full Stack &amp; AI Software Engineer roles and technical partners. If you&apos;re a recruiter, hiring manager, or organization seeking a technical collaborator, let&apos;s connect.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link
