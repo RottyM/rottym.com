@@ -7,9 +7,9 @@ import { Rocket, Cpu, Globe, Sparkles, ArrowRight, CheckCircle2, Users } from 'l
 const services = [
   {
     title: "Websites & Digital Platforms",
-    desc: "High-performance sites and applications for service businesses, non-profits, and organizations moving off WordPress or template platforms. Built with modern stacks for speed, reliability, and easier long-term ownership.",
+    desc: "High-performance sites and applications for service businesses, non-profits, and organizations moving off WordPress or template platforms. Built with modern stacks for speed, reliability, and strict WCAG 2.1 AA / Section 508 accessibility compliance.",
     icon: <Rocket className="w-6 h-6" />,
-    features: ["WP Escape Plans", "Speed & Reliability", "Long-Term Ownership"],
+    features: ["WP Escape Plans", "WCAG 2.1 AA & 508 Compliant", "Sub-Second Speed & Reliability"],
     packageNote: "Most Reston & NoVA projects start here — view packages →",
     packageHref: "/packages#local-launchpad"
   },

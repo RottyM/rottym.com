@@ -150,6 +150,9 @@ export default function PackagesPage() {
               <Check className="w-4 h-4" /> Zero Lock-in
             </span>
             <span className="flex items-center gap-2 text-emerald-500">
+              <Check className="w-4 h-4" /> WCAG 2.1 AA Accessible
+            </span>
+            <span className="flex items-center gap-2 text-emerald-500">
               <Check className="w-4 h-4" /> No Surprise Invoices
             </span>
           </div>

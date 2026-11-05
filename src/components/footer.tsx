@@ -1,6 +1,6 @@
 // src/components/footer.tsx
 import Link from 'next/link';
-import { Mail, MapPin, ArrowRight, ShieldCheck, Sparkles, Code2 } from 'lucide-react';
+import { Mail, MapPin, ArrowRight, ShieldCheck, Sparkles, Code2, CheckCircle2 } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -168,6 +168,9 @@ export default function Footer() {
             </span>
             <span className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-accent" /> Zero Vendor Lock-in
+            </span>
+            <span className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-accent" /> WCAG 2.1 AA &amp; Section 508
             </span>
             <span className="flex items-center gap-1.5">
               <Code2 className="w-3.5 h-3.5 text-accent" /> Enterprise Modern Stack

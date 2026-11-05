@@ -1,11 +1,12 @@
 // src/app/sitemap.ts
 import { MetadataRoute } from 'next';
+import { projects } from '@/lib/projects';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://rottym.com';
   const currentDate = new Date().toISOString();
 
-  return [
+  const coreRoutes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: currentDate,
@@ -27,14 +28,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `${baseUrl}/portfolio`,
       lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.8,
+      changeFrequency: 'weekly',
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/about`,
       lastModified: currentDate,
       changeFrequency: 'monthly',
-      priority: 0.7,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/contact`,
@@ -43,5 +44,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
   ];
-}
 
+  const caseStudyRoutes: MetadataRoute.Sitemap = projects.map((p) => ({
+    url: `${baseUrl}/portfolio/${p.slug}`,
+    lastModified: currentDate,
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }));
+
+  return [...coreRoutes, ...caseStudyRoutes];
+}

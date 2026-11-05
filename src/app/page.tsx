@@ -108,12 +108,12 @@ export default function Home() {
             </div>
 
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
-              Reston-based full-stack developer and UX designer. I build high-performance sites and custom platforms (Next.js, React, modern cloud) with the speed of AI and the precision of enterprise work at Disney, USA Today, FEMA, and Booz Allen.
+              Reston-based full-stack developer and UX designer. I build high-performance sites, custom portals, and WordPress escape rebuilds with the precision of enterprise work at Disney, FEMA, and BAE Systems — fully compliant with WCAG 2.1 AA / Section 508 accessibility standards.
             </p>
 
             <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-muted/60 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Fixed pricing after a short discovery call · Booking 2026 projects and beyond
+              Fixed pricing after a short discovery call · WCAG 2.1 AA compliant · Booking 2026 projects
             </div>
 
             <div className="flex flex-wrap gap-4">
@@ -167,14 +167,14 @@ export default function Home() {
       {/* Trust Section */}
       <section className="py-24 border-y border-border bg-muted/30 transition-colors">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-sm font-bold tracking-widest uppercase text-muted-foreground mb-12">Trusted by engineering teams at</p>
+          <p className="text-sm font-bold tracking-widest uppercase text-muted-foreground mb-12">Previously engineered for</p>
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-            {['Disney', 'FAA', 'FEMA', 'USA Today', 'Booz Allen', 'Leidos'].map(c => (
+            {['Disney', 'FEMA', 'BAE Systems', 'FAA', 'Leidos', 'USA Today'].map(c => (
               <span key={c} className="text-2xl md:text-3xl font-black tracking-tighter text-foreground">{c}</span>
             ))}
           </div>
           <p className="mt-8 text-sm md:text-base font-medium text-muted-foreground max-w-2xl mx-auto">
-            Trusted by engineering teams at Disney, FAA, FEMA, USA Today, Booz Allen, and Leidos — now applied to practical sites and platforms for growing businesses.
+            Previously engineered systems for Disney, FEMA, BAE Systems, FAA, Leidos, and USA Today — now applied to practical sites and high-performance platforms for growing businesses.
           </p>
         </div>
       </section>
@@ -193,7 +193,7 @@ export default function Home() {
             {[
               {
                 title: 'Websites & Digital Platforms',
-                desc: 'High-performance sites and applications for service businesses, non-profits, and organizations moving off WordPress or template platforms. Built with modern stacks for speed, reliability, and easier long-term ownership.',
+                desc: 'High-performance sites and applications for service businesses, non-profits, and organizations moving off WordPress or template platforms. Built with modern stacks for speed, reliability, and WCAG 2.1 AA / Section 508 accessibility compliance.',
                 icon: <Rocket className="w-6 h-6" />,
                 accent: 'text-orange-500',
                 bg: 'bg-orange-500/10'
@@ -432,24 +432,27 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
+                slug: "throttlelife",
                 name: "ThrottleLife",
                 desc: "A custom operating system concept for motorcycle riders — built as a high-performance Next.js application with real-time data handling, user accounts, and cloud-backed features. Focused on clean architecture and mobile-first interaction.",
                 image: "/images/apps/throttlelife.png",
-                badge: "Concept & Architecture",
+                badge: "Next.js Application",
                 icon: <Zap className="w-6 h-6" />
               },
               {
-                name: "Family OS",
-                desc: "A digital command center for household coordination. Developed as a full-stack application emphasizing secure data handling, multi-user roles, and practical automation for everyday workflows.",
-                image: "/images/apps/familyos.png",
-                badge: "Full-Stack System",
+                slug: "found-archives",
+                name: "Found Archives (Next.js Rebuild)",
+                desc: "WordPress Escape Case Study: Replaced a slow, 28-plugin monolithic WordPress installation with a modern decoupled Next.js App Router and Sanity CMS setup on Vercel. Result: 99/100 Lighthouse performance and sub-350ms TTFB.",
+                image: "/images/portfolio/found-archives-homepage.png",
+                badge: "WordPress Escape Case Study",
                 icon: <Globe className="w-6 h-6" />
               },
               {
-                name: "Client & Organizational Work",
-                desc: "Custom websites, client portals, and membership tools for service businesses, non-profits, and teams that needed more reliable systems than standard WordPress or template platforms. Work includes performance-focused rebuilds, intake automation, and scalable cloud deployments.",
+                slug: "northern-virginia-writers",
+                name: "Northern Virginia Writers Club",
+                desc: "Proof of deep WordPress & BuddyBoss internals: managing custom user roles, membership databases, and recurring Stripe subscriptions. This deep CMS mastery is what makes our headless migrations seamless and risk-free.",
                 image: "/images/portfolio/northernvirginiawriters-home.png",
-                badge: "Production Systems",
+                badge: "WordPress Mastery & Portals",
                 icon: <Users className="w-6 h-6" />
               }
             ].map((app, idx) => (
@@ -461,7 +464,10 @@ export default function Home() {
                 transition={{ delay: idx * 0.15 }}
                 className="group relative flex flex-col"
               >
-                <div className="relative aspect-[16/10] bg-card rounded-[2.5rem] border border-border overflow-hidden shadow-2xl group-hover:border-accent/30 transition-all duration-500">
+                <Link
+                  href={`/portfolio/${app.slug}`}
+                  className="relative aspect-[16/10] bg-card rounded-[2.5rem] border border-border overflow-hidden shadow-2xl group-hover:border-accent/40 group-hover:shadow-accent/10 transition-all duration-500 block"
+                >
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                   {/* App Screen Mockup */}
@@ -479,13 +485,19 @@ export default function Home() {
                       {app.icon}
                     </div>
                     <div>
-                      <h3 className="text-xl font-black text-foreground">{app.name}</h3>
+                      <h3 className="text-xl font-black text-foreground group-hover:text-accent transition-colors">{app.name}</h3>
                       <p className="text-xs font-black uppercase tracking-widest text-accent">{app.badge}</p>
                     </div>
                   </div>
-                </div>
-                <div className="mt-6 px-2">
+                </Link>
+                <div className="mt-6 px-2 space-y-3">
                   <p className="text-sm font-medium text-muted-foreground leading-relaxed">{app.desc}</p>
+                  <Link
+                    href={`/portfolio/${app.slug}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline group-hover:gap-2 transition-all"
+                  >
+                    View Case Study &amp; Architecture →
+                  </Link>
                 </div>
               </motion.div>
             ))}

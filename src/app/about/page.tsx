@@ -1,6 +1,7 @@
 // src/app/about/page.tsx
 'use client';
-import { Briefcase, Code2, Award, ArrowRight } from 'lucide-react';
+
+import { Briefcase, Code2, Award, ArrowRight, Download, Mail, CheckCircle2, FileText, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 const experiences = [
@@ -8,7 +9,7 @@ const experiences = [
     role: "Full-Stack & AI Software Engineer (Independent Consultant)",
     company: "RottyM Designs",
     period: "11/2023 – Present",
-    desc: "Architecting AI-augmented cloud platforms, RAG pipelines, Model Context Protocol (MCP) integrations, and high-performance headless Next.js applications (Vercel, GCP, Firebase). Partnering with healthcare providers, regional non-profits, and commercial clients to modernize legacy systems and automate workflows."
+    desc: "Architecting AI-augmented cloud platforms, RAG pipelines, Model Context Protocol (MCP) integrations, and high-performance headless Next.js applications (Vercel, GCP, Firebase). Built custom intake portals and automated workflows for regional healthcare providers and non-profits, cutting administrative onboarding time by 60% and migrating legacy WordPress systems to sub-second headless architectures."
   },
   {
     role: "Full-Stack Software Engineer (Contract)",
@@ -27,6 +28,18 @@ const experiences = [
     company: "One Globe LLC – FEMA",
     period: "07/2020 – 08/2021",
     desc: "Engineered full-stack microservices and UI workflows for the FEMA GO Grants Management Modernization platform, consolidating 40+ disparate federal grant programs processing $3B+ in annual funding using Java, React/Redux, OpenShift, AWS, PostgreSQL, and Camunda BPMN."
+  },
+  {
+    role: "Front-End Software Engineer (Contract)",
+    company: "Leidos – Federal Aviation Administration (FAA)",
+    period: "08/2017 – 06/2020",
+    desc: "Engineered responsive UI workflows, Webpack optimization pipelines, and strict Section 508 / WCAG 2.1 AA accessibility compliance across mission-critical aviation administration web applications."
+  },
+  {
+    role: "Lead Front-End Engineer (Contract)",
+    company: "USA Today / Gannett",
+    period: "03/2016 – 07/2017",
+    desc: "Delivered high-traffic interactive digital news publication features for USA Today (The Point) using React, Redux, and AWS, serving millions of monthly active readers with real-time editorial updates."
   }
 ];
 
@@ -51,12 +64,45 @@ const skillsets = [
 
 export default function About() {
   return (
-    <section className="py-20 md:py-24 px-6 max-w-5xl mx-auto space-y-20">
+    <section className="py-16 md:py-24 px-6 max-w-5xl mx-auto space-y-20">
+      {/* Recruiter / Hiring Manager Availability Callout */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 md:p-5 rounded-2xl bg-accent/5 border border-accent/20">
+        <div className="flex items-center gap-3 text-center sm:text-left">
+          <span className="relative flex h-3 w-3 shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </span>
+          <div>
+            <p className="text-xs md:text-sm font-black text-foreground">
+              Open to Full-Time Senior / Lead Roles &amp; Strategic Contracts
+            </p>
+            <p className="text-[11px] text-muted-foreground font-medium">
+              Available for high-impact technical leadership, architecture, and AI-augmented engineering.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <a
+            href="mailto:rmendez@rottym.com?subject=Full-Time%20Role%20Inquiry%20-%20Rottman%20Mendez"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-accent text-accent-foreground rounded-xl text-xs font-bold hover:scale-105 transition-all shadow-sm"
+          >
+            <Mail className="w-3.5 h-3.5" /> Hire Me
+          </a>
+          <a
+            href="mailto:rmendez@rottym.com?subject=Resume%20Request%20-%20Rottman%20Mendez"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-muted hover:bg-card border border-border text-foreground rounded-xl text-xs font-bold transition-all"
+            title="Request Official Resume PDF"
+          >
+            <Download className="w-3.5 h-3.5 text-accent" /> Resume (PDF)
+          </a>
+        </div>
+      </div>
+
       {/* Intro Header */}
       <div className="text-center space-y-4">
         <h1 className="text-5xl md:text-6xl font-black tracking-tight text-foreground">Rottman M. Mendez</h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
-          I’m a Full-Stack &amp; AI Software Engineer based in Reston, Virginia. With extensive experience engineering scalable enterprise microservices (Disney Streaming, FEMA, BAE Systems) and delivering AI-augmented cloud platforms, I specialize in modern serverless web stacks (Next.js, React, TypeScript, Tailwind CSS, Sanity, Vercel) and enterprise backend systems (Java, Spring Boot, Scala, GCP, Firebase, AWS). I help organizations and technical teams replace fragile legacy systems with reliable, high-performance digital platforms.
+          I’m a Full-Stack &amp; AI Software Engineer based in Reston, Virginia. With extensive experience engineering scalable enterprise microservices (Disney Streaming, FEMA, BAE Systems, FAA via Leidos) and delivering AI-augmented cloud platforms, I specialize in modern serverless web stacks (Next.js, React, TypeScript, Tailwind CSS, Sanity, Vercel) and enterprise backend systems (Java, Spring Boot, Scala, GCP, Firebase, AWS). I help organizations and technical teams replace fragile legacy systems with reliable, high-performance digital platforms.
         </p>
       </div>
 
@@ -100,29 +146,37 @@ export default function About() {
             ))}
           </div>
 
-          {/* Quantified Impact / Highlights (Replaces Education) */}
+          {/* Quantified Impact / Highlights (Context-rich, honest metrics) */}
           <div className="pt-4">
             <div className="flex items-center gap-3 text-accent mb-6 transition-colors">
               <Award className="w-6 h-6" />
               <h2 className="text-2xl font-bold tracking-tight text-foreground">Enterprise &amp; Mission Impact</h2>
             </div>
             <div className="p-6 glass rounded-2xl border border-border space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
                   <p className="text-2xl font-black text-accent">100M+</p>
-                  <p className="text-xs text-muted-foreground font-semibold mt-1">Subscribers Supported at Disney Streaming</p>
+                  <p className="text-xs text-muted-foreground font-semibold mt-1">
+                    Engineer on Disney Streaming platform serving 100M+ global subscribers
+                  </p>
                 </div>
                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
                   <p className="text-2xl font-black text-accent">$3B+</p>
-                  <p className="text-xs text-muted-foreground font-semibold mt-1">Annual Funding Processed on FEMA GO</p>
+                  <p className="text-xs text-muted-foreground font-semibold mt-1">
+                    Full-stack engineer on FEMA GO platform processing $3B+ in annual federal grant funding
+                  </p>
                 </div>
                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
                   <p className="text-2xl font-black text-accent">95–100</p>
-                  <p className="text-xs text-muted-foreground font-semibold mt-1">Google Lighthouse Performance Scores</p>
+                  <p className="text-xs text-muted-foreground font-semibold mt-1">
+                    Google Lighthouse &amp; WCAG 2.1 AA accessibility benchmarks across production deploys
+                  </p>
                 </div>
                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
                   <p className="text-2xl font-black text-accent">45%+</p>
-                  <p className="text-xs text-muted-foreground font-semibold mt-1">Faster Prototyping via Agentic Workflows</p>
+                  <p className="text-xs text-muted-foreground font-semibold mt-1">
+                    Faster prototyping &amp; delivery via agentic workflows vs. traditional manual scaffolding
+                  </p>
                 </div>
               </div>
             </div>
@@ -130,15 +184,31 @@ export default function About() {
         </div>
       </div>
 
-      {/* CTA Banner */}
+      {/* Recruiter & Strategic Partnership CTA Banner */}
       <div className="p-10 rounded-[2.5rem] glass border border-accent/20 text-center space-y-6">
-        <h2 className="text-3xl font-black text-foreground">Interested in partnering or reviewing architecture?</h2>
-        <p className="text-muted-foreground max-w-xl mx-auto font-medium">
-          Whether you need a custom platform built from the ground up or experienced engineering leadership for an enterprise team, let&apos;s connect.
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
+          <Sparkles className="w-3 h-3" /> Full-Time Roles &amp; Strategic Advisory
+        </div>
+        <h2 className="text-3xl md:text-4xl font-black text-foreground">
+          Looking for a Senior / Lead Engineer or Technical Partner?
+        </h2>
+        <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base">
+          Whether you&apos;re a technical recruiter seeking a lead full-stack engineer or an organization looking to modernize legacy architecture, let&apos;s connect.
         </p>
-        <Link href="/contact" className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-black text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20">
-          Get in Touch <ArrowRight className="w-5 h-5" />
-        </Link>
+        <div className="flex flex-wrap justify-center gap-4">
+          <a
+            href="mailto:rmendez@rottym.com?subject=Full-Time%20Role%20Inquiry%20-%20Rottman%20Mendez"
+            className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-black text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20"
+          >
+            Discuss Full-Time Roles <ArrowRight className="w-5 h-5" />
+          </a>
+          <a
+            href="mailto:rmendez@rottym.com?subject=Resume%20Request%20-%20Rottman%20Mendez"
+            className="inline-flex items-center gap-2 glass px-8 py-4 rounded-2xl font-bold text-base hover:bg-muted transition-all text-foreground"
+          >
+            <Download className="w-4 h-4 text-accent" /> Request Resume (PDF)
+          </a>
+        </div>
       </div>
     </section>
   );
