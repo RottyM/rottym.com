@@ -97,7 +97,7 @@ export default function About() {
         </div>
 
         <p className="text-xs text-muted-foreground font-semibold">
-          Open to senior full-time engineering roles, technical leadership, and strategic platform contracts.
+          Open to Full Stack &amp; AI Software Engineer roles and strategic platform contracts.
         </p>
       </div>
 
@@ -185,10 +185,10 @@ export default function About() {
           <Sparkles className="w-3 h-3" /> Full-Time Roles &amp; Strategic Advisory
         </div>
         <h2 className="text-3xl md:text-4xl font-black text-foreground">
-          Looking for a Senior / Lead Engineer or Technical Partner?
+          Looking for a Full Stack &amp; AI Software Engineer or Technical Partner?
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base">
-          Whether you&apos;re a technical recruiter seeking a lead full-stack engineer or an organization looking to modernize legacy architecture, let&apos;s connect.
+          Whether you&apos;re a technical recruiter seeking a Full Stack &amp; AI Software Engineer or an organization looking to modernize legacy architecture, let&apos;s connect.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link
