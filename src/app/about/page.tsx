@@ -96,8 +96,8 @@ export default function About() {
           </a>
         </div>
 
-        <p className="text-xs text-muted-foreground font-semibold">
-          Open to Full Stack &amp; AI Software Engineer roles and strategic platform contracts.
+        <p className="text-xs md:text-sm text-foreground/80 font-bold">
+          Looking for Full Stack &amp; AI Software Engineer roles.
         </p>
       </div>
 
@@ -182,13 +182,13 @@ export default function About() {
       {/* Recruiter & Strategic Partnership CTA Banner */}
       <div className="p-10 rounded-[2.5rem] glass border border-accent/20 text-center space-y-6">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
-          <Sparkles className="w-3 h-3" /> Full-Time Roles &amp; Strategic Advisory
+          <Sparkles className="w-3 h-3" /> Career Opportunities
         </div>
         <h2 className="text-3xl md:text-4xl font-black text-foreground">
-          Looking for a Full Stack &amp; AI Software Engineer or Technical Partner?
+          Looking for a Full Stack &amp; AI Software Engineer?
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base">
-          Whether you&apos;re a technical recruiter seeking a Full Stack &amp; AI Software Engineer or an organization looking to modernize legacy architecture, let&apos;s connect.
+          I&apos;m looking for Full Stack &amp; AI Software Engineer roles. If you&apos;re a recruiter, hiring manager, or technical lead looking for a senior contributor, let&apos;s connect.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link
