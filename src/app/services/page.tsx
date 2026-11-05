@@ -9,25 +9,33 @@ const services = [
     title: "Websites & Digital Platforms",
     desc: "High-performance sites and applications for service businesses, non-profits, and organizations moving off WordPress or template platforms. Built with modern stacks for speed, reliability, and easier long-term ownership.",
     icon: <Rocket className="w-6 h-6" />,
-    features: ["WP Escape Plans", "Speed & Reliability", "Long-Term Ownership"]
+    features: ["WP Escape Plans", "Speed & Reliability", "Long-Term Ownership"],
+    packageNote: "Most Reston & NoVA projects start here — view packages →",
+    packageHref: "/packages#local-launchpad"
   },
   {
     title: "Client Portals, Membership Systems & Internal Tools",
     desc: "Custom portals for client intake, member management, document sharing, and workflow automation. Designed for teams that have outgrown basic forms or off-the-shelf tools.",
     icon: <Users className="w-6 h-6" />,
-    features: ["Client Intake & Portals", "Member Management", "Workflow Automation"]
+    features: ["Client Intake & Portals", "Member Management", "Workflow Automation"],
+    packageNote: "Available with Booking & Intake packages — view details →",
+    packageHref: "/packages#booking-intake"
   },
   {
     title: "Full-Stack Development",
     desc: "Next.js, React, and cloud-backed applications (Vercel, Firebase, AWS, GCP) with attention to performance, security, and maintainability. Includes work on subscription systems, e-commerce, and AI-assisted features where they create real value.",
     icon: <Cpu className="w-6 h-6" />,
-    features: ["Next.js & React", "Cloud Backend Integration", "Subscriptions & E-Commerce"]
+    features: ["Next.js & React", "Cloud Backend Integration", "Subscriptions & E-Commerce"],
+    packageNote: "Most Reston & NoVA projects start here — view packages →",
+    packageHref: "/packages"
   },
   {
     title: "Cloud & Deployment",
     desc: "Secure, managed hosting and deployment so platforms stay fast and stable after launch.",
     icon: <Globe className="w-6 h-6" />,
-    features: ["Managed Hosting", "High Availability", "Continuous Deployment"]
+    features: ["Managed Hosting", "High Availability", "Continuous Deployment"],
+    packageNote: "Included in Ongoing Care maintenance — view add-on →",
+    packageHref: "/packages#ongoing-care"
   }
 ];
 
@@ -66,7 +74,7 @@ export default function Services() {
               <h3 className="text-3xl font-black mb-4 text-foreground">{s.title}</h3>
               <p className="text-muted-foreground leading-relaxed mb-8 text-lg">{s.desc}</p>
 
-              <div className="flex flex-wrap gap-4 mt-auto">
+              <div className="flex flex-wrap gap-4 mt-auto mb-6">
                 {s.features.map(f => (
                   <div key={f} className="flex items-center gap-2 text-sm font-bold text-foreground/80">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -74,6 +82,17 @@ export default function Services() {
                   </div>
                 ))}
               </div>
+
+              {s.packageNote && (
+                <div className="pt-4 border-t border-border/50">
+                  <Link
+                    href={s.packageHref}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
+                  >
+                    {s.packageNote}
+                  </Link>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>

@@ -1,0 +1,388 @@
+// src/app/packages/page.tsx
+'use client';
+import Link from 'next/link';
+import { 
+  Rocket, 
+  CalendarCheck, 
+  RefreshCw, 
+  ShieldCheck, 
+  CheckCircle2, 
+  ArrowRight, 
+  Sparkles, 
+  Languages, 
+  Bot, 
+  Users,
+  Clock,
+  Check
+} from 'lucide-react';
+
+const packages = [
+  {
+    id: "local-launchpad",
+    name: "Local Launchpad",
+    subtitle: "Entry & Most Common",
+    price: "$3,500 – $4,500",
+    priceNote: "Starting range · Fixed after 15-min call",
+    desc: "A clean, fast site built for local service businesses that need to show up and get inquiries.",
+    icon: <Rocket className="w-7 h-7" />,
+    accent: "text-orange-500",
+    accentBg: "bg-orange-500/10",
+    borderHover: "hover:border-orange-500/40",
+    featured: false,
+    included: [
+      "5–8 page high-performance site (modern stack or clean WordPress escape)",
+      "Mobile-first design and sub-second load times",
+      "Contact and quote forms that actually work",
+      "Service-area pages for Reston, Fairfax, and surrounding NoVA",
+      "Basic local SEO setup and Google Business Profile optimization notes",
+      "Short post-launch support window"
+    ],
+    bestFor: "Restaurants, home services, dental, auto shops, independent professionals.",
+    cta: "Start with Local Launchpad",
+    href: "/contact?service=local-launchpad"
+  },
+  {
+    id: "booking-intake",
+    name: "Booking & Intake",
+    subtitle: "High-Volume & Practices",
+    price: "$5,500 – $7,500",
+    priceNote: "Starting range · Fixed after 15-min call",
+    desc: "Everything in Local Launchpad, plus the tools that reduce back-and-forth and capture more of the work you’re already getting.",
+    icon: <CalendarCheck className="w-7 h-7" />,
+    accent: "text-accent",
+    accentBg: "bg-accent/10",
+    borderHover: "hover:border-accent/60",
+    featured: true,
+    badge: "Most Popular",
+    included: [
+      "Full Local Launchpad build included",
+      "Online booking or structured intake forms",
+      "Optional simple client portal or document upload",
+      "Cleaner client workflows so your team spends less time on admin",
+      "Automated confirmation & notification routing",
+      "Priority post-launch support window"
+    ],
+    bestFor: "Dental offices, salons, home service companies, and professional practices with appointment or form volume.",
+    cta: "Add Booking & Intake",
+    href: "/contact?service=booking-intake"
+  },
+  {
+    id: "performance-rebuild",
+    name: "Performance Rebuild",
+    subtitle: "WordPress Escape",
+    price: "$5,000 – $9,000",
+    priceNote: "Scales with size · Fixed after 15-min call",
+    desc: "Move off a slow or bloated WordPress site to a modern stack that loads faster, breaks less, and is easier to maintain.",
+    icon: <RefreshCw className="w-7 h-7" />,
+    accent: "text-blue-500",
+    accentBg: "bg-blue-500/10",
+    borderHover: "hover:border-blue-500/40",
+    featured: false,
+    included: [
+      "Full migration from WordPress (or template builder) to modern stack (Vercel + headless CMS)",
+      "Complete content, asset, and SEO structure migration",
+      "Speed, security, and maintainability focus (95–100 Lighthouse)",
+      "Cleaner ownership — you own the code and stack outright",
+      "Zero brittle plugins or security vulnerabilities",
+      "Dedicated transition and post-launch verification"
+    ],
+    bestFor: "Businesses that have outgrown their current site and are tired of plugin conflicts, security alerts, and slow mobile performance.",
+    cta: "Start a Performance Rebuild",
+    href: "/contact?service=performance-rebuild"
+  }
+];
+
+export default function PackagesPage() {
+  return (
+    <div className="min-h-screen py-16 md:py-24 px-6">
+      <div className="max-w-7xl mx-auto space-y-24">
+
+        {/* Hero Section */}
+        <div className="text-center space-y-6 max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-xs md:text-sm font-bold tracking-wide uppercase">
+              Reston &amp; Northern Virginia Fixed-Scope Packages
+            </span>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.15]">
+            Local Packages for <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500">Reston &amp; NoVA</span> Businesses
+          </h1>
+
+          <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
+            High-performance sites and custom tools that actually get used.
+          </p>
+
+          <div className="p-4 rounded-2xl bg-muted/40 border border-border inline-block">
+            <p className="text-sm md:text-base text-foreground font-semibold">
+              Most projects land between <span className="text-accent font-black">$3,500 – $8,000</span>. Exact price is fixed after a short call.
+            </p>
+          </div>
+
+          <div className="pt-2">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl shadow-accent/20"
+            >
+              Book a 15-Minute Call <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Intro Manifesto */}
+        <div className="max-w-4xl mx-auto glass p-8 md:p-12 rounded-[2.5rem] border border-border space-y-4 text-center md:text-left">
+          <h2 className="text-2xl md:text-3xl font-black text-foreground">
+            You don’t need another bloated WordPress site that breaks every time you update a plugin.
+          </h2>
+          <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
+            These packages are built for local businesses that want something faster, cleaner, and easier to own — whether that’s a modern rebuild, online booking, or a straightforward high-performance site that ranks and converts.
+          </p>
+          <div className="pt-2 flex flex-wrap items-center gap-4 text-sm font-bold text-foreground">
+            <span className="flex items-center gap-2 text-emerald-500">
+              <Check className="w-4 h-4" /> 100% Code Ownership
+            </span>
+            <span className="flex items-center gap-2 text-emerald-500">
+              <Check className="w-4 h-4" /> Zero Lock-in
+            </span>
+            <span className="flex items-center gap-2 text-emerald-500">
+              <Check className="w-4 h-4" /> No Surprise Invoices
+            </span>
+          </div>
+        </div>
+
+        {/* 3 Core Packages Grid */}
+        <div className="grid lg:grid-cols-3 gap-8 items-stretch">
+          {packages.map((pkg) => (
+            <div
+              key={pkg.id}
+              className={`relative rounded-[2.5rem] border bg-card p-8 md:p-10 flex flex-col justify-between transition-all duration-300 shadow-lg hover:shadow-2xl ${pkg.borderHover} ${
+                pkg.featured 
+                  ? 'border-accent shadow-accent/10 ring-2 ring-accent/20 scale-[1.02] lg:-translate-y-2' 
+                  : 'border-border'
+              }`}
+            >
+              {pkg.badge && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-md">
+                  {pkg.badge}
+                </div>
+              )}
+
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className={`w-14 h-14 rounded-2xl ${pkg.accentBg} ${pkg.accent} flex items-center justify-center shadow-sm`}>
+                    {pkg.icon}
+                  </div>
+                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                    {pkg.subtitle}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-black text-foreground">{pkg.name}</h3>
+                  <div className="mt-3">
+                    <span className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">{pkg.price}</span>
+                    <p className="text-xs text-muted-foreground font-medium mt-1">{pkg.priceNote}</p>
+                  </div>
+                </div>
+
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {pkg.desc}
+                </p>
+
+                <div className="border-t border-border/60 pt-6 space-y-3">
+                  <p className="text-xs font-black uppercase tracking-wider text-foreground/80">What&apos;s Included:</p>
+                  <ul className="space-y-2.5">
+                    {pkg.included.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-foreground/90 leading-snug">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/50 text-xs text-muted-foreground">
+                  <strong className="text-foreground font-bold">Best for: </strong>
+                  {pkg.bestFor}
+                </div>
+              </div>
+
+              <div className="pt-8">
+                <Link
+                  href={pkg.href}
+                  className={`w-full py-4 px-6 rounded-2xl font-black text-base flex items-center justify-center gap-2 transition-all ${
+                    pkg.featured
+                      ? 'bg-accent text-accent-foreground hover:scale-105 shadow-xl shadow-accent/20'
+                      : 'bg-muted hover:bg-accent hover:text-accent-foreground text-foreground'
+                  }`}
+                >
+                  {pkg.cta} <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Ongoing Care & Optional Add-ons Row */}
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
+          
+          {/* Ongoing Care */}
+          <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-lg space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-black uppercase tracking-widest">
+                Optional Add-on
+              </span>
+            </div>
+
+            <div>
+              <h3 className="text-2xl md:text-3xl font-black text-foreground">Ongoing Care</h3>
+              <div className="mt-2">
+                <span className="text-3xl font-extrabold text-foreground">$150 – $350</span>
+                <span className="text-muted-foreground font-medium text-sm"> / month</span>
+              </div>
+            </div>
+
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Hosting, monitoring, security, and small updates so the site stays fast and doesn’t become someone else’s problem later.
+            </p>
+
+            <ul className="space-y-2.5 border-t border-border/60 pt-6">
+              {[
+                "Managed hosting + 24/7 uptime monitoring",
+                "Automated security & platform dependency updates",
+                "Small monthly content, copy, or form updates",
+                "Quarterly performance and SEO audit check",
+                "Optional light AI-assisted content or form optimization",
+                "Can be added to any package above. Cancel anytime."
+              ].map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-foreground/90">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="pt-2">
+              <Link
+                href="/contact?service=ongoing-care"
+                className="inline-flex items-center gap-2 text-accent font-bold hover:underline text-sm"
+              >
+                Inquire about Ongoing Care <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Optional Add-Ons */}
+          <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-lg space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <span className="px-3 py-1 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-black uppercase tracking-widest">
+                Custom Modules
+              </span>
+            </div>
+
+            <div>
+              <h3 className="text-2xl md:text-3xl font-black text-foreground">Optional Add-Ons</h3>
+              <p className="text-muted-foreground text-sm mt-1">Layer these onto any package above to fit your exact operational needs.</p>
+            </div>
+
+            <div className="space-y-4 border-t border-border/60 pt-6">
+              <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
+                <div className="p-2.5 rounded-xl bg-accent/10 text-accent shrink-0">
+                  <Languages className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-foreground text-sm">Bilingual (Spanish) Key Pages &amp; Forms</h4>
+                    <span className="text-xs font-black text-accent ml-2">+$800 – $1,500</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Native Spanish translation and localized intake forms for Northern Virginia&apos;s diverse audience.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
+                <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-500 shrink-0">
+                  <Bot className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-foreground text-sm">Custom AI Workflow or Automation</h4>
+                    <span className="text-xs font-black text-purple-500 ml-2">Scoped After Call</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Automated lead routing, LLM customer triage, or internal workflow automation connected to your inbox or CRM.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
+                <div className="p-2.5 rounded-xl bg-pink-500/10 text-pink-500 shrink-0">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-foreground text-sm">Membership or Community Features</h4>
+                    <span className="text-xs font-black text-pink-500 ml-2">Scoped Separately</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Gated member portals, subscription access, or community tools derived from established club platforms.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 text-accent font-bold hover:underline text-sm"
+              >
+                Discuss Custom Modules <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom Note & Final Call to Action */}
+        <div className="p-10 md:p-14 rounded-[3rem] bg-accent text-accent-foreground relative overflow-hidden shadow-2xl">
+          <div className="max-w-3xl mx-auto text-center space-y-6 relative z-10">
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight">
+              Ready to see what fits?
+            </h2>
+            <p className="text-lg md:text-xl font-medium opacity-95 leading-relaxed">
+              Most Reston and Northern Virginia projects land between <strong>$3,500 and $8,000</strong> depending on page count, booking needs, and whether you’re migrating from WordPress.
+            </p>
+            <p className="text-sm md:text-base opacity-90">
+              The number you get after a short discovery call is the exact number you’re billed. No ranges that turn into surprise invoices.
+            </p>
+
+            <div className="pt-4 flex flex-wrap justify-center gap-4">
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 bg-accent-foreground text-accent px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition-transform shadow-2xl"
+              >
+                Book a 15-Minute Call <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/contact?intent=secure-spot"
+                className="inline-flex items-center gap-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent-foreground/30 px-8 py-5 rounded-2xl font-bold text-lg transition-all"
+              >
+                Secure Your Spot
+              </Link>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+

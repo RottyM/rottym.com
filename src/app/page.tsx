@@ -174,6 +174,89 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Local Packages / Start Here Teaser */}
+      <section className="py-24 px-6 border-t border-border bg-muted/20 transition-colors">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
+                <Sparkles className="w-3 h-3" /> Fixed-Scope Packages
+              </div>
+              <h2 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
+                Local Packages &amp; Pricing
+              </h2>
+              <p className="text-muted-foreground text-lg max-w-xl font-medium">
+                High-performance modern stacks with transparent starting ranges. Exact price fixed after a 15-min call.
+              </p>
+            </div>
+            <Link
+              href="/packages"
+              className="inline-flex items-center gap-2 text-accent font-black text-base hover:gap-3 transition-all group"
+            >
+              Explore All Packages &amp; Add-Ons <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Local Launchpad",
+                badge: "Most Common",
+                price: "$3,500 – $4,500",
+                desc: "5–8 page high-performance site, mobile-first speed, quote forms, and local NoVA SEO setup.",
+                best: "Restaurants, home services, independent pros",
+              },
+              {
+                title: "Booking & Intake",
+                badge: "High-Volume",
+                price: "$5,500 – $7,500",
+                desc: "Full build plus online booking or structured intake workflows to cut admin back-and-forth.",
+                best: "Dental, clinics, salons, home services",
+                featured: true,
+              },
+              {
+                title: "Performance Rebuild",
+                badge: "WordPress Escape",
+                price: "$5,000 – $9,000",
+                desc: "Migrate off slow, bloated WordPress to modern serverless stack (Vercel + headless CMS).",
+                best: "Established businesses escaping plugin bloat",
+              }
+            ].map((pkg) => (
+              <div
+                key={pkg.title}
+                className={`p-8 rounded-[2.5rem] border bg-card flex flex-col justify-between transition-all duration-300 shadow-sm hover:shadow-xl ${
+                  pkg.featured ? 'border-accent shadow-accent/10 ring-1 ring-accent/20' : 'border-border'
+                }`}
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase tracking-widest text-accent bg-accent/10 px-3 py-1 rounded-full">
+                      {pkg.badge}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-foreground">{pkg.title}</h3>
+                    <p className="text-2xl font-black text-foreground mt-2">{pkg.price}</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{pkg.desc}</p>
+                  <p className="text-xs text-muted-foreground/80 font-medium">
+                    <span className="font-bold text-foreground">Best for:</span> {pkg.best}
+                  </p>
+                </div>
+                <div className="pt-6">
+                  <Link
+                    href="/packages"
+                    className="w-full py-3 px-4 rounded-xl text-center font-bold text-sm bg-muted hover:bg-accent hover:text-accent-foreground text-foreground flex items-center justify-center gap-2 transition-all"
+                  >
+                    View Package Details <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Selected Work & Projects Section */}
       <section className="py-32 px-6 bg-accent/[0.03] transition-colors relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />

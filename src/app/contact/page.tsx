@@ -1,8 +1,9 @@
 // src/app/contact/page.tsx
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Send, Mail, MapPin, Sparkles, Phone } from 'lucide-react';
+import { Send, Mail, MapPin, Sparkles, Phone, ArrowRight } from 'lucide-react';
 
 
 export default function Contact() {
@@ -10,6 +11,23 @@ export default function Contact() {
   const [status, setStatus] = useState('');
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedService, setSelectedService] = useState('Local Launchpad ($3,500 – $4,500)');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const serviceParam = params.get('service');
+      if (serviceParam === 'local-launchpad') {
+        setSelectedService('Local Launchpad ($3,500 – $4,500)');
+      } else if (serviceParam === 'booking-intake') {
+        setSelectedService('Booking & Intake ($5,500 – $7,500)');
+      } else if (serviceParam === 'performance-rebuild') {
+        setSelectedService('Performance Rebuild ($5,000 – $9,000)');
+      } else if (serviceParam === 'ongoing-care') {
+        setSelectedService('Ongoing Care ($150 – $350/mo)');
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,6 +153,14 @@ export default function Contact() {
           className="relative"
         >
           <div className="absolute inset-0 bg-accent/5 blur-3xl rounded-full -z-10" />
+          
+          <div className="mb-4 flex items-center justify-between px-2">
+            <span className="text-xs text-muted-foreground font-medium">Not sure where to start?</span>
+            <Link href="/packages" className="text-xs font-bold text-accent hover:underline flex items-center gap-1">
+              See local packages &amp; pricing →
+            </Link>
+          </div>
+
           <form onSubmit={handleSubmit} className="p-10 rounded-[3rem] bg-card border border-border shadow-2xl space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -148,13 +174,27 @@ export default function Contact() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="service" className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Service Selection</label>
-              <select id="service" name="service" className="w-full p-5 bg-muted/50 border border-border rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all font-medium appearance-none">
-                <option>Websites & Digital Platforms</option>
-                <option>Client Portals, Membership Systems & Internal Tools</option>
-                <option>Full-Stack Development</option>
-                <option>Cloud & Deployment</option>
-                <option>Something Else</option>
+              <label htmlFor="service" className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Service or Package Selection</label>
+              <select 
+                id="service" 
+                name="service" 
+                value={selectedService}
+                onChange={(e) => setSelectedService(e.target.value)}
+                className="w-full p-5 bg-muted/50 border border-border rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all font-medium"
+              >
+                <optgroup label="Fixed-Scope Local Packages">
+                  <option value="Local Launchpad ($3,500 – $4,500)">Local Launchpad ($3,500 – $4,500)</option>
+                  <option value="Booking & Intake ($5,500 – $7,500)">Booking &amp; Intake ($5,500 – $7,500)</option>
+                  <option value="Performance Rebuild ($5,000 – $9,000)">Performance Rebuild ($5,000 – $9,000)</option>
+                  <option value="Ongoing Care ($150 – $350/mo)">Ongoing Care ($150 – $350/mo)</option>
+                </optgroup>
+                <optgroup label="Custom & Full-Stack Capabilities">
+                  <option value="Websites & Digital Platforms">Websites &amp; Digital Platforms</option>
+                  <option value="Client Portals, Membership Systems & Internal Tools">Client Portals, Membership Systems &amp; Internal Tools</option>
+                  <option value="Full-Stack Development">Full-Stack Development</option>
+                  <option value="Cloud & Deployment">Cloud &amp; Deployment</option>
+                  <option value="Custom / Something Else">Custom / Something Else</option>
+                </optgroup>
               </select>
             </div>
 

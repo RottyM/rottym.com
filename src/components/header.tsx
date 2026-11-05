@@ -41,9 +41,10 @@ export default function Header() {
             <span className="text-[10px] md:text-xs font-bold tracking-wider text-muted-foreground uppercase mt-1.5 leading-none">{"Full Stack & AI Software Engineer"}</span>
           </div>
         </Link>
-        <nav className="hidden md:flex gap-8 text-sm font-medium items-center">
+        <nav className="hidden md:flex gap-7 text-sm font-medium items-center">
           <Link href="/" className="text-foreground/80 hover:text-accent transition-colors">Home</Link>
           <Link href="/services" className="text-foreground/80 hover:text-accent transition-colors">Services</Link>
+          <Link href="/packages" className="text-foreground/80 hover:text-accent transition-colors">Packages</Link>
           <Link href="/portfolio" className="text-foreground/80 hover:text-accent transition-colors">Portfolio</Link>
           <Link href="/about" className="text-foreground/80 hover:text-accent transition-colors">About</Link>
           <Link href="/contact" className="px-4 py-2 bg-accent text-accent-foreground rounded-full hover:scale-105 transition-transform shadow-md font-semibold">Contact</Link>
@@ -80,6 +81,7 @@ export default function Header() {
           <nav className="flex flex-col py-6 px-6 space-y-4 text-lg font-medium text-center">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent">Home</Link>
             <Link href="/services" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent">Services</Link>
+            <Link href="/packages" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent">Packages</Link>
             <Link href="/portfolio" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent">Portfolio</Link>
             <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent">About</Link>
             <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="text-accent font-bold">Contact</Link>
