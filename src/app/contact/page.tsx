@@ -12,10 +12,23 @@ export default function Contact() {
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedService, setSelectedService] = useState('Local Launchpad ($3,500 – $4,500)');
+  const [attribution, setAttribution] = useState<{ source?: string; campaign?: string; ref?: string }>({});
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
+      const utmSource = params.get('utm_source') || sessionStorage.getItem('utm_source') || '';
+      const utmCampaign = params.get('utm_campaign') || sessionStorage.getItem('utm_campaign') || '';
+      const ref = params.get('ref') || sessionStorage.getItem('ref') || '';
+      
+      if (params.get('utm_source')) sessionStorage.setItem('utm_source', params.get('utm_source')!);
+      if (params.get('utm_campaign')) sessionStorage.setItem('utm_campaign', params.get('utm_campaign')!);
+      if (params.get('ref')) sessionStorage.setItem('ref', params.get('ref')!);
+
+      if (utmSource || utmCampaign || ref) {
+        setAttribution({ source: utmSource, campaign: utmCampaign, ref });
+      }
+
       const serviceParam = params.get('service');
       if (serviceParam === 'local-launchpad') {
         setSelectedService('Local Launchpad ($3,500 – $4,500)');
@@ -40,6 +53,7 @@ export default function Contact() {
       email: formData.get('email'),
       service: formData.get('service'),
       message: formData.get('message'),
+      attribution,
     };
 
     try {

@@ -4,44 +4,55 @@ import nodemailer from 'nodemailer';
 export async function POST(req: Request) {
     try {
         console.log('--- Incoming Transmission ---');
-        const { name, email, service, message } = await req.json();
+        const { name, email, service, message, attribution } = await req.json();
         console.log(`Project Inquiry from: ${name} (${email}) for ${service}`);
+
+        const attributionText = attribution && (attribution.source || attribution.campaign || attribution.ref)
+            ? `\n--- Lead Tracking / Campaign Attribution ---\nSource: ${attribution.source || 'N/A'}\nCampaign: ${attribution.campaign || 'N/A'}\nRef: ${attribution.ref || 'N/A'}\n`
+            : '';
+
+        const attributionHtml = attribution && (attribution.source || attribution.campaign || attribution.ref)
+            ? `<div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px; margin-top: 15px;">
+                 <strong style="color: #166534;">🎯 Campaign Attribution / Lead Source:</strong><br />
+                 <strong>Source:</strong> ${attribution.source || 'N/A'}<br />
+                 <strong>Campaign:</strong> ${attribution.campaign || 'N/A'}<br />
+                 <strong>Ref Tag:</strong> ${attribution.ref || 'N/A'}
+               </div>`
+            : '';
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
                 user: 'no-reply@rottym.com',
-                // In production, these should be environment variables:
-                // process.env.SMTP_USER (no-reply@rottym.com)
-                // process.env.SMTP_PASS (your Google Workspace App Password)
                 pass: process.env.SMTP_PASS,
             },
         });
 
         const mailOptions = {
             from: '"RottyM Website" <no-reply@rottym.com>',
-            to: 'rmendez@rottym.com', // Destination email
+            to: 'rmendez@rottym.com',
             replyTo: email,
             subject: `[PROJECT INQUIRY] ${service} from ${name}`,
             text: `
-        Name: ${name}
-        Email: ${email}
-        Service: ${service}
-        
-        Message:
-        ${message}
-      `,
+Name: ${name}
+Email: ${email}
+Service: ${service}
+${attributionText}
+Message:
+${message}
+            `,
             html: `
-        <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
-          <h2 style="color: #6366f1;">New Project Inquiry Received</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Service:</strong> ${service}</p>
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-          <h3 style="color: #444;">Project Details:</h3>
-          <p style="background: #fdfdfd; padding: 15px; border-left: 4px solid #6366f1; border-radius: 4px;">${message}</p>
-        </div>
-      `,
+<div style="font-family: sans-serif; line-height: 1.6; color: #333;">
+  <h2 style="color: #6366f1;">New Project Inquiry Received</h2>
+  <p><strong>Name:</strong> ${name}</p>
+  <p><strong>Email:</strong> ${email}</p>
+  <p><strong>Service:</strong> ${service}</p>
+  ${attributionHtml}
+  <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+  <h3 style="color: #444;">Project Details:</h3>
+  <p style="background: #fdfdfd; padding: 15px; border-left: 4px solid #6366f1; border-radius: 4px;">${message}</p>
+</div>
+            `,
         };
 
         await transporter.sendMail(mailOptions);
