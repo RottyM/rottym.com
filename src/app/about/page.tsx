@@ -80,25 +80,28 @@ export default function About() {
         </p>
 
         {/* Action Buttons directly under the bio */}
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-7 py-3.5 rounded-2xl font-bold text-sm hover:scale-105 transition-all shadow-lg shadow-accent/20"
-          >
-            Hire Me / Get in Touch <ArrowRight className="w-4 h-4" />
-          </Link>
-          <a
-            href="/resume.pdf"
-            download="Rottman_Mendez_Resume.pdf"
-            className="inline-flex items-center gap-2 glass px-7 py-3.5 rounded-2xl font-bold text-sm hover:bg-muted transition-all text-foreground border border-border shadow-sm"
-          >
-            <Download className="w-4 h-4 text-accent" /> Download Resume (PDF)
-          </a>
-        </div>
+        <div className="pt-2 flex flex-col items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-7 py-3.5 rounded-2xl font-bold text-sm hover:scale-105 transition-all shadow-lg shadow-accent/20"
+            >
+              Hire Me / Get in Touch <ArrowRight className="w-4 h-4" />
+            </Link>
+            <a
+              href="/resume.pdf"
+              download="Rottman_Mendez_Resume.pdf"
+              className="inline-flex items-center gap-2 glass px-7 py-3.5 rounded-2xl font-bold text-sm hover:bg-muted transition-all text-foreground border border-border shadow-sm"
+            >
+              <Download className="w-4 h-4 text-accent" /> Download Resume (PDF)
+            </a>
+          </div>
 
-        <p className="text-xs md:text-sm text-foreground/80 font-bold">
-          Looking for Full Stack &amp; AI Software Engineer roles and technical partners.
-        </p>
+          <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-muted/70 border border-border/80 rounded-xl text-xs sm:text-sm font-semibold text-foreground/90 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Looking for Full Stack &amp; AI Software Engineer roles and technical partners</span>
+          </div>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-12 items-start">
