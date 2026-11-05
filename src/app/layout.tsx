@@ -123,7 +123,7 @@ const jsonLd = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-3HVHES29PX';
+  const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-C0XCJ5TP2M';
 
   return (
     <html lang="en" suppressHydrationWarning>
