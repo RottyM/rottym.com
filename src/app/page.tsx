@@ -107,12 +107,16 @@ export default function Home() {
               </div>
             </div>
 
+            <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
+              Reston-based full-stack developer and UX designer. I build high-performance sites and custom platforms (Next.js, React, modern cloud) with the speed of AI and the precision of enterprise work at Disney, USA Today, FEMA, and Booz Allen.
+            </p>
+
             <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-muted/60 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Fixed pricing after a short discovery call · Booking 2026 projects and beyond
             </div>
 
-            <div className="flex flex-wrap gap-4 pt-1">
+            <div className="flex flex-wrap gap-4">
               <Link href="/contact" className="group flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl shadow-accent/20">
                 Book a Discovery Call
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -140,7 +144,7 @@ export default function Home() {
             initial={false}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="relative lg:pt-1 w-full max-w-lg mx-auto lg:max-w-none space-y-6"
+            className="relative lg:pt-6 w-full max-w-lg mx-auto lg:max-w-none"
           >
             <Link 
               href="/portfolio" 
@@ -156,10 +160,6 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-40 group-hover:opacity-10 transition-opacity" />
               </div>
             </Link>
-
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              Reston-based full-stack developer and UX designer. I build high-performance sites and custom platforms (Next.js, React, modern cloud) with the speed of AI and the precision of enterprise work at Disney, USA Today, FEMA, and Booz Allen.
-            </p>
           </motion.div>
         </div>
       </section>
