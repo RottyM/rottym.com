@@ -50,7 +50,7 @@ export default function Services() {
         >
           <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground">Premium Services</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-            Engineering digital excellence from first code to global scale.
+            Engineering high-performance sites and platforms for Reston &amp; Northern Virginia businesses that have outgrown templates or bloated WordPress.
           </p>
         </motion.div>
 

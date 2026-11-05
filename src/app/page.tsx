@@ -50,20 +50,25 @@ export default function Home() {
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-[1.15] tracking-tight">
-              Custom web platforms, <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">client portals</span>, and modern applications.
+              Building fast, modern sites that <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">replace slow WordPress</span>.
             </h1>
 
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
-              I design and build high-performance websites and tools for organizations that need more than a template — from Northern Virginia service firms and non-profits to larger technical teams. Reston-based.
+              Reston-based full-stack developer and UX designer. I build high-performance sites and custom platforms (Next.js, React, modern cloud) with the speed of AI and the precision of enterprise work at Disney, USA Today, FEMA, and Booz Allen.
             </p>
+
+            <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-muted/60 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Fixed pricing after a short discovery call · Currently booking Q1 2026 projects
+            </div>
 
             <div className="flex flex-wrap gap-4">
               <Link href="/contact" className="group flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl shadow-accent/20">
-                Launch Your Project
+                Book a Discovery Call
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link href="/portfolio" className="flex items-center gap-2 glass px-8 py-4 rounded-2xl font-bold text-lg hover:bg-muted transition-all text-foreground">
-                View Portfolio
+              <Link href="/packages" className="flex items-center gap-2 glass px-8 py-4 rounded-2xl font-bold text-lg hover:bg-muted transition-all text-foreground">
+                View Packages &amp; Pricing
               </Link>
             </div>
 
@@ -109,6 +114,9 @@ export default function Home() {
               <span key={c} className="text-2xl md:text-3xl font-black tracking-tighter text-foreground">{c}</span>
             ))}
           </div>
+          <p className="mt-8 text-sm md:text-base font-medium text-muted-foreground max-w-2xl mx-auto">
+            Trusted by engineering teams at Disney, FAA, FEMA, USA Today, Booz Allen, and Leidos — now applied to practical sites and platforms for growing businesses.
+          </p>
         </div>
       </section>
 
@@ -170,6 +178,91 @@ export default function Home() {
                 </p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How We Work Section */}
+      <section className="py-24 px-6 border-t border-border bg-background transition-colors">
+        <div className="max-w-7xl mx-auto space-y-16">
+          <div className="text-center space-y-4 max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
+              <Sparkles className="w-3 h-3" /> The Process
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
+              How a project works
+            </h2>
+            <p className="text-muted-foreground text-lg font-medium">
+              A clear, predictable roadmap from first conversation to live deployment. No open-ended hourly surprises.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                step: "01",
+                title: "Discovery Call",
+                time: "30 min",
+                desc: "We clarify your primary business goals, must-have features, audience, and technical constraints."
+              },
+              {
+                step: "02",
+                title: "Fixed Proposal",
+                time: "Clear Scope",
+                desc: "You receive an exact price, fixed timeline, and clear deliverables. No runaway hourly billing."
+              },
+              {
+                step: "03",
+                title: "Build & Review",
+                time: "Modern Stack",
+                desc: "Built on Next.js, React, and cloud infra with regular check-ins. You own 100% of the code and stack."
+              },
+              {
+                step: "04",
+                title: "Launch & Handoff",
+                time: "Live Site",
+                desc: "Production release, full performance checks, and handoff documentation. Optional ongoing support available."
+              }
+            ].map((p) => (
+              <div
+                key={p.step}
+                className="p-8 rounded-[2rem] border border-border bg-card/60 hover:bg-card hover:border-accent/30 transition-all duration-300 shadow-sm flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-2xl font-black font-mono text-accent">
+                      {p.step}
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md">
+                      {p.time}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-black text-foreground mb-3 group-hover:text-accent transition-colors">
+                    {p.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {p.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-8 md:p-10 rounded-[2.5rem] border border-accent/20 bg-accent/5 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div className="space-y-1">
+              <p className="text-base md:text-lg font-bold text-foreground">
+                Most Strategic Launchpads land in the <span className="text-accent font-black">$3,500–$8,000</span> range.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Full-stack apps, membership portals, and custom AI workflows are scoped higher after discovery.
+              </p>
+            </div>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-6 py-3.5 rounded-xl font-bold text-sm hover:scale-105 transition-all shadow-lg shrink-0"
+            >
+              Book a Discovery Call <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>
@@ -345,12 +438,17 @@ export default function Home() {
       <section className="py-24 px-6 bg-accent text-accent-foreground rounded-[3rem] mx-6 mb-24 overflow-hidden relative">
         <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
           <h2 className="text-4xl md:text-5xl font-black tracking-tight">Have a project in mind? Let&apos;s build it.</h2>
-          <p className="text-xl font-medium opacity-90">
-            Currently accepting new projects. Let&apos;s discuss your organization&apos;s goals and how to build a reliable, high-performance platform.
+          <p className="text-xl font-medium opacity-90 max-w-2xl mx-auto">
+            Currently booking Q1 2026 projects. Let&apos;s discuss your organization&apos;s goals and how to build a reliable, high-performance platform.
           </p>
-          <Link href="/contact" className="inline-flex items-center gap-2 bg-accent-foreground text-accent px-10 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform shadow-2xl">
-            Start the Conversation <ArrowRight className="w-6 h-6" />
-          </Link>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/contact" className="inline-flex items-center gap-2 bg-accent-foreground text-accent px-10 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform shadow-2xl">
+              Book a Discovery Call <ArrowRight className="w-6 h-6" />
+            </Link>
+            <Link href="/packages" className="inline-flex items-center gap-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent-foreground/30 px-8 py-5 rounded-2xl font-black text-xl transition-all">
+              See Packages &amp; Pricing
+            </Link>
+          </div>
         </div>
       </section>
     </>

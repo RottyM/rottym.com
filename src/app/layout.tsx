@@ -36,8 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </div>
           <footer className="bg-card text-foreground border-t border-border py-12 mt-20 transition-all">
-            <div className="max-w-7xl mx-auto px-6 text-center text-sm">
-              <p className="text-muted-foreground">© {new Date().getFullYear()} Rottman M. Mendez. All rights reserved.</p>
+            <div className="max-w-7xl mx-auto px-6 text-center text-sm space-y-2">
+              <p className="text-muted-foreground font-medium">Based in Reston, VA · Serving Northern Virginia &amp; remote clients</p>
+              <p className="text-muted-foreground/60 text-xs">© {new Date().getFullYear()} Rottman M. Mendez. All rights reserved.</p>
             </div>
           </footer>
         </ThemeProvider>
