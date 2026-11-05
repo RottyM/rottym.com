@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Send, Mail, MapPin, Sparkles, Phone, ArrowRight } from 'lucide-react';
+import { trackEvent } from '@/lib/analytics';
 
 
 export default function Contact() {
@@ -65,6 +66,11 @@ export default function Contact() {
       const result = await res.json();
 
       if (res.ok) {
+        trackEvent({
+          action: 'generate_lead',
+          category: 'contact_form',
+          label: String(data.service || 'general'),
+        });
         setStatus('Message received! Expect a reply within 24h.');
         (e.target as HTMLFormElement).reset();
       } else {
