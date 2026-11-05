@@ -169,7 +169,7 @@ export default function About() {
                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
                   <p className="text-2xl font-black text-accent">95–100</p>
                   <p className="text-xs text-muted-foreground font-semibold mt-1">
-                    Google Lighthouse &amp; WCAG 2.1 AA accessibility benchmarks across production deploys
+                    Google Lighthouse performance &amp; production quality benchmarks
                   </p>
                 </div>
                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">

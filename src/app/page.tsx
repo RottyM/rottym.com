@@ -108,12 +108,12 @@ export default function Home() {
             </div>
 
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
-              Reston-based full-stack developer and UX designer. I build high-performance sites, custom portals, and WordPress escape rebuilds with the precision of enterprise work at Disney, FEMA, and BAE Systems — fully compliant with WCAG 2.1 AA / Section 508 accessibility standards.
+              Reston-based full-stack developer and UX designer. I build high-performance sites, custom portals, and WordPress escape rebuilds with the precision of enterprise work at Disney, FEMA, and BAE Systems.
             </p>
 
             <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-muted/60 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Fixed pricing after a short discovery call · WCAG 2.1 AA compliant · Booking 2026 projects
+              Fixed pricing after a short discovery call · Booking 2026 projects and beyond
             </div>
 
             <div className="flex flex-wrap gap-4">
@@ -193,7 +193,7 @@ export default function Home() {
             {[
               {
                 title: 'Websites & Digital Platforms',
-                desc: 'High-performance sites and applications for service businesses, non-profits, and organizations moving off WordPress or template platforms. Built with modern stacks for speed, reliability, and WCAG 2.1 AA / Section 508 accessibility compliance.',
+                desc: 'High-performance sites and applications for service businesses, non-profits, and organizations moving off WordPress or template platforms. Built with modern stacks for speed, reliability, and easier long-term ownership.',
                 icon: <Rocket className="w-6 h-6" />,
                 accent: 'text-orange-500',
                 bg: 'bg-orange-500/10'

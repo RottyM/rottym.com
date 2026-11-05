@@ -7,7 +7,7 @@ export interface Project {
   role: string;
   category: string;
   tag: string;
-  isLegacy?: boolean;
+  section: 'modern' | 'enterprise';
   featured?: boolean;
   tech: string[];
   img: string;
@@ -24,12 +24,14 @@ export interface Project {
 }
 
 export const projects: Project[] = [
+  // --- Section 1: Modern Web Platforms & Client Systems ---
   {
     slug: "throttlelife",
     title: "ThrottleLife",
     role: "Concept & Architecture",
     category: "Platform Architecture",
     tag: "Modern Next.js Stack",
+    section: "modern",
     featured: true,
     tech: ["Next.js (App Router)", "TypeScript", "Tailwind CSS", "Real-Time APIs", "Vercel"],
     img: "/images/apps/throttlelife.png",
@@ -45,6 +47,7 @@ export const projects: Project[] = [
     role: "Full-Stack Engineer",
     category: "Full-Stack System",
     tag: "Cloud-Native Platform",
+    section: "modern",
     featured: true,
     tech: ["Next.js", "React", "Firebase", "Role-Based Auth", "Tailwind CSS"],
     img: "/images/apps/familyos.png",
@@ -60,6 +63,7 @@ export const projects: Project[] = [
     role: "Full-Stack Web Developer",
     category: "Headless CMS & Migration",
     tag: "WordPress Escape Case Study",
+    section: "modern",
     featured: true,
     tech: ["Next.js", "Sanity Headless CMS", "TypeScript", "Vercel", "Tailwind CSS"],
     img: "/images/portfolio/found-archives-homepage.png",
@@ -80,14 +84,15 @@ export const projects: Project[] = [
     role: "Web Developer & Designer",
     category: "Author & Publishing",
     tag: "Modern Next.js Stack",
+    section: "modern",
     featured: true,
     tech: ["Next.js", "Sanity CMS", "Vercel", "Tailwind CSS", "Semantic SEO"],
     img: "/images/portfolio/lori-eaton-writer-homepage.png",
-    highlightMetric: "100% SEO & Accessibility Score · Instant content updates",
+    highlightMetric: "100% SEO & Performance Score · Instant content updates",
     summary: "Clean, elegant author platform designed for literary showcases, reader engagement, and automated mailing list acquisition.",
     challenge: "Replacing generic website builders with an ultra-fast, branded portfolio that the author could independently manage without touching code.",
     solution: "Engineered with Next.js on Vercel, structured schema markup, OpenGraph previews, and custom Sanity CMS editorial workflows.",
-    details: "Combines typography-first responsive design with WCAG 2.1 AA accessibility and rapid editorial publishing."
+    details: "Combines typography-first responsive design with accessible markup and rapid editorial publishing."
   },
   {
     slug: "northern-virginia-writers",
@@ -95,6 +100,7 @@ export const projects: Project[] = [
     role: "Web Manager & Platform Architect",
     category: "Community & Membership",
     tag: "Deep WordPress & BuddyBoss Internals",
+    section: "modern",
     featured: true,
     tech: ["WordPress", "BuddyBoss", "Custom PHP", "MySQL", "Stripe Subscriptions"],
     img: "/images/portfolio/northernvirginiawriters-home.png",
@@ -110,15 +116,33 @@ export const projects: Project[] = [
     }
   },
   {
+    slug: "local-business-dev",
+    title: "Local Business Development (Brevic)",
+    role: "Strategic Tech Partner",
+    category: "Commercial Platforms",
+    tag: "Rapid Launchpad",
+    section: "modern",
+    tech: ["Next.js", "Tailwind CSS", "Vercel", "Lead Capture Workflows"],
+    img: "/images/portfolio/brevic.jpg",
+    highlightMetric: "98 Lighthouse score · Streamlined customer inquiry flow",
+    summary: "High-performance web storefront engineered for modern local service business conversion and direct quote requests.",
+    challenge: "Transforming a slow brochure site into an ultra-fast inquiry generator for commercial services.",
+    solution: "Deployed a lightweight Next.js application with instant click-to-call/quote triggers, clear service framing, and local SEO metadata.",
+    details: "Demonstrates how performance optimization and clean layout architecture directly increase inbound customer inquiries."
+  },
+
+  // --- Section 2: Enterprise & Earlier Career Work ---
+  {
     slug: "usa-today-the-point",
     title: "USA Today – The Point",
     role: "Lead Front-End Engineer (Contract)",
     category: "Enterprise High Scale",
-    tag: "Enterprise Media Contract",
+    tag: "Enterprise Publishing",
+    section: "enterprise",
     featured: true,
     tech: ["React", "Redux", "AWS (S3/CloudFront)", "RESTful APIs", "High-Traffic Optimization"],
     img: "/images/portfolio/usa-today-thepoint.jpg",
-    highlightMetric: "Millions of monthly active readers · Real-time editorial streaming",
+    highlightMetric: "Lead front-end engineer on a platform serving millions of monthly readers",
     summary: "High-traffic interactive digital news publication platform engineered for Gannett / USA Today.",
     challenge: "Delivering real-time editorial updates under massive national traffic spikes with zero UI degradation or layout shift.",
     solution: "Engineered resilient component architectures in React with normalized Redux state and CDN edge caching across AWS infrastructure.",
@@ -130,20 +154,22 @@ export const projects: Project[] = [
     role: "UX Developer",
     category: "Digital Publishing",
     tag: "High-Traffic Front-End",
+    section: "enterprise",
     tech: ["JavaScript", "HTML5", "CSS3", "Responsive Layouts", "Performance"],
     img: "/images/portfolio/detroit-freepress.jpg",
     highlightMetric: "Multi-device layout parity · Newsroom publishing pipeline",
     summary: "Editorial layouts and responsive digital presentation for one of Michigan’s largest daily newsrooms.",
     challenge: "Translating print and editorial designs into fluid responsive web layouts for fast-breaking news delivery.",
     solution: "Implemented modular CSS/JS component templates compatible with legacy publishing CMS pipelines.",
-    details: "Focused on high accessibility, font performance, and reliable multi-device responsive design."
+    details: "Focused on clean typography, font performance, and reliable multi-device responsive design."
   },
   {
     slug: "custom-cms-platforms",
     title: "Custom CMS & Gov Platforms",
     role: "Full Stack Engineer",
     category: "Gov & Enterprise Infrastructure",
-    tag: "Secure Compliance",
+    tag: "Gov Infrastructure",
+    section: "enterprise",
     tech: ["Java", "React", "Cloud-Native Architecture", "Section 508 / WCAG 2.1 AA"],
     img: "/images/portfolio/gov-sites.jpg",
     highlightMetric: "Section 508 accessibility compliance · Zero security vulnerabilities",
@@ -153,25 +179,12 @@ export const projects: Project[] = [
     details: "Built to federal standards for accessibility, resilience, and scalable data processing."
   },
   {
-    slug: "local-business-dev",
-    title: "Local Business Development (Brevic)",
-    role: "Strategic Tech Partner",
-    category: "Commercial Platforms",
-    tag: "Rapid Launchpad",
-    tech: ["Next.js", "Tailwind CSS", "Vercel", "Lead Capture Workflows"],
-    img: "/images/portfolio/brevic.jpg",
-    highlightMetric: "3x lead conversion uplift · 98 Lighthouse performance score",
-    summary: "High-performance web storefront engineered for modern local service business conversion and instant quote inquiries.",
-    challenge: "Transforming a slow brochure site into a high-converting customer acquisition engine for commercial services.",
-    solution: "Deployed a lightweight Next.js application with instant phone/quote actions, clear value framing, and local SEO metadata.",
-    details: "Demonstrates how enterprise speed and design clarity directly drive local business inbound leads."
-  },
-  {
     slug: "enterprise-subscriptions",
     title: "Enterprise Subscriptions",
     role: "Cloud Architect",
     category: "Fintech & Subscriptions",
     tag: "Revenue & Billing",
+    section: "enterprise",
     tech: ["Firebase", "Stripe Subscriptions", "Cloud Functions", "Node.js"],
     img: "/images/portfolio/club-sites.jpg",
     highlightMetric: "Automated recurring billing · Zero checkout friction",
@@ -185,7 +198,8 @@ export const projects: Project[] = [
     title: "Reverb Networks",
     role: "UX Designer & Prototyper",
     category: "Enterprise Telecommunications",
-    tag: "B2B UX & Product",
+    tag: "B2B Telecom UX",
+    section: "enterprise",
     tech: ["Wireframing", "Figma", "Design Systems", "Usability Testing"],
     img: "/images/portfolio/reverb-performa.jpg",
     highlightMetric: "Enterprise antenna optimization interface · Complex telemetry data",
@@ -199,15 +213,15 @@ export const projects: Project[] = [
     title: "WWF Gift Center",
     role: "UX Developer",
     category: "E-Commerce UX",
-    tag: "Legacy / Early Career",
-    isLegacy: true,
+    tag: "E-Commerce Platform",
+    section: "enterprise",
     tech: ["E-Commerce UX", "HTML5", "CSS3", "Conversion Optimization"],
     img: "/images/portfolio/wwf-giftcenter.jpg",
-    highlightMetric: "High-volume non-profit donation checkout · Early career milestone",
-    summary: "Donation and symbolic adoption gift catalog for World Wildlife Fund. Labeled as an early-career milestone demonstrating conversion-focused UX fundamentals.",
+    highlightMetric: "High-volume international donation and symbolic adoption checkout",
+    summary: "Donation and symbolic adoption gift catalog for World Wildlife Fund, focused on streamlined gift selection and friction-free donor checkout.",
     challenge: "Simplifying a multi-step gift catalog checkout flow for international donors across varied giving tiers.",
     solution: "Streamlined basket steps and added clear visual donation badges to maximize end-of-year giving conversion.",
-    details: "Early career work highlighting e-commerce fundamentals, donation UX, and non-profit conversion psychology."
+    details: "Conversion-focused user experience engineering for high-volume non-profit donation processing."
   },
   {
     slug: "brand-identity-systems",
@@ -215,6 +229,7 @@ export const projects: Project[] = [
     role: "Creative Lead",
     category: "Identity & Branding",
     tag: "Visual Systems",
+    section: "enterprise",
     tech: ["Vector Design", "Design Systems", "Typography", "Style Guides"],
     img: "/images/portfolio/logos.jpg",
     highlightMetric: "Cohesive multi-platform brand design systems",

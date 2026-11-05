@@ -68,15 +68,9 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
           Back to All Work
         </Link>
         <div className="flex items-center gap-2">
-          {project.isLegacy ? (
-            <span className="text-[11px] font-bold px-3 py-1 bg-muted text-muted-foreground rounded-full border border-border">
-              Legacy / Early Career
-            </span>
-          ) : (
-            <span className="text-[11px] font-bold px-3 py-1 bg-accent/10 text-accent rounded-full border border-accent/20">
-              {project.tag}
-            </span>
-          )}
+          <span className="text-[11px] font-bold px-3 py-1 bg-accent/10 text-accent rounded-full border border-accent/20">
+            {project.tag}
+          </span>
         </div>
       </div>
 
@@ -261,3 +255,4 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
     </article>
   );
 }
+
