@@ -44,7 +44,7 @@ const packages = [
   {
     id: "booking-intake",
     name: "Booking & Intake",
-    subtitle: "High-Volume & Practices",
+    subtitle: "Booking & Client Workflows",
     price: "$5,500 – $7,500",
     priceNote: "Starting range · Fixed after 15-min call",
     desc: "Everything in Local Launchpad, plus the tools that reduce back-and-forth and capture more of the work you’re already getting.",
@@ -116,7 +116,7 @@ export default function PackagesPage() {
 
           <div className="p-4 rounded-2xl bg-muted/40 border border-border inline-block">
             <p className="text-sm md:text-base text-foreground font-semibold">
-              Most projects land between <span className="text-accent font-black">$3,500 – $8,000</span>. Exact price is fixed after a short call.
+              Most local projects land between <span className="text-accent font-black">$3,500–$8,000</span>. Price is fixed after a short call.
             </p>
           </div>
 
@@ -190,6 +190,11 @@ export default function PackagesPage() {
                   {pkg.desc}
                 </p>
 
+                <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 text-xs text-muted-foreground">
+                  <strong className="text-foreground font-bold">Best for: </strong>
+                  {pkg.bestFor}
+                </div>
+
                 <div className="border-t border-border/60 pt-6 space-y-3">
                   <p className="text-xs font-black uppercase tracking-wider text-foreground/80">What&apos;s Included:</p>
                   <ul className="space-y-2.5">
@@ -200,11 +205,6 @@ export default function PackagesPage() {
                       </li>
                     ))}
                   </ul>
-                </div>
-
-                <div className="p-4 rounded-xl bg-muted/40 border border-border/50 text-xs text-muted-foreground">
-                  <strong className="text-foreground font-bold">Best for: </strong>
-                  {pkg.bestFor}
                 </div>
               </div>
 
@@ -269,9 +269,9 @@ export default function PackagesPage() {
             <div className="pt-2">
               <Link
                 href="/contact?service=ongoing-care"
-                className="inline-flex items-center gap-2 text-accent font-bold hover:underline text-sm"
+                className="w-full py-4 px-6 rounded-2xl font-black text-base bg-muted hover:bg-accent hover:text-accent-foreground text-foreground flex items-center justify-center gap-2 transition-all"
               >
-                Inquire about Ongoing Care <ArrowRight className="w-4 h-4" />
+                Add Ongoing Care <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -342,7 +342,7 @@ export default function PackagesPage() {
             <div className="pt-2">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 text-accent font-bold hover:underline text-sm"
+                className="w-full py-4 px-6 rounded-2xl font-black text-base bg-muted hover:bg-accent hover:text-accent-foreground text-foreground flex items-center justify-center gap-2 transition-all"
               >
                 Discuss Custom Modules <ArrowRight className="w-4 h-4" />
               </Link>
@@ -357,10 +357,10 @@ export default function PackagesPage() {
             <h2 className="text-3xl md:text-5xl font-black tracking-tight">
               Ready to see what fits?
             </h2>
-            <p className="text-lg md:text-xl font-medium opacity-95 leading-relaxed">
-              Most Reston and Northern Virginia projects land between <strong>$3,500 and $8,000</strong> depending on page count, booking needs, and whether you’re migrating from WordPress.
+            <p className="text-xl md:text-2xl font-bold opacity-95">
+              Most Reston and Northern Virginia projects land between $3,500 and $8,000.
             </p>
-            <p className="text-sm md:text-base opacity-90">
+            <p className="text-base md:text-lg opacity-90 max-w-2xl mx-auto leading-relaxed">
               The number you get after a short discovery call is the exact number you’re billed. No ranges that turn into surprise invoices.
             </p>
 

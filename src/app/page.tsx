@@ -208,7 +208,7 @@ export default function Home() {
               },
               {
                 title: "Booking & Intake",
-                badge: "High-Volume",
+                badge: "Client Workflows",
                 price: "$5,500 – $7,500",
                 desc: "Full build plus online booking or structured intake workflows to cut admin back-and-forth.",
                 best: "Dental, clinics, salons, home services",
