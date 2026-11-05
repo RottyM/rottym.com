@@ -20,16 +20,28 @@ export async function POST(req: Request) {
                </div>`
             : '';
 
+        console.log('📬 NEW PROJECT INQUIRY CAPTURED:', JSON.stringify({
+            name,
+            email,
+            service,
+            message,
+            attribution,
+            timestamp: new Date().toISOString()
+        }, null, 2));
+
+        const smtpUser = process.env.SMTP_USER || 'rmendez@rottym.com';
+        const smtpPass = process.env.SMTP_PASS;
+
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'no-reply@rottym.com',
-                pass: process.env.SMTP_PASS,
+                user: smtpUser,
+                pass: smtpPass,
             },
         });
 
         const mailOptions = {
-            from: '"RottyM Website" <no-reply@rottym.com>',
+            from: `"RottyM Website" <${smtpUser}>`,
             to: 'rmendez@rottym.com',
             replyTo: email,
             subject: `[PROJECT INQUIRY] ${service} from ${name}`,

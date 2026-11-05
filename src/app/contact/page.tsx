@@ -228,9 +228,19 @@ export default function Contact() {
             </button>
 
             {status && (
-              <p className={`text-center p-3 rounded-xl border font-bold ${status.includes('Error') ? 'text-red-500 bg-red-500/10 border-red-500/20' : 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'}`}>
-                {status}
-              </p>
+              <div className={`p-4 rounded-2xl border text-center space-y-2 ${status.includes('Error') ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}>
+                <p className="font-bold text-sm sm:text-base">{status}</p>
+                {status.includes('Error') && (
+                  <div>
+                    <a
+                      href="mailto:rmendez@rottym.com?subject=Project%20Inquiry%20via%20RottyM.com"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity"
+                    >
+                      Email rmendez@rottym.com Directly →
+                    </a>
+                  </div>
+                )}
+              </div>
             )}
           </form>
         </motion.div>
