@@ -1,7 +1,7 @@
 // src/app/about/page.tsx
 'use client';
 
-import { Briefcase, Code2, Award, ArrowRight, Download, Mail, CheckCircle2, FileText, Sparkles } from 'lucide-react';
+import { Briefcase, Code2, Award, ArrowRight, Download, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 const experiences = [
@@ -9,37 +9,31 @@ const experiences = [
     role: "Full-Stack & AI Software Engineer (Independent Consultant)",
     company: "RottyM Designs",
     period: "11/2023 – Present",
-    desc: "Architecting AI-augmented cloud platforms, RAG pipelines, Model Context Protocol (MCP) integrations, and high-performance headless Next.js applications (Vercel, GCP, Firebase). Built custom intake portals and automated workflows for regional healthcare providers and non-profits, cutting administrative onboarding time by 60% and migrating legacy WordPress systems to sub-second headless architectures."
+    desc: "Architecting AI-augmented cloud platforms, RAG pipelines, MCP integrations, and high-performance headless Next.js applications (Vercel, GCP, Firebase). Partnering with healthcare providers, regional non-profits, and commercial clients to modernize legacy systems, automate intake/membership pipelines, and accelerate release cycles by 45%+ using agentic engineering workflows."
   },
   {
     role: "Full-Stack Software Engineer (Contract)",
-    company: "Disney Streaming",
+    company: "Insight Global – Disney Streaming",
     period: "05/2022 – 11/2023",
-    desc: "Scaled distributed microservices supporting 100M+ global streaming subscribers using Java, Scala, Spring Boot, TypeScript, and AWS (S3, Athena, Lambda) within Docker/Kubernetes environments. Led front-end JWT auth migration and real-time observability telemetry."
+    desc: "Scaled distributed microservices supporting 100M+ global streaming subscribers using Java, Scala, Spring Boot, TypeScript, and AWS (S3, Athena, Lambda) within Docker/Kubernetes environments. Led front-end JWT auth migration (reducing session token errors by 30%) and integrated real-time Adobe Analytics compliance telemetry."
   },
   {
     role: "Full-Stack Software Engineer (Contract)",
-    company: "BAE Systems",
+    company: "Insight Global – BAE Systems",
     period: "09/2021 – 04/2022",
-    desc: "Engineered mission-critical production expense-tracking systems for the Defense Intelligence Agency (DIA) within a secure, high-compliance distributed team using JavaScript, React/Redux on the front end, backed by Java and SQL, maintaining 99.9% system availability."
+    desc: "Engineered mission-critical production expense-tracking systems for the Defense Intelligence Agency (DIA) within a secure, high-compliance distributed engineering team using React/Redux on the front end, backed by Java and SQL, maintaining 99.9% system availability."
   },
   {
     role: "Senior Software Engineer",
     company: "One Globe LLC – FEMA",
     period: "07/2020 – 08/2021",
-    desc: "Engineered full-stack microservices and UI workflows for the FEMA GO Grants Management Modernization platform, consolidating 40+ disparate federal grant programs processing $3B+ in annual funding using Java, React/Redux, OpenShift, AWS, PostgreSQL, and Camunda BPMN."
+    desc: "Engineered full-stack microservices and UI workflows for the FEMA GO Grants Management Modernization (GMM) platform, consolidating 40+ disparate federal grant programs processing $3B+ in annual funding using Java, React/Redux, OpenShift, AWS (DynamoDB, S3, Athena), PostgreSQL, and Camunda BPMN."
   },
   {
-    role: "Front-End Software Engineer (Contract)",
+    role: "Front End Developer (Contract)",
     company: "Leidos – Federal Aviation Administration (FAA)",
-    period: "08/2017 – 06/2020",
-    desc: "Engineered responsive UI workflows, Webpack optimization pipelines, and strict Section 508 / WCAG 2.1 AA accessibility compliance across mission-critical aviation administration web applications."
-  },
-  {
-    role: "Lead Front-End Engineer (Contract)",
-    company: "USA Today / Gannett",
-    period: "03/2016 – 07/2017",
-    desc: "Delivered high-traffic interactive digital news publication features for USA Today (The Point) using React, Redux, and AWS, serving millions of monthly active readers with real-time editorial updates."
+    period: "12/2017 – 03/2020",
+    desc: "Modernized internal federal web application suites serving 10,000+ agency personnel in an enterprise .NET environment. Optimized JS/jQuery/CSS execution pipelines—improving UI rendering speeds by 30%—while enforcing 100% federal Section 508 Accessibility compliance across all interfaces."
   }
 ];
 
@@ -65,44 +59,45 @@ const skillsets = [
 export default function About() {
   return (
     <section className="py-16 md:py-24 px-6 max-w-5xl mx-auto space-y-20">
-      {/* Recruiter / Hiring Manager Availability Callout */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 md:p-5 rounded-2xl bg-accent/5 border border-accent/20">
-        <div className="flex items-center gap-3 text-center sm:text-left">
-          <span className="relative flex h-3 w-3 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-          </span>
-          <div>
-            <p className="text-xs md:text-sm font-black text-foreground">
-              Open to Full-Time Senior / Lead Roles &amp; Strategic Contracts
-            </p>
-            <p className="text-[11px] text-muted-foreground font-medium">
-              Available for high-impact technical leadership, architecture, and AI-augmented engineering.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <a
-            href="mailto:rmendez@rottym.com?subject=Full-Time%20Role%20Inquiry%20-%20Rottman%20Mendez"
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-accent text-accent-foreground rounded-xl text-xs font-bold hover:scale-105 transition-all shadow-sm"
-          >
-            <Mail className="w-3.5 h-3.5" /> Hire Me
-          </a>
-          <a
-            href="mailto:rmendez@rottym.com?subject=Resume%20Request%20-%20Rottman%20Mendez"
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-muted hover:bg-card border border-border text-foreground rounded-xl text-xs font-bold transition-all"
-            title="Request Official Resume PDF"
-          >
-            <Download className="w-3.5 h-3.5 text-accent" /> Resume (PDF)
-          </a>
-        </div>
-      </div>
-
       {/* Intro Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-5xl md:text-6xl font-black tracking-tight text-foreground">Rottman M. Mendez</h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
-          I’m a Full-Stack &amp; AI Software Engineer based in Reston, Virginia. With extensive experience engineering scalable enterprise microservices (Disney Streaming, FEMA, BAE Systems, FAA via Leidos) and delivering AI-augmented cloud platforms, I specialize in modern serverless web stacks (Next.js, React, TypeScript, Tailwind CSS, Sanity, Vercel) and enterprise backend systems (Java, Spring Boot, Scala, GCP, Firebase, AWS). I help organizations and technical teams replace fragile legacy systems with reliable, high-performance digital platforms.
+      <div className="text-center space-y-6 max-w-4xl mx-auto">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="text-xs font-bold tracking-wide uppercase">
+            Full-Stack &amp; AI Software Engineer · Reston, VA
+          </span>
+        </div>
+
+        <h1 className="text-5xl md:text-6xl font-black tracking-tight text-foreground">
+          Rottman M. Mendez
+        </h1>
+
+        <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium">
+          Full-Stack &amp; AI Software Engineer based in Reston, Virginia. With extensive experience engineering scalable enterprise microservices (Disney Streaming, FEMA, BAE Systems, FAA via Leidos) and delivering AI-augmented cloud platforms, I specialize in modern serverless web stacks (Next.js, React, TypeScript, Tailwind CSS, Sanity, Vercel) and enterprise backend systems (Java, Spring Boot, Scala, GCP, Firebase, AWS). I help organizations and technical teams replace fragile legacy systems with reliable, high-performance digital platforms.
+        </p>
+
+        {/* Action Buttons directly under the bio */}
+        <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-7 py-3.5 rounded-2xl font-bold text-sm hover:scale-105 transition-all shadow-lg shadow-accent/20"
+          >
+            Hire Me / Get in Touch <ArrowRight className="w-4 h-4" />
+          </Link>
+          <a
+            href="/resume.pdf"
+            download="Rottman_Mendez_Resume.pdf"
+            className="inline-flex items-center gap-2 glass px-7 py-3.5 rounded-2xl font-bold text-sm hover:bg-muted transition-all text-foreground border border-border shadow-sm"
+          >
+            <Download className="w-4 h-4 text-accent" /> Download Resume (PDF)
+          </a>
+        </div>
+
+        <p className="text-xs text-muted-foreground font-semibold">
+          Open to senior full-time engineering roles, technical leadership, and strategic platform contracts.
         </p>
       </div>
 
@@ -146,7 +141,7 @@ export default function About() {
             ))}
           </div>
 
-          {/* Quantified Impact / Highlights (Context-rich, honest metrics) */}
+          {/* Quantified Impact / Highlights */}
           <div className="pt-4">
             <div className="flex items-center gap-3 text-accent mb-6 transition-colors">
               <Award className="w-6 h-6" />
@@ -196,17 +191,18 @@ export default function About() {
           Whether you&apos;re a technical recruiter seeking a lead full-stack engineer or an organization looking to modernize legacy architecture, let&apos;s connect.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
-          <a
-            href="mailto:rmendez@rottym.com?subject=Full-Time%20Role%20Inquiry%20-%20Rottman%20Mendez"
+          <Link
+            href="/contact"
             className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-black text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20"
           >
-            Discuss Full-Time Roles <ArrowRight className="w-5 h-5" />
-          </a>
+            Hire Me / Get in Touch <ArrowRight className="w-5 h-5" />
+          </Link>
           <a
-            href="mailto:rmendez@rottym.com?subject=Resume%20Request%20-%20Rottman%20Mendez"
-            className="inline-flex items-center gap-2 glass px-8 py-4 rounded-2xl font-bold text-base hover:bg-muted transition-all text-foreground"
+            href="/resume.pdf"
+            download="Rottman_Mendez_Resume.pdf"
+            className="inline-flex items-center gap-2 glass px-8 py-4 rounded-2xl font-bold text-base hover:bg-muted transition-all text-foreground border border-border"
           >
-            <Download className="w-4 h-4 text-accent" /> Request Resume (PDF)
+            <Download className="w-4 h-4 text-accent" /> Download Resume (PDF)
           </a>
         </div>
       </div>
