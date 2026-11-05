@@ -102,8 +102,8 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
 
         {/* Hero Header (Centered to match /services, /packages, and site layout) */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
-            <Sparkles className="w-3 h-3" /> {project.category} · {project.role}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
+            <Sparkles className="w-3.5 h-3.5" /> {project.category} · {project.role}
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-foreground">
@@ -235,7 +235,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* Left Column Narrative */}
               <div className="lg:col-span-5 space-y-5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-black uppercase tracking-wider">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
                   <span>{cs.crisis.eyebrow}</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-tight">
@@ -300,7 +300,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             {/* The Solution: 6 Core Engineering Pillars Bento Grid */}
             <section className="space-y-8">
               <div className="text-center max-w-2xl mx-auto space-y-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-black uppercase tracking-wider">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
                   <Sparkles className="w-3.5 h-3.5" /> ENGINEERED ARCHITECTURE
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">

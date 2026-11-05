@@ -112,8 +112,8 @@ export default function Contact() {
           className="space-y-12"
         >
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
-              <Sparkles className="w-3 h-3" /> Get in Touch
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
+              <Sparkles className="w-3.5 h-3.5" /> Get in Touch
             </div>
             <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1]">Let&apos;s Build Something <span className="text-accent">Exceptional</span>.</h1>
             <p className="text-xl text-muted-foreground max-w-md font-medium leading-relaxed">

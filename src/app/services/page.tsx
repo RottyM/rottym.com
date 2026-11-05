@@ -48,6 +48,9 @@ export default function Services() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center space-y-4 mb-20"
         >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
+            <Sparkles className="w-3.5 h-3.5" /> High-Performance Engineering
+          </div>
           <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground">Premium Services</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
             Engineering high-performance sites and platforms for Reston &amp; Northern Virginia businesses that have outgrown templates or bloated WordPress.

@@ -129,8 +129,8 @@ export default function Portfolio() {
       <div className="max-w-7xl mx-auto w-full space-y-12">
         {/* Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
-            <Sparkles className="w-3 h-3" /> Production Systems &amp; Case Studies
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
+            <Sparkles className="w-3.5 h-3.5" /> Production Systems &amp; Case Studies
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tight text-foreground">
             Selected Work &amp; Case Studies
@@ -208,7 +208,7 @@ export default function Portfolio() {
             {/* Section Divider: Enterprise & Earlier Career Work */}
             <div className="pt-10 space-y-6">
               <div className="p-8 md:p-10 rounded-[2.5rem] bg-muted/40 border border-border space-y-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
                   Enterprise &amp; Earlier Career Work
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
