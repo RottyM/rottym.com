@@ -1,11 +1,19 @@
 // src/app/page.tsx
 'use client';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Rocket, Zap, Globe, Cpu, Sparkles, Users } from 'lucide-react';
 
 export default function Home() {
+  const [headlineIndex, setHeadlineIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHeadlineIndex((prev) => (prev + 1) % 2);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, []);
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!localStorage.getItem('audit-shown')) {
@@ -49,9 +57,35 @@ export default function Home() {
               <span className="text-sm font-semibold tracking-wide uppercase">Full-Stack Development · Reston, VA</span>
             </div>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-[1.15] tracking-tight">
-              Building fast, modern sites that <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">replace slow WordPress</span>
-            </h1>
+            <div className="min-h-[170px] sm:min-h-[190px] md:min-h-[220px] lg:min-h-[260px] flex items-center">
+              <AnimatePresence mode="wait">
+                <motion.h1
+                  key={headlineIndex}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.45, ease: "easeInOut" }}
+                  className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-[1.15] tracking-tight"
+                >
+                  {headlineIndex === 0 ? (
+                    <>
+                      Building fast, modern sites that{" "}
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">
+                        replace slow WordPress
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Custom web platforms,{" "}
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">
+                        client portals
+                      </span>
+                      , and modern applications
+                    </>
+                  )}
+                </motion.h1>
+              </AnimatePresence>
+            </div>
 
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
               Reston-based full-stack developer and UX designer. I build high-performance sites and custom platforms (Next.js, React, modern cloud) with the speed of AI and the precision of enterprise work at Disney, USA Today, FEMA, and Booz Allen.
