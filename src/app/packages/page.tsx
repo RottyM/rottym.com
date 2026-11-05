@@ -106,8 +106,12 @@ export default function PackagesPage() {
             </span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.15]">
-            Local Packages for <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500">Reston &amp; NoVA</span> Businesses
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.2]">
+            Local Packages for{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-2.5">
+              Reston &amp; NoVA
+            </span>{" "}
+            Businesses
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">

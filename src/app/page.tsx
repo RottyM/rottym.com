@@ -49,8 +49,8 @@ export default function Home() {
               <span className="text-sm font-semibold tracking-wide uppercase">Full-Stack Development · Reston, VA</span>
             </div>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-[1.1] tracking-tight">
-              Custom web platforms, <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500">client portals</span>, and modern applications.
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-[1.15] tracking-tight">
+              Custom web platforms, <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">client portals</span>, and modern applications.
             </h1>
 
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
