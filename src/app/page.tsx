@@ -42,7 +42,7 @@ export default function Home() {
         <div className="absolute top-0 right-0 -z-10 w-1/2 h-full bg-gradient-to-l from-accent/10 to-transparent blur-3xl opacity-50 transition-colors" />
         <div className="absolute -top-24 -left-24 -z-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse-soft transition-colors" />
 
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-start pt-6 md:pt-10 lg:pt-12">
           <motion.div
             initial={false}
             animate={{ opacity: 1, x: 0 }}
@@ -57,14 +57,14 @@ export default function Home() {
               <span className="text-sm font-semibold tracking-wide uppercase">Full-Stack Development · Reston, VA</span>
             </div>
 
-            <div className="min-h-[170px] sm:min-h-[190px] md:min-h-[220px] lg:min-h-[260px] flex items-center">
+            <div className="min-h-[190px] sm:min-h-[220px] md:min-h-[260px] lg:min-h-[300px] flex items-start">
               <AnimatePresence mode="wait">
                 <motion.h1
                   key={headlineIndex}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -16 }}
-                  transition={{ duration: 0.45, ease: "easeInOut" }}
+                  exit={{ opacity: 0, y: -14 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
                   className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-[1.15] tracking-tight"
                 >
                   {headlineIndex === 0 ? (
@@ -124,17 +124,22 @@ export default function Home() {
             initial={false}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="relative"
+            className="relative lg:pt-6 w-full max-w-lg mx-auto lg:max-w-none"
           >
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border group bg-card">
-              <img
-                src="/images/portfolio/rottman-hero.jpg"
-                alt="Rottman Mendez"
-                className="w-full h-auto object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-60" />
-            </div>
-
+            <Link 
+              href="/portfolio" 
+              className="block group focus:outline-none"
+              title="View Portfolio"
+            >
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border group-hover:border-accent/50 group-hover:shadow-accent/15 transition-all duration-500 bg-card">
+                <img
+                  src="/images/portfolio/rottman-hero.jpg"
+                  alt="Rottman Mendez Portfolio"
+                  className="w-full h-auto object-cover grayscale-[15%] group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-40 group-hover:opacity-10 transition-opacity" />
+              </div>
+            </Link>
           </motion.div>
         </div>
       </section>
