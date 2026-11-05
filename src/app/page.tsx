@@ -47,7 +47,7 @@ export default function Home() {
             initial={false}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="space-y-8"
+            className="space-y-6 sm:space-y-8"
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm">
               <span className="relative flex h-2 w-2">
@@ -57,46 +57,62 @@ export default function Home() {
               <span className="text-sm font-semibold tracking-wide uppercase">Full-Stack Development · Reston, VA</span>
             </div>
 
-            <div className="min-h-[190px] sm:min-h-[220px] md:min-h-[260px] lg:min-h-[300px] flex items-start">
-              <AnimatePresence mode="wait">
-                <motion.h1
-                  key={headlineIndex}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -14 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                  className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-[1.15] tracking-tight"
-                >
-                  {headlineIndex === 0 ? (
-                    <>
-                      Building fast, modern sites that{" "}
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">
-                        replace slow WordPress
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      Custom web platforms,{" "}
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">
-                        client portals
-                      </span>
-                      , and modern applications
-                    </>
-                  )}
-                </motion.h1>
-              </AnimatePresence>
-            </div>
+            {/* Zero-shift layout-locked rotating headline */}
+            <div className="grid grid-cols-1 grid-rows-1 items-start">
+              {/* Ghost 1: keeps grid row sized to headline 0 */}
+              <h1
+                aria-hidden="true"
+                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.15] tracking-tight"
+              >
+                Building fast, modern sites that replace slow WordPress
+              </h1>
 
-            <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
-              Reston-based full-stack developer and UX designer. I build high-performance sites and custom platforms (Next.js, React, modern cloud) with the speed of AI and the precision of enterprise work at Disney, USA Today, FEMA, and Booz Allen.
-            </p>
+              {/* Ghost 2: keeps grid row sized to headline 1 */}
+              <h1
+                aria-hidden="true"
+                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.15] tracking-tight"
+              >
+                Custom web platforms, client portals, and modern applications
+              </h1>
+
+              {/* Active visible animated headline */}
+              <div className="col-start-1 row-start-1 w-full">
+                <AnimatePresence mode="wait">
+                  <motion.h1
+                    key={headlineIndex}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold text-foreground leading-[1.15] tracking-tight"
+                  >
+                    {headlineIndex === 0 ? (
+                      <>
+                        Building fast, modern sites that{" "}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">
+                          replace slow WordPress
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        Custom web platforms,{" "}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">
+                          client portals
+                        </span>
+                        , and modern applications
+                      </>
+                    )}
+                  </motion.h1>
+                </AnimatePresence>
+              </div>
+            </div>
 
             <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-muted/60 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Fixed pricing after a short discovery call · Booking 2026 projects and beyond
             </div>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 pt-1">
               <Link href="/contact" className="group flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl shadow-accent/20">
                 Book a Discovery Call
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -106,7 +122,7 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="flex items-center gap-6 pt-4 text-muted-foreground">
+            <div className="flex items-center gap-6 pt-2 text-muted-foreground">
               <div className="flex -space-x-3">
                 {[1, 2, 3, 4].map(i => (
                   <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[10px] font-bold">
@@ -124,7 +140,7 @@ export default function Home() {
             initial={false}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="relative lg:pt-6 w-full max-w-lg mx-auto lg:max-w-none"
+            className="relative lg:pt-1 w-full max-w-lg mx-auto lg:max-w-none space-y-6"
           >
             <Link 
               href="/portfolio" 
@@ -140,6 +156,10 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-40 group-hover:opacity-10 transition-opacity" />
               </div>
             </Link>
+
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+              Reston-based full-stack developer and UX designer. I build high-performance sites and custom platforms (Next.js, React, modern cloud) with the speed of AI and the precision of enterprise work at Disney, USA Today, FEMA, and Booz Allen.
+            </p>
           </motion.div>
         </div>
       </section>
