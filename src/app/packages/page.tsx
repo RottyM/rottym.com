@@ -21,7 +21,7 @@ const packages = [
     id: "local-launchpad",
     name: "Local Launchpad",
     subtitle: "Entry & Most Common",
-    price: "$3,500 – $4,500",
+    price: "$2,500 – $3,500",
     priceNote: "Starting range · Fixed after 15-min call",
     desc: "A clean, fast site built for local service businesses that need to show up and get inquiries.",
     icon: <Rocket className="w-7 h-7" />,
@@ -45,7 +45,7 @@ const packages = [
     id: "booking-intake",
     name: "Booking & Intake",
     subtitle: "Booking & Client Workflows",
-    price: "$5,500 – $7,500",
+    price: "$4,200 – $5,800",
     priceNote: "Starting range · Fixed after 15-min call",
     desc: "Everything in Local Launchpad, plus the tools that reduce back-and-forth and capture more of the work you’re already getting.",
     icon: <CalendarCheck className="w-7 h-7" />,
@@ -70,7 +70,7 @@ const packages = [
     id: "performance-rebuild",
     name: "Performance Rebuild",
     subtitle: "WordPress Escape",
-    price: "$5,000 – $9,000",
+    price: "$3,800 – $6,500",
     priceNote: "Scales with size · Fixed after 15-min call",
     desc: "Move off a slow or bloated WordPress site to a modern stack that loads faster, breaks less, and is easier to maintain.",
     icon: <RefreshCw className="w-7 h-7" />,
@@ -120,7 +120,7 @@ export default function PackagesPage() {
 
           <div className="p-4 rounded-2xl bg-muted/40 border border-border inline-block">
             <p className="text-sm md:text-base text-foreground font-semibold">
-              Most local projects land between <span className="text-accent font-black">$3,500–$8,000</span>. Price is fixed after a short call.
+              Most local projects land between <span className="text-accent font-black">$2,500–$6,500</span>. Price is fixed after a short call.
             </p>
           </div>
 
@@ -245,7 +245,7 @@ export default function PackagesPage() {
             <div>
               <h3 className="text-2xl md:text-3xl font-black text-foreground">Ongoing Care</h3>
               <div className="mt-2">
-                <span className="text-3xl font-extrabold text-foreground">$150 – $350</span>
+                <span className="text-3xl font-extrabold text-foreground">$99 – $250</span>
                 <span className="text-muted-foreground font-medium text-sm"> / month</span>
               </div>
             </div>
@@ -304,7 +304,7 @@ export default function PackagesPage() {
                 <div>
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-foreground text-sm">Bilingual (Spanish) Key Pages &amp; Forms</h4>
-                    <span className="text-xs font-black text-accent ml-2">+$800 – $1,500</span>
+                    <span className="text-xs font-black text-accent ml-2">+$500 – $950</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Native Spanish translation and localized intake forms for Northern Virginia&apos;s diverse audience.
@@ -362,7 +362,7 @@ export default function PackagesPage() {
               Ready to see what fits?
             </h2>
             <p className="text-xl md:text-2xl font-bold opacity-95">
-              Most Reston and Northern Virginia projects land between $3,500 and $8,000.
+              Most Reston and Northern Virginia projects land between $2,500 and $6,500.
             </p>
             <p className="text-base md:text-lg opacity-90 max-w-2xl mx-auto leading-relaxed">
               The number you get after a short discovery call is the exact number you’re billed. No ranges that turn into surprise invoices.

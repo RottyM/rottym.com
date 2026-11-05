@@ -310,7 +310,7 @@ export default function Home() {
           <div className="p-8 md:p-10 rounded-[2.5rem] border border-accent/20 bg-accent/5 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
             <div className="space-y-1">
               <p className="text-base md:text-lg font-bold text-foreground">
-                Most Strategic Launchpads land in the <span className="text-accent font-black">$3,500–$8,000</span> range.
+                Most Strategic Launchpads land in the <span className="text-accent font-black">$2,500–$6,500</span> range.
               </p>
               <p className="text-sm text-muted-foreground">
                 Full-stack apps, membership portals, and custom AI workflows are scoped higher after discovery.
@@ -354,14 +354,14 @@ export default function Home() {
               {
                 title: "Local Launchpad",
                 badge: "Most Common",
-                price: "$3,500 – $4,500",
+                price: "$2,500 – $3,500",
                 desc: "5–8 page high-performance site, mobile-first speed, quote forms, and local NoVA SEO setup.",
                 best: "Restaurants, home services, independent pros",
               },
               {
                 title: "Booking & Intake",
                 badge: "Client Workflows",
-                price: "$5,500 – $7,500",
+                price: "$4,200 – $5,800",
                 desc: "Full build plus online booking or structured intake workflows to cut admin back-and-forth.",
                 best: "Dental, clinics, salons, home services",
                 featured: true,
@@ -369,7 +369,7 @@ export default function Home() {
               {
                 title: "Performance Rebuild",
                 badge: "WordPress Escape",
-                price: "$5,000 – $9,000",
+                price: "$3,800 – $6,500",
                 desc: "Migrate off slow, bloated WordPress to modern serverless stack (Vercel + headless CMS).",
                 best: "Established businesses escaping plugin bloat",
               }
