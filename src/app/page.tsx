@@ -50,7 +50,7 @@ export default function Home() {
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-[1.15] tracking-tight">
-              Building fast, modern sites that <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">replace slow WordPress</span>.
+              Building fast, modern sites that <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">replace slow WordPress</span>
             </h1>
 
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
@@ -59,7 +59,7 @@ export default function Home() {
 
             <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-muted/60 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Fixed pricing after a short discovery call · Currently booking Q1 2026 projects
+              Fixed pricing after a short discovery call · Booking 2026 projects and beyond
             </div>
 
             <div className="flex flex-wrap gap-4">
@@ -439,7 +439,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
           <h2 className="text-4xl md:text-5xl font-black tracking-tight">Have a project in mind? Let&apos;s build it.</h2>
           <p className="text-xl font-medium opacity-90 max-w-2xl mx-auto">
-            Currently booking Q1 2026 projects. Let&apos;s discuss your organization&apos;s goals and how to build a reliable, high-performance platform.
+            Booking 2026 projects and beyond. Let&apos;s discuss your organization&apos;s goals and how to build a reliable, high-performance platform.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/contact" className="inline-flex items-center gap-2 bg-accent-foreground text-accent px-10 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform shadow-2xl">
