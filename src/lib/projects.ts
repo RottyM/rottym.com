@@ -191,7 +191,7 @@ export const projects: Project[] = [
       heroHeadline: "How a Writers Club Replaced Manual Membership Admin with a Connected Member Platform",
       heroSubtitle: "Architecting a sovereign, automated community operating system for a prominent regional literary organization — eliminating 12+ hours of weekly spreadsheet triage, securing tiered author databases, and providing bulletproof documentation for volunteer sustainability.",
       verifiedBadge: "PRODUCTION DEPLOYMENT · VERIFIED 2026",
-      liveUrl: "https://virginiawritersclub.org",
+      liveUrl: "https://northernvirginiawriters.org/",
       liveUrlLabel: "Live Site",
       proofBar: {
         title: "Active Production Infrastructure",
