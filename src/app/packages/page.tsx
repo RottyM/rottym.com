@@ -202,8 +202,8 @@ export default function PackagesPage() {
                       : 'bg-accent text-accent-foreground shadow-accent/25 border border-white/20'
                   }`}
                 >
-                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#4cd7f6]" />
-                  <span>★ {pkg.badge.toUpperCase()} · 95+ LIGHTHOUSE</span>
+                  <Sparkles className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${pkg.featured ? 'text-[#4cd7f6]' : 'text-current'}`} />
+                  <span>{pkg.badge}</span>
                 </div>
               )}
 
@@ -227,17 +227,6 @@ export default function PackagesPage() {
                   </span>
                 </div>
 
-                {pkg.featured && (
-                  <div className="flex flex-wrap items-center gap-2 -mt-2">
-                    <span className="font-mono text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded bg-white/10 text-white font-semibold">
-                      FULL PRODUCTION BUILD
-                    </span>
-                    <span className="font-mono text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded bg-[#4cd7f6]/20 text-[#4cd7f6] font-semibold">
-                      CLIENT PORTALS
-                    </span>
-                  </div>
-                )}
-
                 <div>
                   <h3
                     className={`text-xl sm:text-2xl md:text-3xl font-black ${
@@ -248,22 +237,17 @@ export default function PackagesPage() {
                   </h3>
 
                   {pkg.featured ? (
-                    <div className="mt-3 p-3.5 sm:p-4 rounded-xl bg-white/10 border border-white/10">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                          {pkg.price}
-                        </span>
-                        <span className="text-xs uppercase font-mono text-[#4cd7f6] font-bold">
-                          USD
-                        </span>
-                      </div>
-                      <p className="text-[11px] sm:text-xs text-[#4cd7f6] font-mono font-medium mt-0.5">
+                    <div className="mt-3 p-3 sm:p-3.5 rounded-xl bg-white/10 border border-white/10">
+                      <span className="text-xl sm:text-2xl lg:text-[1.65rem] xl:text-3xl font-extrabold text-white tracking-tight whitespace-nowrap block">
+                        {pkg.price}
+                      </span>
+                      <p className="text-[11px] sm:text-xs text-[#4cd7f6] font-mono font-medium mt-1">
                         {pkg.priceNote}
                       </p>
                     </div>
                   ) : (
                     <div className="mt-2 sm:mt-3">
-                      <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
+                      <span className="text-xl sm:text-2xl lg:text-[1.65rem] xl:text-3xl font-extrabold text-foreground tracking-tight whitespace-nowrap block">
                         {pkg.price}
                       </span>
                       <p className="text-[11px] sm:text-xs text-muted-foreground font-medium mt-1">

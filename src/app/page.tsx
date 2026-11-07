@@ -436,14 +436,14 @@ export default function Home() {
                           : 'text-accent bg-accent/10'
                       }`}
                     >
-                      {pkg.featured ? '★ MOST POPULAR' : pkg.badge}
+                      {pkg.badge}
                     </span>
                   </div>
                   <div>
                     <h3 className={`text-2xl font-black ${pkg.featured ? 'text-white' : 'text-slate-900 dark:text-foreground'}`}>
                       {pkg.title}
                     </h3>
-                    <p className={`text-2xl font-black mt-2 ${pkg.featured ? 'text-white' : 'text-slate-900 dark:text-foreground'}`}>
+                    <p className={`text-2xl font-black mt-2 whitespace-nowrap ${pkg.featured ? 'text-white' : 'text-slate-900 dark:text-foreground'}`}>
                       {pkg.price}
                     </p>
                   </div>
