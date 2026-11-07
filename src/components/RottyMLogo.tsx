@@ -76,6 +76,7 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
   const glowId = `rotty-glow-${uniqueId}`;
   const neonFilterId = `rotty-neon-${uniqueId}`;
   const depthShadowId = `rotty-shadow-${uniqueId}`;
+  const mShadowId = `rotty-m-shadow-${uniqueId}`;
   const wordmarkMGradId = `rotty-wordmark-m-${uniqueId}`;
 
   // Palette from Stitch Modern Motion Suite v2.4
@@ -179,13 +180,13 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
             </feMerge>
           </filter>
 
-          {/* Precision Depth & Drop Shadow Filter */}
+          {/* Precision Depth & Drop Shadow Filter for 'R' */}
           <filter id={depthShadowId} x="-30%" y="-30%" width="160%" height="160%">
             {isDark ? (
               <>
-                <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#00F2FE" floodOpacity="0.45" />
-                <feDropShadow dx="0" dy="4" stdDeviation="10" floodColor="#4FACFE" floodOpacity="0.30" />
-                <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="#000000" floodOpacity="0.75" />
+                <feDropShadow dx="0" dy="1.5" stdDeviation="2.5" floodColor="#000000" floodOpacity="0.90" />
+                <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#000000" floodOpacity="0.65" />
+                <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#00F2FE" floodOpacity="0.20" />
               </>
             ) : (
               <>
@@ -193,6 +194,12 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
                 <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#0F172A" floodOpacity="0.16" />
               </>
             )}
+          </filter>
+
+          {/* Dedicated Crisp Shadow Filter for 'M' Chevron to stand out with high contrast */}
+          <filter id={mShadowId} x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="1.5" stdDeviation="2" floodColor="#000000" floodOpacity="0.95" />
+            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#00F5A0" floodOpacity="0.30" />
           </filter>
 
           {/* Kinetic animations when animated={true} - Queued on hover */}
@@ -249,19 +256,19 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
 
         {/* Monogram Glyph Group */}
         <g>
-          {/* Diffuse Ambient Neon Aura (Rendered in both dark and light modes) */}
+          {/* Diffuse Ambient Neon Aura (Toned down to prevent wash-out) */}
           <path
             d="M 28 148 L 28 22 C 28 10 37 0 49 0 L 88 0 C 114 0 134 18 134 44 C 134 68 116 85 92 88 L 138 148"
             fill="none"
             stroke={isDark ? active.diffuseAura : '#38BDF8'}
-            strokeWidth={isDark ? "28" : "20"}
+            strokeWidth={isDark ? "14" : "16"}
             strokeLinecap="round"
             strokeLinejoin="round"
-            opacity={isDark ? "0.30" : "0.16"}
+            opacity={isDark ? "0.16" : "0.12"}
             filter={`url(#${neonFilterId})`}
           />
 
-          {/* Depth Shadow Layer on R Letterform & Chevron Accent */}
+          {/* Depth Shadow Layer on R Letterform */}
           <g filter={`url(#${depthShadowId})`}>
             {/* Stem of 'R' with Gradient */}
             <rect
@@ -291,17 +298,6 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
               strokeWidth="18"
               strokeLinecap="round"
             />
-
-            {/* The 'M' / AI Chevron Apex Accent (Apex elevated to y=8) */}
-            <path
-              d="M 106 20 L 124 42 L 154 8"
-              fill="none"
-              stroke={`url(#${gradMId})`}
-              strokeWidth="14"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              filter={isDark ? `url(#${neonFilterId})` : undefined}
-            />
           </g>
 
           {/* High-Velocity Laser Photons Streaming over R contour (Triggers on hover) */}
@@ -317,7 +313,17 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
             />
           )}
 
-          {/* The 'M' / AI Chevron Apex Accent (Apex elevated to y=8) */}
+          {/* Monoglyphic 'M' / AI Chevron Knockout Underlay for Razor-Sharp Edge Separation */}
+          <path
+            d="M 106 20 L 124 42 L 154 8"
+            fill="none"
+            stroke={isDark ? "#080c18" : "#ffffff"}
+            strokeWidth="19"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Crisp Monoglyphic 'M' Chevron with Dedicated High-Contrast Shadow */}
           <path
             d="M 106 20 L 124 42 L 154 8"
             fill="none"
@@ -325,7 +331,7 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
             strokeWidth="14"
             strokeLinecap="round"
             strokeLinejoin="round"
-            filter={isDark ? `url(#${neonFilterId})` : undefined}
+            filter={`url(#${mShadowId})`}
           />
 
           {/* Dual-Phase Synapse Apex Radar Pulse Waves (Triggers on hover) */}
@@ -398,7 +404,7 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
         {/* Row 1: RottyM Wordmark with robust CSS gradient (eliminates SVG tspan glyph-box bug) */}
         <div className="flex items-center leading-none">
           <span className="font-extrabold text-[22px] sm:text-[24px] md:text-[25px] tracking-[-0.03em] text-foreground select-none inline-flex items-center">
-            Rotty<span className="bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 dark:from-cyan-400 dark:via-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">M</span>
+            Rotty<span className="bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 dark:from-emerald-400 dark:via-cyan-400 dark:to-sky-400 bg-clip-text text-transparent drop-shadow-sm font-black">M</span>
           </span>
         </div>
 

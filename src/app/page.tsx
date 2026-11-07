@@ -86,7 +86,7 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
                     transition={{ duration: 0.35, ease: "easeInOut" }}
-                    className="text-4xl sm:text-5xl md:text-6xl font-black text-foreground leading-[1.12] tracking-tight"
+                    className="text-4xl sm:text-5xl md:text-6xl font-black text-foreground leading-[1.12] tracking-tight drop-shadow-sm"
                   >
                     {headlineIndex === 0 ? (
                       <>
@@ -197,8 +197,8 @@ export default function Home() {
         <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center space-y-4 mb-20 text-balance">
-            <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight">Everything you need to <span className="tech-gradient-text">scale</span></h2>
-            <p className="text-muted-foreground text-xl max-w-2xl mx-auto font-medium">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Everything you need to <span className="tech-gradient-text">scale</span></h2>
+            <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto font-medium">
               I don&apos;t just build websites. I engineer high-performance digital ecosystems using the most modern stacks.
             </p>
           </div>
@@ -461,8 +461,8 @@ export default function Home() {
                 <span className="text-border">|</span>
                 <span className="font-mono text-xs text-muted-foreground uppercase">CLIENT WORK &amp; APPS</span>
               </div>
-              <h2 className="text-4xl md:text-6xl font-black tracking-tight text-foreground">Selected Work &amp; <span className="tech-gradient-text">Projects</span>.</h2>
-              <p className="text-muted-foreground text-xl max-w-2xl font-medium">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">Selected Work &amp; <span className="tech-gradient-text">Projects</span>.</h2>
+              <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl font-medium">
                 A mix of client platforms and self-initiated systems that demonstrate full-stack development, product thinking, and modern deployment practices.
               </p>
             </div>
