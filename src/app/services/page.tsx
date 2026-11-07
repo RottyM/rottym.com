@@ -66,7 +66,7 @@ const services = [
 
 export default function Services() {
   return (
-    <section className="relative py-16 md:py-24 px-6 min-h-screen overflow-hidden">
+    <section className="relative pt-10 pb-24 px-4 md:px-6 min-h-screen overflow-hidden">
       {/* Background Dot-Grid Texture */}
       <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
@@ -75,35 +75,37 @@ export default function Services() {
       <div className="pointer-events-none absolute top-[850px] -right-40 w-[600px] h-[600px] bg-accent/5 blur-[160px] rounded-full -z-10" />
       <div className="pointer-events-none absolute bottom-[400px] -left-32 w-[650px] h-[650px] bg-emerald-500/5 blur-[180px] rounded-full -z-10" />
 
-      <div className="max-w-7xl mx-auto relative z-10 space-y-20">
+      <div className="max-w-7xl mx-auto relative z-10 space-y-16">
         
         {/* SECTION 1: HERO INTRO & TELEMETRY STRIP */}
-        <motion.div
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center flex flex-col items-center"
-        >
-          {/* Eyebrow Radar Beacon Badge */}
-          <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md mb-6 border border-border">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">HIGH-PERFORMANCE ENGINEERING</span>
-            <span className="text-border">|</span>
-            <span className="font-mono text-xs text-muted-foreground uppercase">RESTON, NOVA &amp; GLOBAL</span>
-          </div>
+        <div>
+          <motion.div
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center space-y-4 max-w-3xl mx-auto mb-12"
+          >
+            {/* Eyebrow Radar Beacon Badge */}
+            <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">HIGH-PERFORMANCE ENGINEERING</span>
+              <span className="text-border">|</span>
+              <span className="font-mono text-xs text-muted-foreground uppercase">RESTON, NOVA &amp; GLOBAL</span>
+            </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground max-w-4xl mb-6 leading-[1.12]">
-            Premium <span className="tech-gradient-text">Services</span>
-          </h1>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
+              Premium <span className="tech-gradient-text">Services</span>
+            </h1>
 
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-10 font-medium">
-            Engineering high-performance software, bespoke web applications, and resilient platforms for Reston &amp; Northern Virginia businesses that demand speed, scale, and uncompromising quality.
-          </p>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
+              Engineering high-performance software, bespoke web applications, and resilient platforms for Reston &amp; Northern Virginia businesses that demand speed, scale, and uncompromising quality.
+            </p>
+          </motion.div>
 
           {/* High-Density Telemetry Ticker Strip */}
-          <div className="w-full max-w-5xl stitch-card rounded-2xl p-2.5 shadow-xl">
+          <div className="w-full max-w-5xl mx-auto stitch-card rounded-2xl p-2.5 shadow-xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
               {/* Telemetry Slot 1 */}
               <div className="bg-muted/50 p-4 rounded-xl flex items-center justify-between gap-3 text-left border border-border/50">
@@ -136,7 +138,7 @@ export default function Services() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* SECTION 2: 4 CORE HIGH-CONVERTING SERVICES (CHROMATIC CARDS) */}
         <div>

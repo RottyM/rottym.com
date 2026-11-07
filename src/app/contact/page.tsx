@@ -104,7 +104,7 @@ export default function Contact() {
   }
 
   return (
-    <section className="relative py-20 md:py-24 px-6 min-h-screen overflow-hidden">
+    <section className="relative pt-10 pb-24 px-4 md:px-6 min-h-screen overflow-hidden">
       {/* Background Dot-Grid Texture */}
       <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
@@ -118,7 +118,7 @@ export default function Contact() {
           animate={{ opacity: 1, x: 0 }}
           className="space-y-12"
         >
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
               <span className="relative flex h-2.5 w-2.5 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

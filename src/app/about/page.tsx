@@ -58,7 +58,7 @@ const skillsets = [
 
 export default function About() {
   return (
-    <section className="relative py-16 md:py-24 px-6 min-h-screen overflow-hidden">
+    <section className="relative pt-10 pb-24 px-4 md:px-6 min-h-screen overflow-hidden">
       {/* Background Dot-Grid Texture */}
       <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
@@ -66,10 +66,10 @@ export default function About() {
       <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/15 via-emerald-500/10 to-transparent blur-[130px] rounded-full -z-10" />
       <div className="pointer-events-none absolute top-1/2 -right-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
 
-      <div className="max-w-5xl mx-auto space-y-20 relative z-10">
+      <div className="max-w-5xl mx-auto space-y-16 relative z-10">
         {/* Intro Header */}
-        <div className="text-center space-y-6 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md mb-6 border border-border">
+        <div className="text-center space-y-4 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
             <span className="relative flex h-2.5 w-2.5 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>

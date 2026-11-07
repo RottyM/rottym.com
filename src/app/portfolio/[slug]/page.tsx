@@ -83,7 +83,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
   const cs = project.caseStudy;
 
   return (
-    <div className="relative py-16 md:py-24 px-6 min-h-screen overflow-hidden">
+    <div className="relative pt-10 pb-24 px-4 md:px-6 min-h-screen overflow-hidden">
       {/* Background Dot-Grid Texture */}
       <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
