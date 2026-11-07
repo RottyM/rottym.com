@@ -14,7 +14,8 @@ import {
   Users,
   Clock,
   Check,
-  Boxes
+  Boxes,
+  FileText
 } from 'lucide-react';
 
 const packages = [
@@ -525,8 +526,8 @@ export default function PackagesPage() {
           <div className="absolute inset-0 bg-dot-grid opacity-15 pointer-events-none" />
           <div className="max-w-3xl mx-auto text-center space-y-5 sm:space-y-6 relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 dark:bg-black/20 border border-white/20 dark:border-black/20 text-xs font-mono font-bold uppercase tracking-wider text-[#00D8F6] dark:text-accent-foreground">
-              <span className="w-2 h-2 rounded-full bg-[#00D8F6] dark:bg-accent-foreground animate-ping" />
-              DIRECT SCOPING &amp; PROPOSAL
+              <FileText className="w-3.5 h-3.5 text-[#00D8F6] dark:text-accent-foreground shrink-0" />
+              <span>DIRECT SCOPING &amp; PROPOSAL</span>
             </div>
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight">
               Ready to see what fits?

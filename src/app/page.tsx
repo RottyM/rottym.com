@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Rocket, Zap, Globe, Cpu, Sparkles, Users, Braces, CalendarCheck, Workflow, Boxes, Layers } from 'lucide-react';
+import { ArrowRight, Rocket, Zap, Globe, Cpu, Sparkles, Users, Braces, CalendarCheck, Workflow, Boxes, Layers, Compass } from 'lucide-react';
 
 export default function Home() {
   const [headlineIndex, setHeadlineIndex] = useState(0);
@@ -587,8 +587,8 @@ export default function Home() {
             <div className="absolute inset-0 bg-dot-grid opacity-15 pointer-events-none" />
             <div className="max-w-4xl mx-auto text-center space-y-5 sm:space-y-6 relative z-10">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 dark:bg-black/20 border border-white/20 dark:border-black/20 text-xs font-mono font-bold uppercase tracking-wider text-[#00D8F6] dark:text-accent-foreground">
-                <span className="w-2 h-2 rounded-full bg-[#00D8F6] dark:bg-accent-foreground animate-ping" />
-                DIRECT ENGINEER DISCOVERY
+                <Compass className="w-3.5 h-3.5 text-[#00D8F6] dark:text-accent-foreground shrink-0" />
+                <span>DIRECT ENGINEER DISCOVERY</span>
               </div>
               <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
                 Have a project in mind? <span className="text-[#00D8F6] dark:text-inherit">Let&apos;s build it.</span>
