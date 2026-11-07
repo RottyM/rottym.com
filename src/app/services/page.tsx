@@ -95,12 +95,12 @@ export default function Services() {
             className="text-center space-y-4 max-w-3xl mx-auto mb-12"
           >
             {/* Eyebrow Badge */}
-            <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
-              <Activity className="w-3.5 h-3.5 text-accent shrink-0" />
-              <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">HIGH-PERFORMANCE ENGINEERING</span>
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm backdrop-blur-md border border-border max-w-full">
+              <Activity className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
+              <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">HIGH-PERFORMANCE ENGINEERING</span>
               <span className="text-border">|</span>
-              <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, NOVA &amp; GLOBAL</span>
-              <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON, VA</span>
+              <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, NOVA &amp; GLOBAL</span>
+              <span className="font-mono text-[9px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON, VA</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
@@ -166,7 +166,7 @@ export default function Services() {
           </div>
 
           {/* 2x2 Bento Grid Matrix */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             {services.map((s, i) => (
               <motion.div
                 key={s.title}
@@ -174,35 +174,35 @@ export default function Services() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="stitch-card p-8 md:p-10 rounded-[2.5rem] flex flex-col justify-between group shadow-xl relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent"
+                className="stitch-card p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2.5rem] flex flex-col justify-between group shadow-md hover:shadow-xl relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent"
               >
                 {/* Chromatic Corner Aura */}
                 <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
 
                 <div className="flex flex-col relative z-10">
                   {/* Card Header & Badge */}
-                  <div className="flex items-start justify-between gap-4 mb-6">
-                    <div className={`w-14 h-14 rounded-2xl ${s.bg} ${s.accent} flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-sm shrink-0`}>
+                  <div className="flex items-start justify-between gap-3 mb-5 sm:mb-6">
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${s.bg} ${s.accent} flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-sm shrink-0`}>
                       {s.icon}
                     </div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider font-semibold px-3 py-1 rounded-full bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-accent border border-white/20 dark:border-white/10 shadow-sm">
+                    <span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold px-2.5 sm:px-3 py-1 rounded-full bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-accent border border-white/20 dark:border-white/10 shadow-sm truncate max-w-[65%] sm:max-w-none">
                       {s.sla}
                     </span>
                   </div>
 
                   {/* Title & Copy */}
-                  <h3 className="text-2xl sm:text-3xl font-black mb-3 text-foreground group-hover:text-accent transition-colors">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-black mb-2 sm:mb-3 text-foreground group-hover:text-accent transition-colors">
                     {s.title}
                   </h3>
-                  <p className="text-muted-foreground leading-relaxed text-base sm:text-lg mb-6 font-medium">
+                  <p className="text-muted-foreground leading-relaxed text-sm sm:text-base md:text-lg mb-5 sm:mb-6 font-medium">
                     {s.desc}
                   </p>
 
                   {/* Core Value Pills */}
-                  <div className="flex flex-wrap gap-2 mb-8">
+                  <div className="flex flex-wrap gap-2 mb-6 sm:mb-8">
                     {s.features.map(f => (
-                      <span key={f} className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-foreground/90 bg-muted/70 px-3 py-1.5 rounded-lg border border-border/60">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <span key={f} className="inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-xs font-semibold text-foreground/90 bg-muted/70 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-border/60">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         <span>{f}</span>
                       </span>
                     ))}
@@ -210,7 +210,7 @@ export default function Services() {
                 </div>
 
                 {/* Technical Telemetry & Footer Anchor Link */}
-                <div className="pt-6 -mx-8 -mb-8 p-8 border-t border-border/60 bg-muted/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-b-[2.5rem] relative z-10">
+                <div className="pt-5 sm:pt-6 -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 md:-mx-10 md:-mb-10 p-5 sm:p-8 border-t border-border/60 bg-muted/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-b-2xl sm:rounded-b-[2.5rem] relative z-10">
                   <div className="flex items-center gap-2 text-muted-foreground font-mono text-xs">
                     <span className="w-2 h-2 rounded-full bg-accent"></span>
                     <span>{s.telemetry}</span>
@@ -229,10 +229,10 @@ export default function Services() {
         </div>
 
         {/* Laser Divider */}
-        <div className="laser-divider my-12" />
+        <div className="laser-divider my-10 sm:my-12" />
 
         {/* SECTION 3: ENGINEERING PRINCIPLES & ARCHITECTURE PHILOSOPHY */}
-        <div className="stitch-card rounded-[2.5rem] p-8 lg:p-12 shadow-2xl relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
+        <div className="stitch-card rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 lg:p-12 shadow-xl relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
           {/* Subtle Ambient Glow */}
           <div className="pointer-events-none absolute -top-24 right-1/4 w-96 h-48 bg-accent/10 rounded-full blur-3xl" />
 
@@ -279,7 +279,7 @@ export default function Services() {
             <div className="bg-muted/60 p-8 rounded-2xl flex flex-col justify-between border border-border/80 hover:border-emerald-500/40 transition-colors shadow-sm">
               <div className="flex flex-col">
                 <div className="flex items-center justify-between mb-6">
-                  <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-md">
+                  <span className="font-mono text-xs text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-md">
                     02 // LEAN SURFACE
                   </span>
                   <ShieldCheck className="w-6 h-6 text-emerald-500" />
@@ -363,14 +363,14 @@ export default function Services() {
             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-8 w-full sm:w-auto">
               <Link
                 href="/contact"
-                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-accent hover:scale-105 text-accent-foreground font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-all shadow-xl shadow-accent/20 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-all shadow-xl shadow-black/10 dark:shadow-accent/20 flex items-center justify-center gap-2 border border-[#090D16] dark:border-transparent hover:scale-105"
               >
                 <span>Start the Conversation</span>
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#00D8F6] dark:text-current" />
               </Link>
               <a
                 href="mailto:rmendez@rottym.com"
-                className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-4 glass hover:bg-muted text-foreground font-semibold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-colors flex items-center justify-center gap-2 border border-border"
+                className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-4 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted font-semibold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-colors flex items-center justify-center gap-2"
               >
                 <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                 <span>rmendez@rottym.com</span>

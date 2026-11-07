@@ -33,19 +33,22 @@ export default function Header() {
           </div>
         </Link>
         <nav className="hidden md:flex gap-7 text-sm font-medium items-center">
-          <Link href="/" className="text-foreground/80 hover:text-accent transition-colors">Home</Link>
-          <Link href="/services" className="text-foreground/80 hover:text-accent transition-colors">Services</Link>
-          <Link href="/packages" className="text-foreground/80 hover:text-accent transition-colors">Packages</Link>
-          <Link href="/portfolio" className="text-foreground/80 hover:text-accent transition-colors">Portfolio</Link>
-          <Link href="/about" className="text-foreground/80 hover:text-accent transition-colors">About</Link>
-          <Link href="/contact" className="px-4 py-2 bg-accent text-accent-foreground rounded-full hover:scale-105 transition-transform shadow-md font-semibold">Contact</Link>
+          <Link href="/" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors">Home</Link>
+          <Link href="/services" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors">Services</Link>
+          <Link href="/packages" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors">Packages</Link>
+          <Link href="/portfolio" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors">Portfolio</Link>
+          <Link href="/about" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors">About</Link>
+          <Link href="/contact" className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white dark:bg-accent dark:text-accent-foreground rounded-full hover:scale-105 transition-all shadow-sm font-semibold font-mono text-xs uppercase tracking-wider">
+            <span>Contact</span>
+            <span className="text-[#00D8F6] dark:text-current font-bold">→</span>
+          </Link>
 
           <button
             onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
             className="p-2 rounded-full hover:bg-muted transition-colors text-foreground/80"
-            aria-label="Toggle theme"
+            aria-label={mounted ? `Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode` : 'Toggle theme'}
           >
-            {mounted && (resolvedTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />)}
+            {mounted && (resolvedTheme === 'dark' ? <Sun className="w-5 h-5" aria-hidden="true" /> : <Moon className="w-5 h-5" aria-hidden="true" />)}
           </button>
         </nav>
 
@@ -54,8 +57,10 @@ export default function Header() {
             className="p-2 -mr-1.5 text-foreground focus:outline-none rounded-lg hover:bg-muted transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu-navigation"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
             </svg>
           </button>
@@ -63,14 +68,17 @@ export default function Header() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden glass border-b border-border shadow-2xl animate-in slide-in-from-top duration-300">
-          <nav className="flex flex-col py-5 px-6 space-y-3.5 text-base font-semibold text-center">
+        <div id="mobile-menu-navigation" className="md:hidden glass border-b border-border shadow-2xl animate-in slide-in-from-top duration-300">
+          <nav aria-label="Mobile navigation" className="flex flex-col py-5 px-6 space-y-3.5 text-base font-semibold text-center">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Home</Link>
             <Link href="/services" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Services</Link>
             <Link href="/packages" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Packages</Link>
             <Link href="/portfolio" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Portfolio</Link>
             <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">About</Link>
-            <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="px-5 py-2.5 bg-accent text-accent-foreground rounded-xl font-bold text-center inline-block shadow-md">Contact</Link>
+            <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="px-5 py-2.5 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground rounded-xl font-bold font-mono text-xs uppercase tracking-wider text-center inline-flex items-center justify-center gap-2 shadow-md">
+              <span>Contact</span>
+              <span className="text-[#00D8F6] dark:text-current font-bold">→</span>
+            </Link>
 
             {/* Dedicated Theme Switcher inside Mobile Menu */}
             <div className="pt-4 mt-2 border-t border-border flex items-center justify-between px-2">

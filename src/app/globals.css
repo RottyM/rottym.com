@@ -3,15 +3,15 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
 
 :root {
-  --background: #f8faff;
-  --foreground: #0b1c30;
-  --accent: #0284c7;
+  --background: #f8fafc;
+  --foreground: #090d16;
+  --accent: #0277b6;
   --accent-foreground: #ffffff;
-  --muted: #edf2f9;
+  --muted: #f1f5f9;
   --muted-foreground: #475569;
   --card: #ffffff;
-  --card-foreground: #0b1c30;
-  --border: #e2e8f2;
+  --card-foreground: #090d16;
+  --border: #e2e8f0;
 }
 
 [data-theme='dark'] {
@@ -45,7 +45,7 @@ body {
 }
 
 body {
-  background: radial-gradient(circle at 50% -80px, rgba(2, 132, 199, 0.09) 0%, rgba(99, 102, 241, 0.04) 38%, transparent 72%), var(--background);
+  background: radial-gradient(circle at 50% -60px, rgba(2, 132, 199, 0.08) 0%, rgba(6, 182, 212, 0.03) 40%, transparent 70%), var(--background);
   background-color: var(--background);
   color: var(--foreground);
   font-feature-settings: "rlig" 1, "calt" 1;
@@ -59,11 +59,11 @@ body {
 }
 
 .glass {
-  background: color-mix(in srgb, var(--card) 80%, transparent);
+  background: #ffffff;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  box-shadow: 0 1px 3px rgba(11, 28, 48, 0.04);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
 }
 
 [data-theme='dark'] .glass {
@@ -72,19 +72,22 @@ body {
 }
 
 .atmospheric-glass {
-  background: color-mix(in srgb, var(--card) 75%, transparent);
+  background: color-mix(in srgb, #ffffff 85%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 [data-theme='dark'] .atmospheric-glass {
   background: color-mix(in srgb, var(--background) 65%, transparent);
   border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  box-shadow: none;
 }
 
 .bg-dot-grid {
-  background-image: none;
+  background-image: radial-gradient(rgba(15, 23, 42, 0.065) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 [data-theme='dark'] .bg-dot-grid {
@@ -106,8 +109,12 @@ body {
   inset-block: 0;
   left: -40%;
   width: 35%;
-  background: linear-gradient(90deg, transparent, var(--accent), #00f5a0, transparent);
+  background: linear-gradient(90deg, transparent, #0284c7, #00d8f6, transparent);
   animation: laserScan 18s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+[data-theme='dark'] .laser-divider::after {
+  background: linear-gradient(90deg, transparent, var(--accent), #00f5a0, transparent);
 }
 
 @keyframes laserScan {
@@ -137,7 +144,7 @@ body {
 }
 
 .tech-gradient-text {
-  background-image: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #4f46e5 100%);
+  background-image: linear-gradient(135deg, #0284c7 0%, #00b8d9 50%, #00d8f6 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -152,13 +159,13 @@ body {
   overflow: hidden;
   background: var(--card);
   border: 1px solid var(--border);
-  box-shadow: 0 1px 3px rgba(11, 28, 48, 0.03), 0 8px 24px -4px rgba(11, 28, 48, 0.05);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03), 0 8px 24px -4px rgba(15, 23, 42, 0.05);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stitch-card:hover {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-  box-shadow: 0 12px 32px -6px rgba(11, 28, 48, 0.09), 0 0 1px 1px color-mix(in srgb, var(--accent) 25%, transparent);
+  border-color: rgba(2, 132, 199, 0.4);
+  box-shadow: 0 12px 32px -6px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(2, 132, 199, 0.2);
 }
 
 [data-theme='dark'] .stitch-card {
@@ -185,4 +192,23 @@ body {
 
 .animate-pulse-soft {
   animation: pulse-soft 3s infinite ease-in-out;
+}
+
+/* Section 508 / WCAG 2.1 AA Focus Visible */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Section 508 / WCAG 2.3.3 Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

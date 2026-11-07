@@ -52,12 +52,12 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="space-y-4 sm:space-y-5"
           >
-            <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
-              <Braces className="w-3.5 h-3.5 text-accent shrink-0" />
-              <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FULL-STACK DEVELOPMENT</span>
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm backdrop-blur-md border border-border max-w-full">
+              <Braces className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
+              <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FULL-STACK &amp; AI</span>
               <span className="text-border">|</span>
-              <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, VA &amp; GLOBAL</span>
-              <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON, VA</span>
+              <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, VA &amp; GLOBAL</span>
+              <span className="font-mono text-[9px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON, VA</span>
             </div>
 
             {/* Zero-shift layout-locked rotating headline */}
@@ -65,7 +65,7 @@ export default function Home() {
               {/* Ghost 1: keeps grid row sized to headline 0 */}
               <h1
                 aria-hidden="true"
-                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-4xl sm:text-5xl md:text-6xl font-black leading-[1.12] tracking-tight"
+                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.12] tracking-tight"
               >
                 Building fast, modern sites that replace slow WordPress
               </h1>
@@ -73,7 +73,7 @@ export default function Home() {
               {/* Ghost 2: keeps grid row sized to headline 1 */}
               <h1
                 aria-hidden="true"
-                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-4xl sm:text-5xl md:text-6xl font-black leading-[1.12] tracking-tight"
+                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.12] tracking-tight"
               >
                 Custom web platforms, client portals, and modern applications
               </h1>
@@ -87,7 +87,7 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
                     transition={{ duration: 0.45, ease: "easeInOut" }}
-                    className="text-4xl sm:text-5xl md:text-6xl font-black text-foreground leading-[1.12] tracking-tight drop-shadow-sm"
+                    className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground leading-[1.12] tracking-tight drop-shadow-sm"
                   >
                     {headlineIndex === 0 ? (
                       <>
@@ -110,23 +110,30 @@ export default function Home() {
               </div>
             </div>
 
-            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-xl font-medium">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl font-medium">
               Reston-based Full-Stack &amp; AI Software Engineer with deep UI/UX architecture expertise. I build high-performance web platforms, custom portals, and AI-augmented applications with the precision of enterprise work at Disney, FEMA, and BAE Systems.
             </p>
 
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-200/90 dark:border-white/10 bg-slate-100/90 dark:bg-slate-900/60 backdrop-blur-md shadow-sm text-[11px] sm:text-xs font-medium max-w-full">
-              <CalendarCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="text-slate-800 dark:text-slate-200 leading-snug">
-                <span className="hidden sm:inline">Fixed pricing after discovery call · </span><span className="text-emerald-700 dark:text-emerald-400 font-bold font-mono">Booking 2026 projects &amp; beyond</span>
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full border border-slate-200/90 dark:border-white/10 bg-slate-100/90 dark:bg-slate-900/60 backdrop-blur-md shadow-sm text-[10px] sm:text-xs font-medium max-w-full">
+              <CalendarCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="text-slate-800 dark:text-slate-200 leading-none truncate">
+                <span className="hidden sm:inline">Fixed pricing after discovery call · </span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold font-mono">Booking 2026 Projects &amp; Beyond</span>
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3.5 pt-1 w-full sm:w-auto">
-              <Link href="/contact" className="group flex items-center justify-center gap-2 bg-accent text-accent-foreground px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm sm:text-base hover:scale-105 transition-all shadow-lg shadow-accent/20">
-                Book a Discovery Call
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-1 w-full sm:w-auto">
+              <Link 
+                href="/contact" 
+                className="group flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent"
+              >
+                <span>Book a Discovery Call</span>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link href="/packages" className="flex items-center justify-center gap-2 glass px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm sm:text-base hover:bg-muted transition-all text-foreground">
+              <Link 
+                href="/packages" 
+                className="flex items-center justify-center gap-2 bg-white text-slate-900 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all"
+              >
                 View Packages &amp; Pricing
               </Link>
             </div>
@@ -175,16 +182,16 @@ export default function Home() {
       <div className="laser-divider" />
 
       {/* Trust Section */}
-      <section className="py-24 bg-muted/30 transition-colors relative overflow-hidden">
-        <div className="absolute inset-0 bg-dot-grid opacity-50 pointer-events-none" />
+      <section className="py-20 bg-muted/40 dark:bg-muted/30 transition-colors relative overflow-hidden border-y border-border">
+        <div className="absolute inset-0 bg-dot-grid opacity-60 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-          <p className="text-sm font-bold tracking-widest uppercase text-muted-foreground mb-12 font-mono">Previously engineered for</p>
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+          <p className="text-xs font-bold tracking-widest uppercase text-slate-500 dark:text-muted-foreground mb-10 font-mono">Previously engineered systems for</p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-14 text-slate-700 dark:text-foreground font-mono font-bold tracking-wider text-base md:text-xl">
             {['Disney', 'FEMA', 'BAE Systems', 'FAA', 'Leidos', 'USA Today'].map(c => (
-              <span key={c} className="text-2xl md:text-3xl font-black tracking-tighter text-foreground">{c}</span>
+              <span key={c} className="hover:text-accent transition-colors">{c}</span>
             ))}
           </div>
-          <p className="mt-8 text-sm md:text-base font-medium text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-8 text-xs sm:text-sm font-medium text-slate-600 dark:text-muted-foreground max-w-2xl mx-auto">
             Previously engineered systems for Disney, FEMA, BAE Systems, FAA, Leidos, and USA Today — now applied to practical sites and high-performance platforms for growing businesses.
           </p>
         </div>
@@ -194,17 +201,17 @@ export default function Home() {
       <div className="laser-divider" />
 
       {/* Services Section */}
-      <section className="py-32 relative overflow-hidden">
+      <section className="py-16 sm:py-24 md:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="text-center space-y-4 mb-20 text-balance">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Everything you need to <span className="tech-gradient-text">scale</span></h2>
-            <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto font-medium">
+          <div className="text-center space-y-3 sm:space-y-4 mb-12 sm:mb-20 text-balance">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Everything you need to <span className="tech-gradient-text">scale</span></h2>
+            <p className="text-muted-foreground text-base sm:text-lg md:text-xl max-w-2xl mx-auto font-medium">
               I don&apos;t just build websites. I engineer high-performance digital ecosystems using the most modern stacks.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {[
               {
                 title: 'Websites & Digital Platforms',
@@ -241,7 +248,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="group relative p-8 rounded-3xl border border-border/80 hover:border-accent/50 bg-card/70 dark:bg-card/90 backdrop-blur-sm transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1 overflow-hidden"
+                className="group relative p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-border/80 hover:border-accent/50 bg-white dark:bg-card/90 backdrop-blur-sm transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1 overflow-hidden"
               >
                 {/* Ambient Chromatic Corner Light */}
                 <div className="absolute -right-12 -top-12 w-36 h-36 bg-accent/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
@@ -262,20 +269,20 @@ export default function Home() {
       <div className="laser-divider" />
 
       {/* How We Work Section */}
-      <section className="py-24 bg-background transition-colors relative overflow-hidden">
+      <section className="py-16 sm:py-24 bg-background transition-colors relative overflow-hidden">
         <div className="absolute inset-0 bg-dot-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
-        <div className="max-w-7xl mx-auto px-6 space-y-16 relative z-10">
-          <div className="text-center space-y-4 max-w-3xl mx-auto">
+        <div className="max-w-7xl mx-auto px-6 space-y-10 sm:space-y-16 relative z-10">
+          <div className="text-center space-y-3 sm:space-y-4 max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
               <Workflow className="w-3.5 h-3.5 text-accent shrink-0" />
               <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">THE PROCESS</span>
               <span className="text-border">|</span>
               <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">HOW PROJECTS WORK</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">
               How a Project <span className="tech-gradient-text">Works</span>
             </h2>
-            <p className="text-muted-foreground text-lg font-medium">
+            <p className="text-muted-foreground text-base sm:text-lg font-medium">
               A clear, predictable roadmap from first conversation to live deployment. No open-ended hourly surprises.
             </p>
           </div>
@@ -309,7 +316,7 @@ export default function Home() {
             ].map((p) => (
               <div
                 key={p.step}
-                className="group relative p-8 rounded-[2rem] border border-border/80 bg-card/70 dark:bg-card/90 backdrop-blur-sm hover:border-accent/40 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1 flex flex-col justify-between overflow-hidden"
+                className="group relative p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-slate-200/90 dark:border-border/80 bg-white dark:bg-card/90 backdrop-blur-sm hover:border-accent/40 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1 flex flex-col justify-between overflow-hidden"
               >
                 {/* Ambient Corner Light */}
                 <div className="absolute -right-10 -top-10 w-28 h-28 bg-accent/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
@@ -318,14 +325,14 @@ export default function Home() {
                     <span className="text-2xl font-black font-mono text-accent">
                       {p.step}
                     </span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-muted-foreground bg-slate-100 dark:bg-muted/60 px-2.5 py-1 rounded-md">
                       {p.time}
                     </span>
                   </div>
-                  <h3 className="text-xl font-black text-foreground mb-3 group-hover:text-accent transition-colors">
+                  <h3 className="text-xl font-black text-slate-900 dark:text-foreground mb-3 group-hover:text-accent transition-colors">
                     {p.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-slate-600 dark:text-muted-foreground leading-relaxed">
                     {p.desc}
                   </p>
                 </div>
@@ -333,20 +340,20 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="p-8 md:p-10 rounded-[2.5rem] border border-accent/20 bg-accent/5 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div className="p-6 sm:p-10 rounded-2xl sm:rounded-[2.5rem] border border-accent/25 bg-sky-50/70 dark:bg-accent/5 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left shadow-sm">
             <div className="space-y-1">
-              <p className="text-base md:text-lg font-bold text-foreground">
+              <p className="text-base md:text-lg font-bold text-slate-900 dark:text-foreground">
                 Most Strategic Launchpads land in the <span className="text-accent font-black">$2,500–$6,500</span> range.
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-600 dark:text-muted-foreground">
                 Full-stack apps, membership portals, and custom AI workflows are scoped higher after discovery.
               </p>
             </div>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-5 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm hover:scale-105 transition-all shadow-lg shrink-0 w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground px-5 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm hover:scale-105 transition-all shadow-md shrink-0 w-full sm:w-auto border border-[#090D16] dark:border-transparent font-mono uppercase tracking-wider text-xs"
             >
-              Book a Discovery Call <ArrowRight className="w-4 h-4" />
+              <span>Book a Discovery Call</span> <ArrowRight className="w-4 h-4 text-[#00D8F6] dark:text-current" />
             </Link>
           </div>
         </div>
@@ -356,10 +363,10 @@ export default function Home() {
       <div className="laser-divider" />
 
       {/* Local Packages / Start Here Teaser */}
-      <section className="py-24 bg-muted/20 transition-colors relative overflow-hidden">
+      <section className="py-16 sm:py-24 bg-muted/20 transition-colors relative overflow-hidden">
         <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-16">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
                 <Boxes className="w-3.5 h-3.5 text-accent shrink-0" />
@@ -367,22 +374,22 @@ export default function Home() {
                 <span className="text-border">|</span>
                 <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">RESTON &amp; NOVA</span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">
                 Local Packages &amp; <span className="tech-gradient-text">Pricing</span>
               </h2>
-              <p className="text-muted-foreground text-lg max-w-xl font-medium">
+              <p className="text-muted-foreground text-base sm:text-lg max-w-xl font-medium">
                 High-performance modern stacks with transparent starting ranges. Exact price fixed after a 15-min call.
               </p>
             </div>
             <Link
               href="/packages"
-              className="inline-flex items-center gap-2 text-accent font-black text-base hover:gap-3 transition-all group"
+              className="inline-flex items-center gap-2 text-accent font-black text-sm sm:text-base hover:gap-3 transition-all group"
             >
               Explore All Packages &amp; Add-Ons <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
             {[
               {
                 title: "Local Launchpad",
@@ -409,10 +416,10 @@ export default function Home() {
             ].map((pkg) => (
               <div
                 key={pkg.title}
-                className={`group relative p-8 rounded-[2.5rem] border bg-card/70 dark:bg-card/90 backdrop-blur-sm flex flex-col justify-between transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 overflow-hidden ${
+                className={`group relative p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border bg-white dark:bg-card/90 backdrop-blur-sm flex flex-col justify-between transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 overflow-hidden ${
                   pkg.featured
                     ? 'border-accent shadow-accent/10 ring-1 ring-accent/30'
-                    : 'border-border/80 hover:border-accent/40 hover:shadow-accent/5'
+                    : 'border-slate-200/90 dark:border-border/80 hover:border-accent/40 hover:shadow-accent/5'
                 }`}
               >
                 {/* Ambient Chromatic Corner Light */}
@@ -424,18 +431,18 @@ export default function Home() {
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-foreground">{pkg.title}</h3>
-                    <p className="text-2xl font-black text-foreground mt-2">{pkg.price}</p>
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-foreground">{pkg.title}</h3>
+                    <p className="text-2xl font-black text-slate-900 dark:text-foreground mt-2">{pkg.price}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{pkg.desc}</p>
-                  <p className="text-xs text-muted-foreground/80 font-medium">
-                    <span className="font-bold text-foreground">Best for:</span> {pkg.best}
+                  <p className="text-sm text-slate-600 dark:text-muted-foreground leading-relaxed">{pkg.desc}</p>
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground/80 font-medium">
+                    <span className="font-bold text-slate-900 dark:text-foreground">Best for:</span> {pkg.best}
                   </p>
                 </div>
                 <div className="pt-6">
                   <Link
                     href="/packages"
-                    className="w-full py-3 px-4 rounded-xl text-center font-bold text-sm bg-muted hover:bg-accent hover:text-accent-foreground text-foreground flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-3 px-4 rounded-xl text-center font-bold text-xs font-mono uppercase tracking-wider bg-slate-100 hover:bg-[#090D16] hover:text-[#00D8F6] text-slate-900 dark:bg-muted dark:hover:bg-accent dark:hover:text-accent-foreground dark:text-foreground flex items-center justify-center gap-2 transition-all"
                   >
                     View Package Details <ArrowRight className="w-4 h-4" />
                   </Link>
@@ -450,12 +457,12 @@ export default function Home() {
       <div className="laser-divider" />
 
       {/* Selected Work & Projects Section */}
-      <section className="py-32 bg-accent/[0.03] transition-colors relative overflow-hidden">
+      <section className="py-16 sm:py-24 md:py-32 bg-accent/[0.03] transition-colors relative overflow-hidden">
         <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
-            <div className="space-y-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8 mb-12 sm:mb-20">
+            <div className="space-y-3 sm:space-y-4">
               <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
                 <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
                 <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">SELECTED PLATFORMS</span>
@@ -463,8 +470,8 @@ export default function Home() {
                 <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">CLIENT WORK &amp; APPS</span>
                 <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">CLIENT WORK</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">Selected Work &amp; <span className="tech-gradient-text">Projects</span>.</h2>
-              <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl font-medium">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">Selected Work &amp; <span className="tech-gradient-text">Projects</span>.</h2>
+              <p className="text-muted-foreground text-base sm:text-lg md:text-xl max-w-2xl font-medium">
                 A mix of client platforms and self-initiated systems that demonstrate full-stack development, product thinking, and modern deployment practices.
               </p>
             </div>
@@ -556,17 +563,25 @@ export default function Home() {
       {/* Teaser CTA */}
       <section className="py-12 mb-16 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="py-20 px-8 sm:px-12 bg-accent text-accent-foreground rounded-[3rem] overflow-hidden relative shadow-2xl">
-            <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
-              <h2 className="text-4xl md:text-5xl font-black tracking-tight">Have a project in mind? Let&apos;s build it.</h2>
-              <p className="text-xl font-medium opacity-90 max-w-2xl mx-auto">
+          <div className="py-10 sm:py-16 md:py-20 px-5 sm:px-10 md:px-12 bg-[#090D16] text-white dark:bg-accent dark:text-accent-foreground rounded-2xl sm:rounded-[3rem] overflow-hidden relative shadow-2xl border border-slate-800 dark:border-transparent">
+            {/* Fine Hairline Blueprint Grid */}
+            <div className="absolute inset-0 bg-dot-grid opacity-15 pointer-events-none" />
+            <div className="max-w-4xl mx-auto text-center space-y-5 sm:space-y-6 relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 dark:bg-black/20 border border-white/20 dark:border-black/20 text-xs font-mono font-bold uppercase tracking-wider text-[#00D8F6] dark:text-accent-foreground">
+                <span className="w-2 h-2 rounded-full bg-[#00D8F6] dark:bg-accent-foreground animate-ping" />
+                DIRECT ENGINEER DISCOVERY
+              </div>
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
+                Have a project in mind? <span className="text-[#00D8F6] dark:text-inherit">Let&apos;s build it.</span>
+              </h2>
+              <p className="text-sm sm:text-lg md:text-xl font-medium opacity-90 max-w-2xl mx-auto text-slate-300 dark:text-inherit">
                 Booking 2026 projects and beyond. Let&apos;s discuss your organization&apos;s goals and how to build a reliable, high-performance platform.
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 w-full sm:w-auto">
-                <Link href="/contact" className="inline-flex items-center justify-center gap-2 bg-accent-foreground text-accent px-6 sm:px-10 py-3.5 sm:py-5 rounded-xl sm:rounded-2xl font-black text-base sm:text-xl hover:scale-105 transition-transform shadow-2xl">
-                  Book a Discovery Call <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
+              <div className="flex flex-col sm:flex-row justify-center gap-2.5 sm:gap-3.5 w-full sm:w-auto pt-2">
+                <Link href="/contact" className="inline-flex items-center justify-center gap-2 bg-[#00D8F6] hover:bg-[#00F2FE] text-[#090D16] dark:bg-accent-foreground dark:text-accent px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-105 transition-transform shadow-xl">
+                  <span>Book a Discovery Call</span> <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link href="/packages" className="inline-flex items-center justify-center gap-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent-foreground/30 px-6 sm:px-8 py-3.5 sm:py-5 rounded-xl sm:rounded-2xl font-black text-base sm:text-xl transition-all">
+                <Link href="/packages" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 dark:bg-accent/20 dark:hover:bg-accent/30 dark:text-accent-foreground dark:border-accent-foreground/30 px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all">
                   See Packages &amp; Pricing
                 </Link>
               </div>

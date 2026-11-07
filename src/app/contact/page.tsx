@@ -157,6 +157,7 @@ export default function Contact() {
                   <button
                     onClick={() => setPhoneRevealed(true)}
                     className="text-lg font-bold text-foreground/50 border-b border-dashed border-foreground/30 hover:text-accent hover:border-accent transition-all text-left cursor-pointer"
+                    aria-label="Click to reveal direct phone number"
                   >
                     Click to Reveal
                   </button>
@@ -191,26 +192,26 @@ export default function Contact() {
             </Link>
           </div>
 
-          <form onSubmit={handleSubmit} className="stitch-card p-8 md:p-10 rounded-[3rem] shadow-2xl space-y-6 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Full Name</label>
-                <input id="name" name="name" placeholder="John Wick" required className="w-full p-5 bg-muted/50 border border-border rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium" />
+          <form onSubmit={handleSubmit} className="stitch-card p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[3rem] shadow-xl space-y-4 sm:space-y-6 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
+            <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-1.5 sm:space-y-2">
+                <label htmlFor="name" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Full Name</label>
+                <input id="name" name="name" placeholder="John Wick" required className="w-full p-3.5 sm:p-4 bg-muted/50 border border-border rounded-xl sm:rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium text-sm" />
               </div>
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Email Address</label>
-                <input id="email" name="email" type="email" placeholder="john@continental.com" required className="w-full p-5 bg-muted/50 border border-border rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium" />
+              <div className="space-y-1.5 sm:space-y-2">
+                <label htmlFor="email" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Email Address</label>
+                <input id="email" name="email" type="email" placeholder="john@continental.com" required className="w-full p-3.5 sm:p-4 bg-muted/50 border border-border rounded-xl sm:rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium text-sm" />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="service" className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Service or Package Selection</label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <label htmlFor="service" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Service or Package Selection</label>
               <select 
                 id="service" 
                 name="service" 
                 value={selectedService}
                 onChange={(e) => setSelectedService(e.target.value)}
-                className="w-full p-5 bg-muted/50 border border-border rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all font-medium"
+                className="w-full p-3.5 sm:p-4 bg-muted/50 border border-border rounded-xl sm:rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all font-medium text-sm"
               >
                 <optgroup label="Fixed-Scope Local Packages">
                   <option value="Local Launchpad ($2,500 – $3,500)">Local Launchpad ($2,500 – $3,500)</option>
@@ -228,17 +229,21 @@ export default function Contact() {
               </select>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="message" className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Project Details</label>
-              <textarea id="message" name="message" rows={4} placeholder="Tell me about your project, goals, and timeline..." required className="w-full p-5 bg-muted/50 border border-border rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium resize-none" />
+            <div className="space-y-1.5 sm:space-y-2">
+              <label htmlFor="message" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Project Details</label>
+              <textarea id="message" name="message" rows={4} placeholder="Tell me about your project, goals, and timeline..." required className="w-full p-3.5 sm:p-4 bg-muted/50 border border-border rounded-xl sm:rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium text-sm resize-none" />
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 sm:gap-3 bg-accent text-accent-foreground py-3.5 sm:py-5 rounded-xl sm:rounded-2xl font-black text-base sm:text-xl hover:scale-105 transition-all shadow-xl shadow-accent/20 disabled:opacity-50 disabled:hover:scale-100">
-              {isSubmitting ? 'Sending...' : 'Send Message'} <Send className="w-4 h-4 sm:w-6 sm:h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent disabled:opacity-50 disabled:hover:scale-100">
+              <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span> <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </button>
 
             {status && (
-              <div className={`p-4 rounded-2xl border text-center space-y-2 ${status.includes('Error') ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}>
+              <div
+                role="status"
+                aria-live="polite"
+                className={`p-4 rounded-2xl border text-center space-y-2 ${status.includes('Error') ? 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300'}`}
+              >
                 <p className="font-bold text-sm sm:text-base">{status}</p>
                 {status.includes('Error') && (
                   <div>
