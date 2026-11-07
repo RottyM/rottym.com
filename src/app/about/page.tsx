@@ -69,14 +69,14 @@ export default function About() {
       <div className="max-w-5xl mx-auto space-y-20 relative z-10">
         {/* Intro Header */}
         <div className="text-center space-y-6 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm border border-border">
-            <span className="relative flex h-2 w-2">
+          <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md mb-6 border border-border">
+            <span className="relative flex h-2.5 w-2.5 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
-            <span className="text-xs font-bold tracking-wide uppercase font-mono">
-              Full-Stack &amp; AI Software Engineer · Reston, VA
-            </span>
+            <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">FULL-STACK &amp; AI SOFTWARE ENGINEER</span>
+            <span className="text-border">|</span>
+            <span className="font-mono text-xs text-muted-foreground uppercase">RESTON, VA</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
@@ -196,8 +196,10 @@ export default function About() {
       {/* Recruiter & Strategic Partnership CTA Banner */}
       <div className="p-10 rounded-[2.5rem] glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
         <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent/15 rounded-full blur-3xl" />
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest relative z-10">
-          <Sparkles className="w-3 h-3" /> Career Opportunities
+        <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border relative z-10">
+          <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">CAREER OPPORTUNITIES</span>
+          <span className="text-border">|</span>
+          <span className="font-mono text-xs text-muted-foreground uppercase">TECHNICAL ROLES &amp; PARTNERSHIPS</span>
         </div>
         <h2 className="text-3xl md:text-4xl font-black text-foreground">
           Looking for a Full Stack &amp; AI Software Engineer or Technical Partner?

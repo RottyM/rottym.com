@@ -27,9 +27,14 @@ export default function Footer() {
             </p>
 
             <div className="space-y-2 text-xs">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/70 rounded-full text-foreground/80 font-semibold border border-border/60">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Booking 2026 projects and beyond</span>
+              <div className="inline-flex items-center gap-2.5 glass px-3.5 py-1.5 rounded-full shadow-sm border border-border">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">2026 SCHEDULE</span>
+                <span className="text-border">|</span>
+                <span className="font-mono text-xs text-muted-foreground uppercase">ACCEPTING PROJECTS</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground pt-1">
                 <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />

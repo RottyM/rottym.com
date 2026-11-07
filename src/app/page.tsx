@@ -52,12 +52,14 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="space-y-4 sm:space-y-5"
           >
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full text-accent shadow-sm border border-accent/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+            <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              <span className="text-xs sm:text-sm font-semibold tracking-wide uppercase">Full-Stack Development · Reston, VA</span>
+              <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">FULL-STACK DEVELOPMENT</span>
+              <span className="text-border">|</span>
+              <span className="font-mono text-xs text-muted-foreground uppercase">RESTON, VA &amp; GLOBAL</span>
             </div>
 
             {/* Zero-shift layout-locked rotating headline */}
@@ -269,8 +271,10 @@ export default function Home() {
         <div className="absolute inset-0 bg-dot-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
         <div className="max-w-7xl mx-auto space-y-16 relative z-10">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full text-accent text-xs font-bold uppercase tracking-widest border border-border">
-              <Sparkles className="w-3.5 h-3.5" /> The Process
+            <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+              <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">THE PROCESS</span>
+              <span className="text-border">|</span>
+              <span className="font-mono text-xs text-muted-foreground uppercase">HOW PROJECTS WORK</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
               How a Project <span className="tech-gradient-text">Works</span>
@@ -361,8 +365,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full text-accent text-xs font-bold uppercase tracking-widest border border-border">
-                <Sparkles className="w-3.5 h-3.5" /> Fixed-Scope Packages
+              <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+                <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">FIXED-SCOPE PACKAGES</span>
+                <span className="text-border">|</span>
+                <span className="font-mono text-xs text-muted-foreground uppercase">RESTON &amp; NOVA</span>
               </div>
               <h2 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
                 Local Packages &amp; <span className="tech-gradient-text">Pricing</span>
@@ -453,8 +459,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full text-accent text-xs font-bold uppercase tracking-widest border border-border">
-                <Sparkles className="w-3.5 h-3.5" /> Platforms &amp; Applications
+              <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+                <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">SELECTED PLATFORMS</span>
+                <span className="text-border">|</span>
+                <span className="font-mono text-xs text-muted-foreground uppercase">CLIENT WORK &amp; APPS</span>
               </div>
               <h2 className="text-4xl md:text-6xl font-black tracking-tight text-foreground">Selected Work &amp; <span className="tech-gradient-text">Projects</span>.</h2>
               <p className="text-muted-foreground text-xl max-w-2xl font-medium">
