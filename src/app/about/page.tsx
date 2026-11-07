@@ -1,7 +1,7 @@
 // src/app/about/page.tsx
 'use client';
 
-import { Briefcase, Code2, Award, ArrowRight, Download, Sparkles } from 'lucide-react';
+import { Briefcase, Code2, Award, ArrowRight, Download, Sparkles, Fingerprint, Compass } from 'lucide-react';
 import Link from 'next/link';
 
 const experiences = [
@@ -70,10 +70,7 @@ export default function About() {
         {/* Intro Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
+            <Fingerprint className="w-3.5 h-3.5 text-accent shrink-0" />
             <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">FULL-STACK &amp; AI SOFTWARE ENGINEER</span>
             <span className="text-border">|</span>
             <span className="font-mono text-xs text-muted-foreground uppercase">RESTON, VA</span>
@@ -106,7 +103,7 @@ export default function About() {
             </div>
 
             <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-muted/80 border border-border/80 rounded-xl text-xs sm:text-sm font-semibold text-foreground/90 shadow-sm font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <Briefcase className="w-3.5 h-3.5 text-accent shrink-0" />
               <span>Looking for Full Stack &amp; AI Software Engineer roles and technical partners</span>
             </div>
           </div>
@@ -197,6 +194,7 @@ export default function About() {
       <div className="p-10 rounded-[2.5rem] glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
         <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent/15 rounded-full blur-3xl" />
         <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border relative z-10">
+          <Compass className="w-3.5 h-3.5 text-accent shrink-0" />
           <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">CAREER OPPORTUNITIES</span>
           <span className="text-border">|</span>
           <span className="font-mono text-xs text-muted-foreground uppercase">TECHNICAL ROLES &amp; PARTNERSHIPS</span>

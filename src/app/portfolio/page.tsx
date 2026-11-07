@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Sparkles, ArrowRight, Zap, CheckCircle2, Monitor } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, CheckCircle2, Monitor, Layers, Server } from 'lucide-react';
 import { projects, Project } from '@/lib/projects';
 
 export default function Portfolio() {
@@ -151,10 +151,7 @@ export default function Portfolio() {
         {/* Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
+            <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
             <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">PRODUCTION SYSTEMS &amp; ARCHITECTURE</span>
             <span className="text-border">|</span>
             <span className="font-mono text-xs text-muted-foreground uppercase">CASE STUDIES</span>
@@ -236,6 +233,7 @@ export default function Portfolio() {
             <div className="pt-10 space-y-6">
               <div className="p-8 md:p-10 rounded-[2.5rem] bg-muted/40 border border-border space-y-3">
                 <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+                  <Server className="w-3.5 h-3.5 text-accent shrink-0" />
                   <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">ENTERPRISE SYSTEMS</span>
                   <span className="text-border">|</span>
                   <span className="font-mono text-xs text-muted-foreground uppercase">LARGE-SCALE PLATFORMS</span>

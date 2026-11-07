@@ -87,17 +87,21 @@ body {
     left: -40%;
     opacity: 0;
   }
+
   3% {
     opacity: 0.85;
   }
+
   28% {
     left: 105%;
     opacity: 0.85;
   }
+
   32% {
     left: 110%;
     opacity: 0;
   }
+
   100% {
     left: 110%;
     opacity: 0;
@@ -117,7 +121,7 @@ body {
 
 .stitch-card {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   background: var(--card);
   border: 1px solid var(--border);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);

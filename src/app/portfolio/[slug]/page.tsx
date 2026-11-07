@@ -26,7 +26,8 @@ import {
   Check,
   X,
   Clock,
-  Quote
+  Quote,
+  FileCode2
 } from 'lucide-react';
 import { projects, getProjectBySlug } from '@/lib/projects';
 
@@ -110,10 +111,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
         {/* Hero Header (Centered to match /services, /packages, and site layout) */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
+            <FileCode2 className="w-3.5 h-3.5 text-accent shrink-0" />
             <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">{project.category}</span>
             <span className="text-border">|</span>
             <span className="font-mono text-xs text-muted-foreground uppercase">{project.role}</span>
@@ -394,7 +392,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                     </p>
                   </div>
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 font-mono text-xs text-accent font-semibold self-start md:self-auto">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <Activity className="w-3.5 h-3.5 text-accent shrink-0" />
                     <span>{cs.topology.pulseBadge}</span>
                   </div>
                 </div>

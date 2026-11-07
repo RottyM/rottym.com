@@ -1,6 +1,6 @@
 // src/components/footer.tsx
 import Link from 'next/link';
-import { Mail, MapPin, ArrowRight, ShieldCheck, Sparkles, Code2, CheckCircle2 } from 'lucide-react';
+import { Mail, MapPin, ArrowRight, ShieldCheck, Sparkles, Code2, CheckCircle2, CalendarCheck } from 'lucide-react';
 import RottyMLogo from './RottyMLogo';
 
 export default function Footer() {
@@ -28,10 +28,7 @@ export default function Footer() {
 
             <div className="space-y-2 text-xs">
               <div className="inline-flex items-center gap-2.5 glass px-3.5 py-1.5 rounded-full shadow-sm border border-border">
-                <span className="relative flex h-2 w-2 shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
+                <CalendarCheck className="w-3.5 h-3.5 text-accent shrink-0" />
                 <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">2026 SCHEDULE</span>
                 <span className="text-border">|</span>
                 <span className="font-mono text-xs text-muted-foreground uppercase">ACCEPTING PROJECTS</span>

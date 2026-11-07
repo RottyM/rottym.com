@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Rocket, Zap, Globe, Cpu, Sparkles, Users } from 'lucide-react';
+import { ArrowRight, Rocket, Zap, Globe, Cpu, Sparkles, Users, Braces, CalendarCheck, Workflow, Boxes, Layers } from 'lucide-react';
 
 export default function Home() {
   const [headlineIndex, setHeadlineIndex] = useState(0);
@@ -53,10 +53,7 @@ export default function Home() {
             className="space-y-4 sm:space-y-5"
           >
             <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
-              <span className="relative flex h-2.5 w-2.5 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-              </span>
+              <Braces className="w-3.5 h-3.5 text-accent shrink-0" />
               <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">FULL-STACK DEVELOPMENT</span>
               <span className="text-border">|</span>
               <span className="font-mono text-xs text-muted-foreground uppercase">RESTON, VA &amp; GLOBAL</span>
@@ -117,10 +114,7 @@ export default function Home() {
             </p>
 
             <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-200/90 dark:border-white/10 bg-slate-100/90 dark:bg-slate-900/60 backdrop-blur-md shadow-sm text-xs font-medium">
-              <span className="relative flex h-2.5 w-2.5 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-              </span>
+              <CalendarCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span className="text-slate-800 dark:text-slate-200">
                 Fixed pricing after a short discovery call <span className="text-muted-foreground/60">·</span> <span className="text-emerald-700 dark:text-emerald-400 font-bold font-mono">Booking 2026 projects and beyond</span>
               </span>
@@ -272,6 +266,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto space-y-16 relative z-10">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+              <Workflow className="w-3.5 h-3.5 text-accent shrink-0" />
               <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">THE PROCESS</span>
               <span className="text-border">|</span>
               <span className="font-mono text-xs text-muted-foreground uppercase">HOW PROJECTS WORK</span>
@@ -366,6 +361,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+                <Boxes className="w-3.5 h-3.5 text-accent shrink-0" />
                 <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">FIXED-SCOPE PACKAGES</span>
                 <span className="text-border">|</span>
                 <span className="font-mono text-xs text-muted-foreground uppercase">RESTON &amp; NOVA</span>
@@ -460,6 +456,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+                <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
                 <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">SELECTED PLATFORMS</span>
                 <span className="text-border">|</span>
                 <span className="font-mono text-xs text-muted-foreground uppercase">CLIENT WORK &amp; APPS</span>
