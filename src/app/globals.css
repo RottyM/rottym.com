@@ -76,15 +76,32 @@ body {
   content: '';
   position: absolute;
   inset-block: 0;
-  left: -35%;
-  width: 40%;
+  left: -40%;
+  width: 35%;
   background: linear-gradient(90deg, transparent, var(--accent), #00f5a0, transparent);
-  animation: laserScan 7s ease-in-out infinite;
+  animation: laserScan 18s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @keyframes laserScan {
-  0% { left: -40%; }
-  100% { left: 100%; }
+  0% {
+    left: -40%;
+    opacity: 0;
+  }
+  3% {
+    opacity: 0.85;
+  }
+  28% {
+    left: 105%;
+    opacity: 0.85;
+  }
+  32% {
+    left: 110%;
+    opacity: 0;
+  }
+  100% {
+    left: 110%;
+    opacity: 0;
+  }
 }
 
 .tech-gradient-text {
