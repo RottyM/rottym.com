@@ -229,48 +229,50 @@ export default function PackagesPage() {
         </div>
 
         {/* Ongoing Care & Optional Add-ons Row */}
-        <div className="grid lg:grid-cols-2 gap-8 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 items-stretch">
           
           {/* Ongoing Care */}
-          <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-lg space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                <ShieldCheck className="w-6 h-6" />
+          <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-lg flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-black uppercase tracking-widest">
+                  Optional Add-on
+                </span>
               </div>
-              <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-black uppercase tracking-widest">
-                Optional Add-on
-              </span>
+
+              <div>
+                <h3 className="text-2xl md:text-3xl font-black text-foreground">Ongoing Care</h3>
+                <div className="mt-2">
+                  <span className="text-3xl font-extrabold text-foreground">$99 – $250</span>
+                  <span className="text-muted-foreground font-medium text-sm"> / month</span>
+                </div>
+              </div>
+
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Hosting, monitoring, security, and small updates so the site stays fast and doesn’t become someone else’s problem later.
+              </p>
+
+              <ul className="space-y-2.5 border-t border-border/60 pt-6">
+                {[
+                  "Managed hosting + 24/7 uptime monitoring",
+                  "Automated security & platform dependency updates",
+                  "Small monthly content, copy, or form updates",
+                  "Quarterly performance and SEO audit check",
+                  "Optional light AI-assisted content or form optimization",
+                  "Can be added to any package above. Cancel anytime."
+                ].map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-foreground/90">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <div>
-              <h3 className="text-2xl md:text-3xl font-black text-foreground">Ongoing Care</h3>
-              <div className="mt-2">
-                <span className="text-3xl font-extrabold text-foreground">$99 – $250</span>
-                <span className="text-muted-foreground font-medium text-sm"> / month</span>
-              </div>
-            </div>
-
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Hosting, monitoring, security, and small updates so the site stays fast and doesn’t become someone else’s problem later.
-            </p>
-
-            <ul className="space-y-2.5 border-t border-border/60 pt-6">
-              {[
-                "Managed hosting + 24/7 uptime monitoring",
-                "Automated security & platform dependency updates",
-                "Small monthly content, copy, or form updates",
-                "Quarterly performance and SEO audit check",
-                "Optional light AI-assisted content or form optimization",
-                "Can be added to any package above. Cancel anytime."
-              ].map((item, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-foreground/90">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="pt-2">
+            <div className="pt-8">
               <Link
                 href="/contact?service=ongoing-care"
                 className="w-full py-4 px-6 rounded-2xl font-black text-base bg-muted hover:bg-accent hover:text-accent-foreground text-foreground flex items-center justify-center gap-2 transition-all"
@@ -281,69 +283,71 @@ export default function PackagesPage() {
           </div>
 
           {/* Optional Add-Ons */}
-          <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-lg space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
-                <Sparkles className="w-6 h-6" />
+          <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-lg flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <span className="px-3 py-1 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-black uppercase tracking-widest">
+                  Custom Modules
+                </span>
               </div>
-              <span className="px-3 py-1 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-black uppercase tracking-widest">
-                Custom Modules
-              </span>
+
+              <div>
+                <h3 className="text-2xl md:text-3xl font-black text-foreground">Optional Add-Ons</h3>
+                <p className="text-muted-foreground text-sm mt-1">Layer these onto any package above to fit your exact operational needs.</p>
+              </div>
+
+              <div className="space-y-4 border-t border-border/60 pt-6">
+                <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-accent/10 text-accent shrink-0">
+                    <Languages className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-foreground text-sm">Bilingual (Spanish) Key Pages &amp; Forms</h4>
+                      <span className="text-xs font-black text-accent ml-2">+$500 – $950</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Native Spanish translation and localized intake forms for Northern Virginia&apos;s diverse audience.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-500 shrink-0">
+                    <Bot className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-foreground text-sm">Custom AI Workflow or Automation</h4>
+                      <span className="text-xs font-black text-purple-500 ml-2">Scoped After Call</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Automated lead routing, LLM customer triage, or internal workflow automation connected to your inbox or CRM.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-pink-500/10 text-pink-500 shrink-0">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-foreground text-sm">Membership or Community Features</h4>
+                      <span className="text-xs font-black text-pink-500 ml-2">Scoped Separately</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Gated member portals, subscription access, or community tools derived from established club platforms.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <h3 className="text-2xl md:text-3xl font-black text-foreground">Optional Add-Ons</h3>
-              <p className="text-muted-foreground text-sm mt-1">Layer these onto any package above to fit your exact operational needs.</p>
-            </div>
-
-            <div className="space-y-4 border-t border-border/60 pt-6">
-              <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
-                <div className="p-2.5 rounded-xl bg-accent/10 text-accent shrink-0">
-                  <Languages className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground text-sm">Bilingual (Spanish) Key Pages &amp; Forms</h4>
-                    <span className="text-xs font-black text-accent ml-2">+$500 – $950</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Native Spanish translation and localized intake forms for Northern Virginia&apos;s diverse audience.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
-                <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-500 shrink-0">
-                  <Bot className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground text-sm">Custom AI Workflow or Automation</h4>
-                    <span className="text-xs font-black text-purple-500 ml-2">Scoped After Call</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Automated lead routing, LLM customer triage, or internal workflow automation connected to your inbox or CRM.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
-                <div className="p-2.5 rounded-xl bg-pink-500/10 text-pink-500 shrink-0">
-                  <Users className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground text-sm">Membership or Community Features</h4>
-                    <span className="text-xs font-black text-pink-500 ml-2">Scoped Separately</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Gated member portals, subscription access, or community tools derived from established club platforms.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2">
+            <div className="pt-8">
               <Link
                 href="/contact"
                 className="w-full py-4 px-6 rounded-2xl font-black text-base bg-muted hover:bg-accent hover:text-accent-foreground text-foreground flex items-center justify-center gap-2 transition-all"
