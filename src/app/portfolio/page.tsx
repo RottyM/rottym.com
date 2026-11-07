@@ -21,6 +21,17 @@ export default function Portfolio() {
     return true;
   });
 
+  const formatRolePill = (role: string) => {
+    if (role.includes('Lead Full Stack Engineer')) return 'Lead Architect';
+    if (role.includes('Lead Front-End Engineer')) return 'Lead Front-End';
+    if (role.includes('Full-Stack Web Developer')) return 'Full-Stack';
+    if (role.includes('Full-Stack Engineer')) return 'Full-Stack';
+    if (role.includes('Web Developer & Designer')) return 'Designer & Dev';
+    if (role.includes('UX Designer & Prototyper')) return 'UX Designer';
+    if (role.includes('Concept & Architecture')) return 'Architecture';
+    return role;
+  };
+
   const renderCard = (project: Project) => (
     <div
       key={project.slug}
@@ -43,16 +54,16 @@ export default function Portfolio() {
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-30 group-hover:opacity-0 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-black/25 opacity-30 group-hover:opacity-10 transition-opacity" />
 
-        {/* Top Badges Overlay */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none z-10">
-          <span className="h-5 inline-flex items-center px-2 rounded-md text-[9px] font-black uppercase tracking-wider bg-card/95 text-foreground border border-border/80 backdrop-blur-md shadow-sm">
+        {/* Top Atmospheric Glass Badges Overlay */}
+        <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between gap-2 pointer-events-none z-10">
+          <span className="h-6 inline-flex items-center px-2.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-foreground/90 border border-white/20 dark:border-white/10 shadow-sm shadow-black/10 truncate max-w-[55%]">
             {project.tag}
           </span>
-          <span className="h-5 inline-flex items-center gap-1 px-2 rounded-md text-[9px] font-bold uppercase tracking-wider bg-card/95 text-muted-foreground border border-border/80 backdrop-blur-md shadow-sm">
+          <span className="h-6 inline-flex items-center gap-1.5 px-2.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-foreground/80 dark:text-foreground/80 border border-white/20 dark:border-white/10 shadow-sm shadow-black/10 shrink-0">
             <Monitor className="w-2.5 h-2.5 text-accent shrink-0" />
-            <span>{project.role}</span>
+            <span className="truncate max-w-[120px]">{formatRolePill(project.role)}</span>
           </span>
         </div>
       </Link>

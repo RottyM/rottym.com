@@ -102,7 +102,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             Back to Selected Work
           </Link>
 
-          <span className="px-3 py-1 rounded-lg text-[10px] font-mono font-black uppercase tracking-wider bg-card text-foreground border border-border shadow-sm">
+          <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-foreground/90 border border-white/20 dark:border-white/10 shadow-sm">
             {project.tag}
           </span>
         </div>
