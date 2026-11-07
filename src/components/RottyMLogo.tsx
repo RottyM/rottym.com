@@ -399,7 +399,7 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
         <div className="flex items-center leading-none">
           <svg
             viewBox="0 0 96 26"
-            className="h-[21px] md:h-[23px] w-auto overflow-visible select-none block"
+            className="h-[24px] md:h-[26px] w-auto overflow-visible select-none block"
             aria-label="RottyM"
           >
             <defs>
@@ -423,9 +423,9 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
           </svg>
         </div>
 
-        {/* Row 2: Title Tagline (Matched to exact menu item slate gray with clear contrast) */}
+        {/* Row 2: Title Tagline (Matched in optical scale and contrast to the navigation menu font) */}
         {!isCompact && !hideSubtitle && (
-          <div className="text-[9px] md:text-[9.5px] font-bold tracking-[0.09em] text-foreground/80 dark:text-foreground/80 uppercase leading-none whitespace-nowrap mt-[3px]">
+          <div className="text-[10.5px] sm:text-[11.5px] md:text-[12px] font-bold tracking-[0.08em] text-foreground/80 dark:text-foreground/80 uppercase leading-none whitespace-nowrap mt-[3.5px]">
             {subtitle}
           </div>
         )}

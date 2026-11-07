@@ -19,7 +19,7 @@ export default function Header() {
         <Link href="/" className="inline-flex items-center group pl-1.5 sm:pl-2" aria-label="Rottman M. Mendez Home">
           <RottyMLogo
             variant="full"
-            size={46}
+            size={52}
             animated={true}
           />
         </Link>
