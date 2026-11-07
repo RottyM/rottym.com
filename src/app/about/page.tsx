@@ -145,12 +145,9 @@ export default function About() {
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{exp.desc}</p>
                 )}
                 {exp.placements && (
-                  <div className="mt-3.5 space-y-3">
+                  <div className="mt-3.5 space-y-4">
                     {exp.placements.map((p, pIdx) => (
-                      <div
-                        key={pIdx}
-                        className="p-3.5 sm:p-4 rounded-xl bg-slate-50/80 dark:bg-card/60 border border-slate-200/80 dark:border-border/70 space-y-1.5 transition-colors shadow-sm"
-                      >
+                      <div key={pIdx} className="space-y-1.5">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                           <div className="flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
