@@ -114,9 +114,14 @@ export default function Home() {
               Reston-based full-stack developer and UX designer. I build high-performance sites, custom portals, and WordPress escape rebuilds with the precision of enterprise work at Disney, FEMA, and BAE Systems.
             </p>
 
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 dark:border-emerald-500/30 rounded-xl text-xs font-semibold text-emerald-900 dark:text-emerald-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Fixed pricing after a short discovery call · Booking 2026 projects and beyond
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full border border-border shadow-sm text-xs">
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="font-semibold text-foreground/80">
+                Fixed pricing after a short discovery call · <span className="text-emerald-600 dark:text-emerald-400 font-bold">Booking 2026 projects and beyond</span>
+              </span>
             </div>
 
             <div className="flex flex-wrap gap-3.5">
