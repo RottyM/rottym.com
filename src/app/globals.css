@@ -121,7 +121,7 @@ body {
 
 .stitch-card {
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   background: var(--card);
   border: 1px solid var(--border);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
