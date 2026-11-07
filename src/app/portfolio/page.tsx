@@ -139,7 +139,7 @@ export default function Portfolio() {
   );
 
   return (
-    <section className="relative pt-10 pb-24 px-4 md:px-6 min-h-screen overflow-hidden">
+    <section className="relative pt-10 pb-24 min-h-screen overflow-hidden">
       {/* Background Dot-Grid Texture */}
       <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
@@ -147,7 +147,7 @@ export default function Portfolio() {
       <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/15 via-emerald-500/10 to-transparent blur-[130px] rounded-full -z-10" />
       <div className="pointer-events-none absolute top-1/3 -left-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
 
-      <div className="max-w-7xl mx-auto w-full space-y-12 relative z-10">
+      <div className="max-w-7xl mx-auto px-6 w-full space-y-12 relative z-10">
         {/* Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">

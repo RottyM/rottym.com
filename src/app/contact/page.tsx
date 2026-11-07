@@ -104,7 +104,7 @@ export default function Contact() {
   }
 
   return (
-    <section className="relative pt-10 pb-24 px-4 md:px-6 min-h-screen overflow-hidden">
+    <section className="relative pt-10 pb-24 min-h-screen overflow-hidden">
       {/* Background Dot-Grid Texture */}
       <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
@@ -112,7 +112,7 @@ export default function Contact() {
       <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/15 via-emerald-500/10 to-transparent blur-[130px] rounded-full -z-10" />
       <div className="pointer-events-none absolute bottom-1/4 -right-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
 
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 relative z-10">
+      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-20 relative z-10">
         <motion.div
           initial={false}
           animate={{ opacity: 1, x: 0 }}

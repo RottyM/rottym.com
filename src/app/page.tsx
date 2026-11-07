@@ -37,7 +37,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100vh-4.75rem)] flex items-center px-6 py-6 md:py-8 overflow-hidden">
+      <section className="relative min-h-[calc(100vh-4.75rem)] flex items-center py-6 md:py-8 overflow-hidden">
         {/* Architectural / Console Dot-Grid Texture */}
         <div className="absolute inset-0 bg-dot-grid opacity-70 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
@@ -45,7 +45,7 @@ export default function Home() {
         <div className="absolute top-0 right-0 -z-10 w-2/3 h-full bg-gradient-to-l from-accent/15 via-blue-500/10 to-transparent blur-3xl opacity-60 transition-colors" />
         <div className="absolute -top-24 -left-24 -z-10 w-[28rem] h-[28rem] bg-gradient-to-br from-emerald-500/10 via-accent/5 to-transparent rounded-full blur-3xl animate-pulse-soft transition-colors" />
 
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-14 items-center w-full">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 lg:gap-14 items-center w-full">
           <motion.div
             initial={false}
             animate={{ opacity: 1, x: 0 }}
@@ -193,9 +193,9 @@ export default function Home() {
       <div className="laser-divider" />
 
       {/* Services Section */}
-      <section className="py-32 px-6 relative overflow-hidden">
+      <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center space-y-4 mb-20 text-balance">
             <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight">Everything you need to <span className="tech-gradient-text">scale</span></h2>
             <p className="text-muted-foreground text-xl max-w-2xl mx-auto font-medium">
@@ -261,9 +261,9 @@ export default function Home() {
       <div className="laser-divider" />
 
       {/* How We Work Section */}
-      <section className="py-24 px-6 bg-background transition-colors relative overflow-hidden">
+      <section className="py-24 bg-background transition-colors relative overflow-hidden">
         <div className="absolute inset-0 bg-dot-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
-        <div className="max-w-7xl mx-auto space-y-16 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 space-y-16 relative z-10">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
               <Workflow className="w-3.5 h-3.5 text-accent shrink-0" />
@@ -355,9 +355,9 @@ export default function Home() {
       <div className="laser-divider" />
 
       {/* Local Packages / Start Here Teaser */}
-      <section className="py-24 px-6 bg-muted/20 transition-colors relative overflow-hidden">
+      <section className="py-24 bg-muted/20 transition-colors relative overflow-hidden">
         <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
@@ -449,10 +449,10 @@ export default function Home() {
       <div className="laser-divider" />
 
       {/* Selected Work & Projects Section */}
-      <section className="py-32 px-6 bg-accent/[0.03] transition-colors relative overflow-hidden">
+      <section className="py-32 bg-accent/[0.03] transition-colors relative overflow-hidden">
         <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
@@ -552,19 +552,23 @@ export default function Home() {
       </section>
 
       {/* Teaser CTA */}
-      <section className="py-24 px-6 bg-accent text-accent-foreground rounded-[3rem] mx-6 mb-24 overflow-hidden relative">
-        <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight">Have a project in mind? Let&apos;s build it.</h2>
-          <p className="text-xl font-medium opacity-90 max-w-2xl mx-auto">
-            Booking 2026 projects and beyond. Let&apos;s discuss your organization&apos;s goals and how to build a reliable, high-performance platform.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/contact" className="inline-flex items-center gap-2 bg-accent-foreground text-accent px-10 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform shadow-2xl">
-              Book a Discovery Call <ArrowRight className="w-6 h-6" />
-            </Link>
-            <Link href="/packages" className="inline-flex items-center gap-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent-foreground/30 px-8 py-5 rounded-2xl font-black text-xl transition-all">
-              See Packages &amp; Pricing
-            </Link>
+      <section className="py-12 mb-16 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="py-20 px-8 sm:px-12 bg-accent text-accent-foreground rounded-[3rem] overflow-hidden relative shadow-2xl">
+            <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
+              <h2 className="text-4xl md:text-5xl font-black tracking-tight">Have a project in mind? Let&apos;s build it.</h2>
+              <p className="text-xl font-medium opacity-90 max-w-2xl mx-auto">
+                Booking 2026 projects and beyond. Let&apos;s discuss your organization&apos;s goals and how to build a reliable, high-performance platform.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link href="/contact" className="inline-flex items-center gap-2 bg-accent-foreground text-accent px-10 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform shadow-2xl">
+                  Book a Discovery Call <ArrowRight className="w-6 h-6" />
+                </Link>
+                <Link href="/packages" className="inline-flex items-center gap-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent-foreground/30 px-8 py-5 rounded-2xl font-black text-xl transition-all">
+                  See Packages &amp; Pricing
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

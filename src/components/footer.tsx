@@ -7,14 +7,14 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-card text-foreground border-t border-border mt-24 transition-colors px-6">
+    <footer className="bg-card text-foreground border-t border-border mt-24 transition-colors">
       {/* Top Footer Section */}
-      <div className="max-w-7xl mx-auto py-16 md:py-20">
+      <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
           
           {/* Brand & Positioning Column (Span 2) */}
           <div className="lg:col-span-2 space-y-6">
-            <Link href="/" className="inline-flex items-center group pl-1.5 sm:pl-2" aria-label="RottyM Home">
+            <Link href="/" className="inline-flex items-center group" aria-label="RottyM Home">
               <RottyMLogo
                 variant="full"
                 size={46}
