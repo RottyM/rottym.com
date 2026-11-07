@@ -378,6 +378,9 @@ export default function PackagesPage() {
 
         </div>
 
+        {/* Laser Divider */}
+        <div className="laser-divider my-16" />
+
         {/* Bottom Note & Final Call to Action */}
         <div className="p-10 md:p-14 rounded-[3rem] bg-accent text-accent-foreground relative overflow-hidden shadow-2xl">
           <div className="max-w-3xl mx-auto text-center space-y-6 relative z-10">

@@ -40,10 +40,21 @@ export default function Portfolio() {
       {/* Chromatic Corner Aura */}
       <div className="pointer-events-none absolute -right-12 -top-12 w-36 h-36 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
 
+      {/* Top Atmospheric Glass Metadata Bar */}
+      <div className="px-5 py-3 flex items-center justify-between gap-2 border-b border-border/50 bg-card/60 dark:bg-card/40 backdrop-blur-sm z-10">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-accent/10 text-accent border border-accent/20 truncate max-w-[55%]">
+          {project.tag}
+        </span>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-muted/80 text-foreground/80 border border-border/60 shrink-0">
+          <Monitor className="w-2.5 h-2.5 text-accent shrink-0" />
+          <span className="truncate max-w-[130px]">{formatRolePill(project.role)}</span>
+        </span>
+      </div>
+
       {/* Thumbnail Image Container */}
       <Link
         href={`/portfolio/${project.slug}`}
-        className="relative aspect-[16/10] bg-muted/50 overflow-hidden block select-none border-b border-border/60"
+        className="relative aspect-[16/10] bg-muted/50 overflow-hidden block select-none border-b border-border/60 group/img"
         title={`View ${project.title} Case Study`}
       >
         <Image
@@ -52,20 +63,9 @@ export default function Portfolio() {
           fill
           unoptimized
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+          className="object-cover object-top group-hover/img:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-black/25 opacity-30 group-hover:opacity-10 transition-opacity" />
-
-        {/* Top Atmospheric Glass Badges Overlay */}
-        <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between gap-2 pointer-events-none z-10">
-          <span className="h-6 inline-flex items-center px-2.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-foreground/90 border border-white/20 dark:border-white/10 shadow-sm shadow-black/10 truncate max-w-[55%]">
-            {project.tag}
-          </span>
-          <span className="h-6 inline-flex items-center gap-1.5 px-2.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-foreground/80 dark:text-foreground/80 border border-white/20 dark:border-white/10 shadow-sm shadow-black/10 shrink-0">
-            <Monitor className="w-2.5 h-2.5 text-accent shrink-0" />
-            <span className="truncate max-w-[120px]">{formatRolePill(project.role)}</span>
-          </span>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-black/25 opacity-20 group-hover/img:opacity-0 transition-opacity" />
       </Link>
 
       {/* Card Body */}

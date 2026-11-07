@@ -114,13 +114,13 @@ export default function Home() {
               Reston-based full-stack developer and UX designer. I build high-performance sites, custom portals, and WordPress escape rebuilds with the precision of enterprise work at Disney, FEMA, and BAE Systems.
             </p>
 
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full border border-border shadow-sm text-xs">
-              <span className="relative flex h-2 w-2 shrink-0">
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-200/90 dark:border-white/10 bg-slate-100/90 dark:bg-slate-900/60 backdrop-blur-md shadow-sm text-xs font-medium">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              <span className="font-semibold text-foreground/80">
-                Fixed pricing after a short discovery call · <span className="text-emerald-600 dark:text-emerald-400 font-bold">Booking 2026 projects and beyond</span>
+              <span className="text-slate-800 dark:text-slate-200">
+                Fixed pricing after a short discovery call <span className="text-muted-foreground/60">·</span> <span className="text-emerald-700 dark:text-emerald-400 font-bold font-mono">Booking 2026 projects and beyond</span>
               </span>
             </div>
 
@@ -507,23 +507,23 @@ export default function Home() {
                 >
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                  {/* App Info Overlay */}
-                  <div className="absolute top-6 left-6 right-6 flex items-center gap-3.5 z-20">
-                    <div className="w-11 h-11 bg-accent rounded-xl flex items-center justify-center text-accent-foreground shadow-md shrink-0">
+                  {/* Atmospheric Glass App Header Overlay */}
+                  <div className="absolute top-4 left-4 right-4 z-20 p-3 sm:p-3.5 rounded-2xl bg-background/65 dark:bg-slate-950/65 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent border border-accent/25 flex items-center justify-center shadow-sm shrink-0">
                       {app.icon}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-lg font-black text-foreground group-hover:text-accent transition-colors tracking-tight truncate leading-tight">
+                      <h3 className="text-base sm:text-[17px] font-black text-foreground group-hover:text-accent transition-colors tracking-tight truncate leading-snug">
                         {app.name}
                       </h3>
-                      <p className="text-[11px] font-black uppercase tracking-wider text-accent truncate mt-0.5">
+                      <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-accent/90 truncate mt-0.5">
                         {app.badge}
                       </p>
                     </div>
                   </div>
 
-                  {/* App Screen Mockup */}
-                  <div className="absolute -bottom-8 left-6 right-6 top-[5.75rem] rounded-[1.75rem] border border-border/80 shadow-2xl overflow-hidden bg-background">
+                  {/* App Screen Mockup with breathing room */}
+                  <div className="absolute -bottom-8 left-5 right-5 top-[5.25rem] sm:top-[5.5rem] rounded-[1.75rem] border border-border/80 shadow-2xl overflow-hidden bg-background">
                     <img
                       src={app.image}
                       alt={app.name}

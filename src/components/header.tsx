@@ -14,12 +14,12 @@ export default function Header() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border shadow-sm transition-all px-6">
-      <div className="max-w-7xl mx-auto py-3.5 flex justify-between items-center">
+    <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border shadow-sm transition-all">
+      <div className="max-w-7xl mx-auto py-3.5 px-6 flex justify-between items-center">
         <Link href="/" className="inline-flex items-center group pl-1.5 sm:pl-2" aria-label="Rottman M. Mendez Home">
           <RottyMLogo
             variant="full"
-            size={52}
+            size={54}
             animated={true}
           />
         </Link>
@@ -70,6 +70,7 @@ export default function Header() {
           </nav>
         </div>
       )}
+      <div className="laser-divider opacity-75" />
     </header>
   );
 }

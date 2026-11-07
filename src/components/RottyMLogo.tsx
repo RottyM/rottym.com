@@ -393,39 +393,18 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
       {/* Monogram Graphic Icon */}
       {renderMonogramSvg(baseHeight)}
 
-      {/* Typography Lockup Group (Shifted down ~2.5px to align with the optical center of the 'R' letterform) */}
-      <div className="flex flex-col justify-center translate-y-[2px] md:translate-y-[2.5px]">
-        {/* Row 1: RottyM Wordmark with native SVG gradient fill (zero background-clip bugs) */}
+      {/* Typography Lockup Group (Optical center aligned with the 'R' monogram) */}
+      <div className="flex flex-col justify-center translate-y-[1px] md:translate-y-[1.5px]">
+        {/* Row 1: RottyM Wordmark with robust CSS gradient (eliminates SVG tspan glyph-box bug) */}
         <div className="flex items-center leading-none">
-          <svg
-            viewBox="0 0 96 26"
-            className="h-[24px] md:h-[26px] w-auto overflow-visible select-none block"
-            aria-label="RottyM"
-          >
-            <defs>
-              <linearGradient id={wordmarkMGradId} x1="0%" y1="0%" x2="100%" y2="100%">
-                {active.rStops.map((stop, i) => (
-                  <stop key={i} offset={stop.offset} stopColor={stop.color} />
-                ))}
-              </linearGradient>
-            </defs>
-            <text
-              x="0"
-              y="20"
-              fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif"
-              fontSize="23"
-              fontWeight="800"
-              letterSpacing="-0.03em"
-              fill={isDark ? '#F8FAFC' : '#0F172A'}
-            >
-              Rotty<tspan fill={`url(#${wordmarkMGradId})`}>M</tspan>
-            </text>
-          </svg>
+          <span className="font-extrabold text-[22px] sm:text-[24px] md:text-[25px] tracking-[-0.03em] text-foreground select-none inline-flex items-center">
+            Rotty<span className="bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 dark:from-cyan-400 dark:via-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">M</span>
+          </span>
         </div>
 
-        {/* Row 2: Title Tagline (Matched in optical scale and contrast to the navigation menu font) */}
+        {/* Row 2: Title Tagline (Harmonized in scale and weight with navigation menu) */}
         {!isCompact && !hideSubtitle && (
-          <div className="text-[10.5px] sm:text-[11.5px] md:text-[12px] font-bold tracking-[0.08em] text-foreground/80 dark:text-foreground/80 uppercase leading-none whitespace-nowrap mt-[3.5px]">
+          <div className="text-[11px] sm:text-[12px] md:text-[12.5px] font-bold tracking-[0.07em] text-foreground/80 dark:text-foreground/80 uppercase leading-none whitespace-nowrap mt-[3px]">
             {subtitle}
           </div>
         )}

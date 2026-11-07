@@ -46,10 +46,17 @@ body {
 }
 
 .glass {
-  background: rgba(var(--background), 0.7);
+  background: color-mix(in srgb, var(--background) 70%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
+}
+
+.atmospheric-glass {
+  background: color-mix(in srgb, var(--background) 65%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
 }
 
 .bg-dot-grid {
