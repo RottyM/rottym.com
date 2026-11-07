@@ -52,11 +52,12 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="space-y-4 sm:space-y-5"
           >
-            <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+            <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
               <Braces className="w-3.5 h-3.5 text-accent shrink-0" />
-              <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">FULL-STACK DEVELOPMENT</span>
+              <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FULL-STACK DEVELOPMENT</span>
               <span className="text-border">|</span>
-              <span className="font-mono text-xs text-muted-foreground uppercase">RESTON, VA &amp; GLOBAL</span>
+              <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, VA &amp; GLOBAL</span>
+              <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON, VA</span>
             </div>
 
             {/* Zero-shift layout-locked rotating headline */}
@@ -113,19 +114,19 @@ export default function Home() {
               Reston-based Full-Stack &amp; AI Software Engineer with deep UI/UX architecture expertise. I build high-performance web platforms, custom portals, and AI-augmented applications with the precision of enterprise work at Disney, FEMA, and BAE Systems.
             </p>
 
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-200/90 dark:border-white/10 bg-slate-100/90 dark:bg-slate-900/60 backdrop-blur-md shadow-sm text-xs font-medium">
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-200/90 dark:border-white/10 bg-slate-100/90 dark:bg-slate-900/60 backdrop-blur-md shadow-sm text-[11px] sm:text-xs font-medium max-w-full">
               <CalendarCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="text-slate-800 dark:text-slate-200">
-                Fixed pricing after a short discovery call <span className="text-muted-foreground/60">·</span> <span className="text-emerald-700 dark:text-emerald-400 font-bold font-mono">Booking 2026 projects and beyond</span>
+              <span className="text-slate-800 dark:text-slate-200 leading-snug">
+                <span className="hidden sm:inline">Fixed pricing after discovery call · </span><span className="text-emerald-700 dark:text-emerald-400 font-bold font-mono">Booking 2026 projects &amp; beyond</span>
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-3.5">
-              <Link href="/contact" className="group flex items-center gap-2 bg-accent text-accent-foreground px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-bold text-base hover:scale-105 transition-all shadow-xl shadow-accent/20">
+            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3.5 pt-1 w-full sm:w-auto">
+              <Link href="/contact" className="group flex items-center justify-center gap-2 bg-accent text-accent-foreground px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm sm:text-base hover:scale-105 transition-all shadow-lg shadow-accent/20">
                 Book a Discovery Call
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link href="/packages" className="flex items-center gap-2 glass px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-bold text-base hover:bg-muted transition-all text-foreground">
+              <Link href="/packages" className="flex items-center justify-center gap-2 glass px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm sm:text-base hover:bg-muted transition-all text-foreground">
                 View Packages &amp; Pricing
               </Link>
             </div>
@@ -265,11 +266,11 @@ export default function Home() {
         <div className="absolute inset-0 bg-dot-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
         <div className="max-w-7xl mx-auto px-6 space-y-16 relative z-10">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+            <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
               <Workflow className="w-3.5 h-3.5 text-accent shrink-0" />
-              <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">THE PROCESS</span>
+              <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">THE PROCESS</span>
               <span className="text-border">|</span>
-              <span className="font-mono text-xs text-muted-foreground uppercase">HOW PROJECTS WORK</span>
+              <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">HOW PROJECTS WORK</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
               How a Project <span className="tech-gradient-text">Works</span>
@@ -343,7 +344,7 @@ export default function Home() {
             </div>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-6 py-3.5 rounded-xl font-bold text-sm hover:scale-105 transition-all shadow-lg shrink-0"
+              className="inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-5 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm hover:scale-105 transition-all shadow-lg shrink-0 w-full sm:w-auto"
             >
               Book a Discovery Call <ArrowRight className="w-4 h-4" />
             </Link>
@@ -360,11 +361,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+              <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
                 <Boxes className="w-3.5 h-3.5 text-accent shrink-0" />
-                <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">FIXED-SCOPE PACKAGES</span>
+                <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FIXED-SCOPE PACKAGES</span>
                 <span className="text-border">|</span>
-                <span className="font-mono text-xs text-muted-foreground uppercase">RESTON &amp; NOVA</span>
+                <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">RESTON &amp; NOVA</span>
               </div>
               <h2 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
                 Local Packages &amp; <span className="tech-gradient-text">Pricing</span>
@@ -455,11 +456,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+              <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
                 <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
-                <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">SELECTED PLATFORMS</span>
+                <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">SELECTED PLATFORMS</span>
                 <span className="text-border">|</span>
-                <span className="font-mono text-xs text-muted-foreground uppercase">CLIENT WORK &amp; APPS</span>
+                <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">CLIENT WORK &amp; APPS</span>
+                <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">CLIENT WORK</span>
               </div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">Selected Work &amp; <span className="tech-gradient-text">Projects</span>.</h2>
               <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl font-medium">
@@ -560,11 +562,11 @@ export default function Home() {
               <p className="text-xl font-medium opacity-90 max-w-2xl mx-auto">
                 Booking 2026 projects and beyond. Let&apos;s discuss your organization&apos;s goals and how to build a reliable, high-performance platform.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link href="/contact" className="inline-flex items-center gap-2 bg-accent-foreground text-accent px-10 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform shadow-2xl">
-                  Book a Discovery Call <ArrowRight className="w-6 h-6" />
+              <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 w-full sm:w-auto">
+                <Link href="/contact" className="inline-flex items-center justify-center gap-2 bg-accent-foreground text-accent px-6 sm:px-10 py-3.5 sm:py-5 rounded-xl sm:rounded-2xl font-black text-base sm:text-xl hover:scale-105 transition-transform shadow-2xl">
+                  Book a Discovery Call <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
                 </Link>
-                <Link href="/packages" className="inline-flex items-center gap-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent-foreground/30 px-8 py-5 rounded-2xl font-black text-xl transition-all">
+                <Link href="/packages" className="inline-flex items-center justify-center gap-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent-foreground/30 px-6 sm:px-8 py-3.5 sm:py-5 rounded-xl sm:rounded-2xl font-black text-base sm:text-xl transition-all">
                   See Packages &amp; Pricing
                 </Link>
               </div>

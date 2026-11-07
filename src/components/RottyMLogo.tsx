@@ -419,7 +419,7 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
       <div className="flex flex-col justify-center translate-y-[1px] md:translate-y-[1.5px]">
         {/* Row 1: RottyM Wordmark with Solid Indigo 'M' & Interactive Hover */}
         <div className="flex items-center leading-none rotty-wordmark">
-          <span className="font-extrabold text-[22px] sm:text-[24px] md:text-[25px] tracking-[-0.03em] select-none inline-flex items-center">
+          <span className="font-extrabold text-[19px] sm:text-[24px] md:text-[25px] tracking-[-0.03em] select-none inline-flex items-center">
             <span className="rotty-wordmark-rotty text-foreground transition-colors duration-300">
               Rotty
             </span>
@@ -431,7 +431,7 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
 
         {/* Row 2: Title Tagline (Harmonized in scale and weight with navigation menu) */}
         {!isCompact && !hideSubtitle && (
-          <div className="text-[11px] sm:text-[12px] md:text-[12.5px] font-bold tracking-[0.07em] text-foreground/80 dark:text-foreground/80 uppercase leading-none whitespace-nowrap mt-[3px]">
+          <div className="text-[9px] xs:text-[10px] sm:text-[12px] md:text-[12.5px] font-bold tracking-[0.04em] sm:tracking-[0.07em] text-foreground/80 dark:text-foreground/80 uppercase leading-none whitespace-nowrap mt-[2px] sm:mt-[3px]">
             {subtitle}
           </div>
         )}

@@ -27,11 +27,11 @@ export default function Footer() {
             </p>
 
             <div className="space-y-2 text-xs">
-              <div className="inline-flex items-center gap-2.5 glass px-3.5 py-1.5 rounded-full shadow-sm border border-border">
+              <div className="inline-flex items-center gap-2 glass px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-sm border border-border max-w-full">
                 <CalendarCheck className="w-3.5 h-3.5 text-accent shrink-0" />
-                <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">2026 SCHEDULE</span>
+                <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">2026 SCHEDULE</span>
                 <span className="text-border">|</span>
-                <span className="font-mono text-xs text-muted-foreground uppercase">ACCEPTING PROJECTS</span>
+                <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">ACCEPTING PROJECTS</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground pt-1">
                 <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />

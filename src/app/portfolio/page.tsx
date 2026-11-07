@@ -150,11 +150,11 @@ export default function Portfolio() {
       <div className="max-w-7xl mx-auto px-6 w-full space-y-12 relative z-10">
         {/* Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+          <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
             <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
-            <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">PRODUCTION SYSTEMS &amp; ARCHITECTURE</span>
+            <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">PRODUCTION SYSTEMS</span>
             <span className="text-border">|</span>
-            <span className="font-mono text-xs text-muted-foreground uppercase">CASE STUDIES</span>
+            <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">CASE STUDIES</span>
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
             Selected Work &amp; <span className="tech-gradient-text">Case Studies</span>
@@ -232,11 +232,11 @@ export default function Portfolio() {
             {/* Section Divider: Enterprise & Earlier Career Work */}
             <div className="pt-10 space-y-6">
               <div className="p-8 md:p-10 rounded-[2.5rem] bg-muted/40 border border-border space-y-3">
-                <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+                <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
                   <Server className="w-3.5 h-3.5 text-accent shrink-0" />
-                  <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">ENTERPRISE SYSTEMS</span>
+                  <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">ENTERPRISE SYSTEMS</span>
                   <span className="text-border">|</span>
-                  <span className="font-mono text-xs text-muted-foreground uppercase">LARGE-SCALE PLATFORMS</span>
+                  <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">LARGE-SCALE</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
                   Enterprise &amp; Large-Scale Systems
@@ -283,16 +283,16 @@ export default function Portfolio() {
           <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base md:text-lg relative z-10 leading-relaxed">
             Fixed pricing after a 15-minute discovery call. We build high-performance platforms with zero runaway hourly surprises.
           </p>
-          <div className="flex flex-wrap justify-center gap-4 relative z-10 pt-2">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 relative z-10 pt-2 w-full sm:w-auto">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-black text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20"
+              className="inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20"
             >
-              Book a Discovery Call <ArrowRight className="w-5 h-5" />
+              Book a Discovery Call <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
             <Link
               href="/packages"
-              className="inline-flex items-center gap-2 glass px-8 py-4 rounded-2xl font-bold text-base hover:bg-muted transition-all text-foreground"
+              className="inline-flex items-center justify-center gap-2 glass px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base hover:bg-muted transition-all text-foreground"
             >
               View Fixed Packages &amp; Pricing
             </Link>

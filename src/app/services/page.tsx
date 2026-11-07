@@ -95,11 +95,12 @@ export default function Services() {
             className="text-center space-y-4 max-w-3xl mx-auto mb-12"
           >
             {/* Eyebrow Badge */}
-            <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+            <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
               <Activity className="w-3.5 h-3.5 text-accent shrink-0" />
-              <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">HIGH-PERFORMANCE ENGINEERING</span>
+              <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">HIGH-PERFORMANCE ENGINEERING</span>
               <span className="text-border">|</span>
-              <span className="font-mono text-xs text-muted-foreground uppercase">RESTON, NOVA &amp; GLOBAL</span>
+              <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, NOVA &amp; GLOBAL</span>
+              <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON, VA</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
@@ -359,19 +360,19 @@ export default function Services() {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 mb-8 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-8 w-full sm:w-auto">
               <Link
                 href="/contact"
-                className="w-full sm:w-auto px-8 py-4 bg-accent hover:scale-105 text-accent-foreground font-bold text-base rounded-2xl transition-all shadow-xl shadow-accent/20 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-accent hover:scale-105 text-accent-foreground font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-all shadow-xl shadow-accent/20 flex items-center justify-center gap-2"
               >
                 <span>Start the Conversation</span>
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
               <a
                 href="mailto:rmendez@rottym.com"
-                className="w-full sm:w-auto px-6 py-4 glass hover:bg-muted text-foreground font-semibold text-base rounded-2xl transition-colors flex items-center justify-center gap-2 border border-border"
+                className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-4 glass hover:bg-muted text-foreground font-semibold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-colors flex items-center justify-center gap-2 border border-border"
               >
-                <Mail className="w-5 h-5 text-accent" />
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                 <span>rmendez@rottym.com</span>
               </a>
             </div>

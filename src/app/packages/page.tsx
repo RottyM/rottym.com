@@ -107,11 +107,12 @@ export default function PackagesPage() {
 
         {/* Hero Section */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+          <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
             <Boxes className="w-3.5 h-3.5 text-accent shrink-0" />
-            <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">FIXED-SCOPE PACKAGES</span>
+            <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FIXED-SCOPE PACKAGES</span>
             <span className="text-border">|</span>
-            <span className="font-mono text-xs text-muted-foreground uppercase">RESTON &amp; NORTHERN VIRGINIA</span>
+            <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON &amp; NORTHERN VIRGINIA</span>
+            <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON &amp; NOVA</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
@@ -135,9 +136,9 @@ export default function PackagesPage() {
           <div className="pt-2">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl shadow-accent/20"
+              className="inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:scale-105 transition-all shadow-xl shadow-accent/20 w-full sm:w-auto"
             >
-              Book a 15-Minute Call <ArrowRight className="w-5 h-5" />
+              Book a 15-Minute Call <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
           </div>
         </div>
@@ -400,16 +401,16 @@ export default function PackagesPage() {
               The number you get after a short discovery call is the exact number you’re billed. No ranges that turn into surprise invoices.
             </p>
 
-            <div className="pt-4 flex flex-wrap justify-center gap-4">
+            <div className="pt-4 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 w-full sm:w-auto">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 bg-accent-foreground text-accent px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition-transform shadow-2xl"
+                className="inline-flex items-center justify-center gap-2 bg-accent-foreground text-accent px-6 sm:px-10 py-3.5 sm:py-5 rounded-xl sm:rounded-2xl font-black text-base sm:text-lg hover:scale-105 transition-transform shadow-2xl"
               >
                 Book a 15-Minute Call <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
                 href="/contact?intent=secure-spot"
-                className="inline-flex items-center gap-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent-foreground/30 px-8 py-5 rounded-2xl font-bold text-lg transition-all"
+                className="inline-flex items-center justify-center gap-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent-foreground/30 px-6 sm:px-8 py-3.5 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg transition-all"
               >
                 Secure Your Spot
               </Link>

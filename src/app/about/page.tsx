@@ -69,11 +69,11 @@ export default function About() {
       <div className="max-w-5xl mx-auto px-6 space-y-16 relative z-10">
         {/* Intro Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+          <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
             <Fingerprint className="w-3.5 h-3.5 text-accent shrink-0" />
-            <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">FULL-STACK &amp; AI SOFTWARE ENGINEER</span>
+            <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FULL-STACK &amp; AI ENGINEER</span>
             <span className="text-border">|</span>
-            <span className="font-mono text-xs text-muted-foreground uppercase">RESTON, VA</span>
+            <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">RESTON, VA</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
@@ -193,11 +193,12 @@ export default function About() {
       {/* Recruiter & Strategic Partnership CTA Banner */}
       <div className="p-10 rounded-[2.5rem] glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
         <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent/15 rounded-full blur-3xl" />
-        <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border relative z-10">
+        <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border relative z-10 max-w-full">
           <Compass className="w-3.5 h-3.5 text-accent shrink-0" />
-          <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">CAREER OPPORTUNITIES</span>
+          <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">CAREER OPPORTUNITIES</span>
           <span className="text-border">|</span>
-          <span className="font-mono text-xs text-muted-foreground uppercase">TECHNICAL ROLES &amp; PARTNERSHIPS</span>
+          <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">TECHNICAL ROLES &amp; PARTNERSHIPS</span>
+          <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">ROLES &amp; COLLABS</span>
         </div>
         <h2 className="text-3xl md:text-4xl font-black text-foreground">
           Looking for a Full Stack &amp; AI Software Engineer or Technical Partner?
@@ -205,17 +206,17 @@ export default function About() {
         <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base">
           I&apos;m looking for Full Stack &amp; AI Software Engineer roles and technical partners. If you&apos;re a recruiter, hiring manager, or organization seeking a technical collaborator, let&apos;s connect.
         </p>
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 w-full sm:w-auto">
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-black text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20"
+            className="inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20"
           >
-            Hire Me / Get in Touch <ArrowRight className="w-5 h-5" />
+            Hire Me / Get in Touch <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </Link>
           <a
             href="/resume.pdf"
             download="Rottman_Mendez_Resume.pdf"
-            className="inline-flex items-center gap-2 glass px-8 py-4 rounded-2xl font-bold text-base hover:bg-muted transition-all text-foreground border border-border"
+            className="inline-flex items-center justify-center gap-2 glass px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base hover:bg-muted transition-all text-foreground border border-border"
           >
             <Download className="w-4 h-4 text-accent" /> Download Resume (PDF)
           </a>

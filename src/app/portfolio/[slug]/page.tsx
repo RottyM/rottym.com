@@ -110,11 +110,11 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
 
         {/* Hero Header (Centered to match /services, /packages, and site layout) */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+          <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
             <FileCode2 className="w-3.5 h-3.5 text-accent shrink-0" />
-            <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">{project.category}</span>
+            <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">{project.category}</span>
             <span className="text-border">|</span>
-            <span className="font-mono text-xs text-muted-foreground uppercase">{project.role}</span>
+            <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">{project.role}</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">

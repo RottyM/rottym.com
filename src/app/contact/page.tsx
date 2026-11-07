@@ -119,11 +119,11 @@ export default function Contact() {
           className="space-y-12"
         >
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2.5 glass px-4 py-1.5 rounded-full shadow-md backdrop-blur-md border border-border">
+            <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
               <Radio className="w-3.5 h-3.5 text-accent shrink-0" />
-              <span className="font-mono text-xs text-accent tracking-widest uppercase font-bold">DIRECT ENGAGEMENT</span>
+              <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">DIRECT ENGAGEMENT</span>
               <span className="text-border">|</span>
-              <span className="font-mono text-xs text-muted-foreground uppercase">START A PROJECT</span>
+              <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">START A PROJECT</span>
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">Let&apos;s Build Something <span className="tech-gradient-text">Exceptional</span>.</h1>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-md font-medium leading-relaxed">
@@ -233,8 +233,8 @@ export default function Contact() {
               <textarea id="message" name="message" rows={4} placeholder="Tell me about your project, goals, and timeline..." required className="w-full p-5 bg-muted/50 border border-border rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium resize-none" />
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-3 bg-accent text-accent-foreground py-6 rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-xl shadow-accent/20 disabled:opacity-50 disabled:hover:scale-100">
-              {isSubmitting ? 'Sending...' : 'Send Message'} <Send className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 sm:gap-3 bg-accent text-accent-foreground py-3.5 sm:py-5 rounded-xl sm:rounded-2xl font-black text-base sm:text-xl hover:scale-105 transition-all shadow-xl shadow-accent/20 disabled:opacity-50 disabled:hover:scale-100">
+              {isSubmitting ? 'Sending...' : 'Send Message'} <Send className="w-4 h-4 sm:w-6 sm:h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </button>
 
             {status && (
