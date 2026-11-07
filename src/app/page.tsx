@@ -415,33 +415,53 @@ export default function Home() {
             ].map((pkg) => (
               <div
                 key={pkg.title}
-                className={`group relative p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border bg-white dark:bg-card/90 backdrop-blur-sm flex flex-col justify-between transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 overflow-hidden ${
+                className={`group relative p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border backdrop-blur-sm flex flex-col justify-between transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 overflow-hidden ${
                   pkg.featured
-                    ? 'border-accent shadow-accent/10 ring-1 ring-accent/30'
-                    : 'border-slate-200/90 dark:border-border/80 hover:border-accent/40 hover:shadow-accent/5'
+                    ? 'bg-[#151b2a] text-white border-[#00D8F6]/40 shadow-xl shadow-sky-950/25 ring-1 ring-[#00D8F6]/30'
+                    : 'bg-white dark:bg-card/90 text-foreground border-slate-200/90 dark:border-border/80 hover:border-accent/40 hover:shadow-accent/5'
                 }`}
               >
                 {/* Ambient Chromatic Corner Light */}
-                <div className="absolute -right-12 -top-12 w-36 h-36 bg-accent/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
+                <div
+                  className={`absolute -right-12 -top-12 w-36 h-36 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none ${
+                    pkg.featured ? 'bg-[#00D8F6]/20' : 'bg-accent/10'
+                  }`}
+                />
                 <div className="space-y-4 relative z-10">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase tracking-widest text-accent bg-accent/10 px-3 py-1 rounded-full">
-                      {pkg.badge}
+                    <span
+                      className={`text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full font-mono ${
+                        pkg.featured
+                          ? 'bg-[#001f26] text-[#4cd7f6] border border-[#00D8F6]/40'
+                          : 'text-accent bg-accent/10'
+                      }`}
+                    >
+                      {pkg.featured ? '★ MOST POPULAR' : pkg.badge}
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-slate-900 dark:text-foreground">{pkg.title}</h3>
-                    <p className="text-2xl font-black text-slate-900 dark:text-foreground mt-2">{pkg.price}</p>
+                    <h3 className={`text-2xl font-black ${pkg.featured ? 'text-white' : 'text-slate-900 dark:text-foreground'}`}>
+                      {pkg.title}
+                    </h3>
+                    <p className={`text-2xl font-black mt-2 ${pkg.featured ? 'text-white' : 'text-slate-900 dark:text-foreground'}`}>
+                      {pkg.price}
+                    </p>
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-muted-foreground leading-relaxed">{pkg.desc}</p>
-                  <p className="text-xs text-slate-500 dark:text-muted-foreground/80 font-medium">
-                    <span className="font-bold text-slate-900 dark:text-foreground">Best for:</span> {pkg.best}
+                  <p className={`text-sm leading-relaxed ${pkg.featured ? 'text-slate-300' : 'text-slate-600 dark:text-muted-foreground'}`}>
+                    {pkg.desc}
+                  </p>
+                  <p className={`text-xs font-medium ${pkg.featured ? 'text-slate-300' : 'text-slate-500 dark:text-muted-foreground/80'}`}>
+                    <span className={`font-bold ${pkg.featured ? 'text-white' : 'text-slate-900 dark:text-foreground'}`}>Best for:</span> {pkg.best}
                   </p>
                 </div>
                 <div className="pt-6">
                   <Link
                     href="/packages"
-                    className="w-full py-3 px-4 rounded-xl text-center font-bold text-xs font-mono uppercase tracking-wider bg-slate-100 hover:bg-[#090D16] hover:text-[#00D8F6] text-slate-900 dark:bg-muted dark:hover:bg-accent dark:hover:text-accent-foreground dark:text-foreground flex items-center justify-center gap-2 transition-all"
+                    className={`w-full py-3 px-4 rounded-xl text-center font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
+                      pkg.featured
+                        ? 'bg-[#00D8F6] hover:bg-[#38bdf8] text-[#090D16] font-black shadow-md shadow-[#00D8F6]/20'
+                        : 'bg-slate-100 hover:bg-[#090D16] hover:text-[#00D8F6] text-slate-900 dark:bg-muted dark:hover:bg-accent dark:hover:text-accent-foreground dark:text-foreground'
+                    }`}
                   >
                     View Package Details <ArrowRight className="w-4 h-4" />
                   </Link>

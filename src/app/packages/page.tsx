@@ -170,58 +170,161 @@ export default function PackagesPage() {
             <div
               key={pkg.id}
               id={pkg.id}
-              className={`stitch-card relative !overflow-visible rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 md:p-10 flex flex-col justify-between transition-all duration-300 shadow-md hover:shadow-2xl ${pkg.borderHover} ${
-                pkg.featured 
-                  ? 'border-accent shadow-accent/10 ring-2 ring-accent/20 scale-[1.01] lg:-translate-y-2' 
-                  : 'border-border'
+              className={`relative !overflow-visible rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 md:p-10 flex flex-col justify-between transition-all duration-300 shadow-md hover:shadow-2xl ${
+                pkg.featured
+                  ? 'bg-[#151b2a] text-white border border-[#00D8F6]/40 shadow-2xl shadow-sky-950/25 ring-1 ring-[#00D8F6]/30 scale-[1.01] lg:-translate-y-2'
+                  : `stitch-card border-border ${pkg.borderHover}`
               }`}
             >
               {/* Inner Aura with overflow-hidden and border matching rounded corners */}
               <div className="absolute inset-0 rounded-2xl sm:rounded-[2.5rem] overflow-hidden pointer-events-none">
-                <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
-                <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+                <div
+                  className={`pointer-events-none absolute -right-14 -top-14 w-44 h-44 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 ${
+                    pkg.featured
+                      ? 'bg-[#00D8F6]/20'
+                      : 'bg-accent/10 dark:bg-accent/15'
+                  }`}
+                />
+                <div
+                  className={`absolute inset-x-0 top-0 h-[1px] ${
+                    pkg.featured
+                      ? 'bg-gradient-to-r from-transparent via-[#00D8F6]/50 to-transparent'
+                      : 'bg-gradient-to-r from-transparent via-accent/30 to-transparent'
+                  }`}
+                />
               </div>
 
               {pkg.badge && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 rounded-full bg-accent text-accent-foreground font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-widest shadow-md shadow-accent/25 border border-white/20 z-20 whitespace-nowrap">
-                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  <span>{pkg.badge}</span>
+                <div
+                  className={`absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1 rounded-full font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-widest shadow-md z-20 whitespace-nowrap ${
+                    pkg.featured
+                      ? 'bg-[#001f26] text-[#4cd7f6] border border-[#00D8F6]/50 shadow-[#00D8F6]/20'
+                      : 'bg-accent text-accent-foreground shadow-accent/25 border border-white/20'
+                  }`}
+                >
+                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#4cd7f6]" />
+                  <span>★ {pkg.badge.toUpperCase()} · 95+ LIGHTHOUSE</span>
                 </div>
               )}
 
               <div className="space-y-5 sm:space-y-6 relative z-10">
                 <div className="flex items-center justify-between">
-                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${pkg.accentBg} ${pkg.accent} flex items-center justify-center shadow-sm`}>
+                  <div
+                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-sm ${
+                      pkg.featured
+                        ? 'bg-white/10 text-[#00D8F6]'
+                        : `${pkg.accentBg} ${pkg.accent}`
+                    }`}
+                  >
                     {pkg.icon}
                   </div>
-                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">
+                  <span
+                    className={`text-[10px] sm:text-xs font-black uppercase tracking-widest font-mono ${
+                      pkg.featured ? 'text-[#4cd7f6]' : 'text-muted-foreground'
+                    }`}
+                  >
                     {pkg.subtitle}
                   </span>
                 </div>
 
-                <div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground">{pkg.name}</h3>
-                  <div className="mt-2 sm:mt-3">
-                    <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">{pkg.price}</span>
-                    <p className="text-[11px] sm:text-xs text-muted-foreground font-medium mt-1">{pkg.priceNote}</p>
+                {pkg.featured && (
+                  <div className="flex flex-wrap items-center gap-2 -mt-2">
+                    <span className="font-mono text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded bg-white/10 text-white font-semibold">
+                      FULL PRODUCTION BUILD
+                    </span>
+                    <span className="font-mono text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded bg-[#4cd7f6]/20 text-[#4cd7f6] font-semibold">
+                      CLIENT PORTALS
+                    </span>
                   </div>
+                )}
+
+                <div>
+                  <h3
+                    className={`text-xl sm:text-2xl md:text-3xl font-black ${
+                      pkg.featured ? 'text-white' : 'text-foreground'
+                    }`}
+                  >
+                    {pkg.name}
+                  </h3>
+
+                  {pkg.featured ? (
+                    <div className="mt-3 p-3.5 sm:p-4 rounded-xl bg-white/10 border border-white/10">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                          {pkg.price}
+                        </span>
+                        <span className="text-xs uppercase font-mono text-[#4cd7f6] font-bold">
+                          USD
+                        </span>
+                      </div>
+                      <p className="text-[11px] sm:text-xs text-[#4cd7f6] font-mono font-medium mt-0.5">
+                        {pkg.priceNote}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-2 sm:mt-3">
+                      <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
+                        {pkg.price}
+                      </span>
+                      <p className="text-[11px] sm:text-xs text-muted-foreground font-medium mt-1">
+                        {pkg.priceNote}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">
+                <p
+                  className={`text-xs sm:text-sm leading-relaxed ${
+                    pkg.featured ? 'text-slate-300' : 'text-muted-foreground'
+                  }`}
+                >
                   {pkg.desc}
                 </p>
 
-                <div className="p-3 sm:p-3.5 rounded-xl bg-muted/40 border border-border/50 text-xs text-muted-foreground">
-                  <strong className="text-foreground font-bold">Best for: </strong>
+                <div
+                  className={`p-3 sm:p-3.5 rounded-xl text-xs ${
+                    pkg.featured
+                      ? 'bg-white/5 border border-white/10 text-slate-300'
+                      : 'bg-muted/40 border border-border/50 text-muted-foreground'
+                  }`}
+                >
+                  <strong
+                    className={`font-bold ${
+                      pkg.featured ? 'text-white' : 'text-foreground'
+                    }`}
+                  >
+                    Best for:{" "}
+                  </strong>
                   {pkg.bestFor}
                 </div>
 
-                <div className="border-t border-border/60 pt-5 sm:pt-6 space-y-3">
-                  <p className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-foreground/80">What&apos;s Included:</p>
+                <div
+                  className={`pt-5 sm:pt-6 space-y-3 ${
+                    pkg.featured
+                      ? 'border-t border-white/10'
+                      : 'border-t border-border/60'
+                  }`}
+                >
+                  <p
+                    className={`text-[11px] sm:text-xs font-black uppercase tracking-wider ${
+                      pkg.featured ? 'text-slate-200' : 'text-foreground/80'
+                    }`}
+                  >
+                    What&apos;s Included:
+                  </p>
                   <ul className="space-y-2 sm:space-y-2.5">
                     {pkg.included.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2 sm:gap-2.5 text-xs md:text-sm text-foreground/90 leading-snug">
-                        <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <li
+                        key={idx}
+                        className={`flex items-start gap-2 sm:gap-2.5 text-xs md:text-sm leading-snug ${
+                          pkg.featured ? 'text-slate-100' : 'text-foreground/90'
+                        }`}
+                      >
+                        <CheckCircle2
+                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 mt-0.5 ${
+                            pkg.featured ? 'text-[#4cd7f6]' : 'text-emerald-500'
+                          }`}
+                        />
                         <span>{item}</span>
                       </li>
                     ))}
@@ -232,13 +335,18 @@ export default function PackagesPage() {
               <div className="pt-6 sm:pt-8 relative z-10">
                 <Link
                   href={pkg.href}
-                  className={`w-full py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
+                  className={`w-full py-3 sm:py-3.5 px-4 sm:px-6 rounded-xl font-bold font-mono text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
                     pkg.featured
-                      ? 'bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground hover:scale-[1.02] shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent'
+                      ? 'bg-[#00D8F6] hover:bg-[#38bdf8] text-[#090D16] font-black hover:scale-[1.02] shadow-lg shadow-[#00D8F6]/25 border border-[#00D8F6] active:scale-[0.99]'
                       : 'bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted'
                   }`}
                 >
-                  <span>{pkg.cta}</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
+                  <span>{pkg.cta}</span>{" "}
+                  <ArrowRight
+                    className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                      pkg.featured ? 'text-[#090D16]' : 'text-[#00D8F6] dark:text-current'
+                    }`}
+                  />
                 </Link>
               </div>
             </div>
