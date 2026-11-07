@@ -3,15 +3,15 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: #f8faff;
+  --foreground: #0b1c30;
   --accent: #0284c7;
   --accent-foreground: #ffffff;
-  --muted: #f8fafc;
+  --muted: #edf2f9;
   --muted-foreground: #475569;
   --card: #ffffff;
-  --card-foreground: #0f172a;
-  --border: #e2e8f0;
+  --card-foreground: #0b1c30;
+  --border: #e2e8f2;
 }
 
 [data-theme='dark'] {
@@ -39,27 +39,49 @@
 }
 
 body {
+  background: radial-gradient(circle at 50% -80px, rgba(2, 132, 199, 0.09) 0%, rgba(99, 102, 241, 0.04) 38%, transparent 72%), var(--background);
   background-color: var(--background);
   color: var(--foreground);
   font-feature-settings: "rlig" 1, "calt" 1;
   transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+[data-theme='dark'] body {
+  background: var(--background);
+  background-color: var(--background);
 }
 
 .glass {
-  background: color-mix(in srgb, var(--background) 70%, transparent);
+  background: color-mix(in srgb, var(--card) 80%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(11, 28, 48, 0.04);
+}
+
+[data-theme='dark'] .glass {
+  background: color-mix(in srgb, var(--background) 70%, transparent);
+  box-shadow: none;
 }
 
 .atmospheric-glass {
-  background: color-mix(in srgb, var(--background) 65%, transparent);
+  background: color-mix(in srgb, var(--card) 75%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+}
+
+[data-theme='dark'] .atmospheric-glass {
+  background: color-mix(in srgb, var(--background) 65%, transparent);
   border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
 }
 
 .bg-dot-grid {
+  background-image: none;
+}
+
+[data-theme='dark'] .bg-dot-grid {
   background-image: radial-gradient(color-mix(in srgb, var(--foreground) 7%, transparent) 1px, transparent 1px);
   background-size: 20px 20px;
 }
@@ -124,12 +146,17 @@ body {
   overflow: hidden;
   background: var(--card);
   border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(11, 28, 48, 0.03), 0 8px 24px -4px rgba(11, 28, 48, 0.05);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stitch-card:hover {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.08), 0 0 1px 1px color-mix(in srgb, var(--accent) 20%, transparent);
+  box-shadow: 0 12px 32px -6px rgba(11, 28, 48, 0.09), 0 0 1px 1px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+[data-theme='dark'] .stitch-card {
+  box-shadow: none;
 }
 
 [data-theme='dark'] .stitch-card:hover {
