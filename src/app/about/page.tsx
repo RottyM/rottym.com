@@ -115,7 +115,7 @@ export default function About() {
               <a
                 href="/resume.pdf"
                 download="Rottman_Mendez_Resume.pdf"
-                className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all w-full sm:w-auto"
               >
                 <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" /> Download Resume (PDF)
               </a>
@@ -259,7 +259,7 @@ export default function About() {
           <a
             href="/resume.pdf"
             download="Rottman_Mendez_Resume.pdf"
-            className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base transition-all"
+            className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base transition-all"
           >
             <Download className="w-4 h-4 text-accent" /> Download Resume (PDF)
           </a>

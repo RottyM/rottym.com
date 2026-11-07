@@ -131,7 +131,7 @@ export default function Home() {
               </Link>
               <Link 
                 href="/packages" 
-                className="flex items-center justify-center gap-2 bg-white text-slate-900 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all"
+                className="flex items-center justify-center gap-2 bg-white text-slate-900 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all"
               >
                 View Packages &amp; Pricing
               </Link>

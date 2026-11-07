@@ -362,7 +362,7 @@ export default function PackagesPage() {
                   className={`w-full py-3 sm:py-3.5 px-4 sm:px-6 rounded-xl font-bold font-mono text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
                     pkg.featured
                       ? 'bg-[#00D8F6] hover:bg-[#38bdf8] text-[#090D16] font-black hover:scale-[1.02] shadow-lg shadow-[#00D8F6]/25 border border-[#00D8F6] active:scale-[0.99]'
-                      : 'bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted'
+                      : 'bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40'
                   }`}
                 >
                   <span>{pkg.cta}</span>{" "}
@@ -430,7 +430,7 @@ export default function PackagesPage() {
             <div className="pt-6 sm:pt-8 relative z-10">
               <Link
                 href="/contact?service=ongoing-care"
-                className="w-full py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted flex items-center justify-center gap-2 transition-all"
+                className="w-full py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 flex items-center justify-center gap-2 transition-all"
               >
                 <span>Add Ongoing Care</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
               </Link>
@@ -508,7 +508,7 @@ export default function PackagesPage() {
             <div className="pt-6 sm:pt-8 relative z-10">
               <Link
                 href="/contact"
-                className="w-full py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted flex items-center justify-center gap-2 transition-all"
+                className="w-full py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 flex items-center justify-center gap-2 transition-all"
               >
                 <span>Discuss Custom Modules</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
               </Link>

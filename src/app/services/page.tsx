@@ -370,7 +370,7 @@ export default function Services() {
               </Link>
               <a
                 href="mailto:rmendez@rottym.com"
-                className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-4 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted font-semibold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-colors flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-4 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 font-semibold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-colors flex items-center justify-center gap-2"
               >
                 <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                 <span>rmendez@rottym.com</span>

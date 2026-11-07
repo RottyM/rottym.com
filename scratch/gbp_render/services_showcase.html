@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RottyM Google Business Profile Service Offerings Showcase</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background-color: #080c14;
+      background-image: 
+        radial-gradient(circle at 75% 35%, rgba(0, 242, 254, 0.14) 0%, rgba(79, 172, 254, 0.05) 35%, transparent 65%),
+        radial-gradient(circle at 20% 80%, rgba(0, 245, 160, 0.08) 0%, transparent 50%),
+        radial-gradient(rgba(255, 255, 255, 0.05) 1.5px, transparent 1.5px);
+      background-size: 100% 100%, 100% 100%, 28px 28px;
+      color: #F8FAFC;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      position: relative;
+    }
+
+    /* Laser top accent line */
+    .laser-border-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 5%, #00F2FE 30%, #00F5A0 70%, transparent 95%);
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.6);
+      z-index: 50;
+    }
+
+    /* Top Navigation / Brand Bar */
+    .header-bar {
+      padding: 44px 80px 24px 80px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 20;
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .brand-logo-svg {
+      width: 62px;
+      height: 66px;
+      filter: drop-shadow(0 6px 16px rgba(0, 242, 254, 0.4));
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-name-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .brand-name {
+      font-size: 32px;
+      font-weight: 900;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-name-m {
+      color: #00F2FE;
+    }
+
+    .brand-founder {
+      font-size: 20px;
+      font-weight: 700;
+      color: #94A3B8;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-tagline {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 800;
+      color: #00F2FE;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .location-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 22px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00F5A0;
+      box-shadow: 0 0 10px #00F5A0;
+    }
+
+    .location-text {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #E2E8F0;
+      text-transform: uppercase;
+    }
+
+    /* Main Grid Layout */
+    .main-content {
+      padding: 0 80px;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 50px;
+      align-items: center;
+      height: 800px;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Left Column: Hero & Package Cards */
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .badge-pill {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      background: rgba(0, 242, 254, 0.08);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #00F2FE;
+      text-transform: uppercase;
+    }
+
+    .headline {
+      font-size: 46px;
+      font-weight: 900;
+      line-height: 1.14;
+      letter-spacing: -0.03em;
+      color: #FFFFFF;
+    }
+
+    .headline-accent {
+      background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 50%, #00F5A0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subhead {
+      font-size: 17px;
+      line-height: 1.55;
+      color: #94A3B8;
+      font-weight: 500;
+      max-width: 680px;
+    }
+
+    /* 3 Package Cards Row */
+    .packages-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .package-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 20px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+
+    .package-card.featured {
+      background: #151b2a;
+      border: 1px solid rgba(0, 216, 246, 0.55);
+      box-shadow: 0 14px 35px rgba(0, 216, 246, 0.18), inset 0 1px 0 rgba(0, 216, 246, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .card-top-tag {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .package-card.featured .card-top-tag {
+      color: #00F2FE;
+    }
+
+    .package-card:not(.featured) .card-top-tag {
+      color: #64748B;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #FFFFFF;
+      margin-bottom: 8px;
+    }
+
+    .card-price {
+      font-size: 21px;
+      font-weight: 900;
+      color: #FFFFFF;
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+    }
+
+    .package-card.featured .card-price {
+      color: #FFFFFF;
+    }
+
+    .card-note {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: #00F2FE;
+      margin-top: 2px;
+      margin-bottom: 10px;
+    }
+
+    .package-card:not(.featured) .card-note {
+      color: #64748B;
+    }
+
+    .card-desc {
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: #94A3B8;
+      margin-bottom: 12px;
+    }
+
+    .card-bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 10px;
+    }
+
+    .card-bullets li {
+      font-size: 11px;
+      color: #CBD5E1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bullet-check {
+      color: #00F5A0;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    /* Right Column: Hardware Mockups & Badges */
+    .right-col {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Ambient Depth Glow behind devices */
+    .mockup-aura {
+      position: absolute;
+      width: 580px;
+      height: 480px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 242, 254, 0.22) 0%, rgba(79, 172, 254, 0.08) 45%, transparent 70%);
+      filter: blur(60px);
+      z-index: 1;
+    }
+
+    /* Device Mockup Canvas Container */
+    .devices-stage {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* MacBook Frame */
+    .macbook-chassis {
+      width: 680px;
+      height: 430px;
+      background: #111622;
+      border-radius: 20px 20px 10px 10px;
+      border: 3px solid #2A364F;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 242, 254, 0.15);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .macbook-screen {
+      width: 100%;
+      height: 410px;
+      background: #090D16;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .macbook-screen img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+    }
+
+    .macbook-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 16px;
+      background: #111622;
+      border-radius: 0 0 10px 10px;
+      z-index: 20;
+    }
+
+    .macbook-base {
+      position: absolute;
+      bottom: -14px;
+      left: -20px;
+      right: -20px;
+      height: 16px;
+      background: #1A2234;
+      border-radius: 4px 4px 12px 12px;
+      border-top: 1px solid #3B4B6E;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .macbook-indent {
+      width: 110px;
+      height: 5px;
+      background: #0C101A;
+      border-radius: 0 0 4px 4px;
+    }
+
+    /* Floating iPhone Mockup */
+    .iphone-frame {
+      position: absolute;
+      right: -30px;
+      bottom: -20px;
+      width: 190px;
+      height: 380px;
+      background: #0B0F19;
+      border-radius: 36px;
+      border: 3.5px solid #334155;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 245, 160, 0.2);
+      overflow: hidden;
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .iphone-island {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 18px;
+      background: #000000;
+      border-radius: 20px;
+      z-index: 30;
+    }
+
+    .iphone-screen {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #090D16;
+    }
+
+    .iphone-screen img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 25% 10%;
+    }
+
+    /* Floating Callout Glass Badges */
+    .floating-badge {
+      position: absolute;
+      padding: 10px 18px;
+      border-radius: 14px;
+      background: rgba(9, 13, 22, 0.85);
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 30;
+    }
+
+    .badge-icon {
+      font-size: 16px;
+    }
+
+    .badge-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #FFFFFF;
+      white-space: nowrap;
+    }
+
+    .badge-sub {
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      color: #00F5A0;
+      font-weight: 700;
+    }
+
+    .badge-pos-1 {
+      top: -24px;
+      left: -20px;
+      border-color: rgba(0, 245, 160, 0.5);
+    }
+
+    .badge-pos-2 {
+      bottom: 20px;
+      left: -35px;
+      border-color: rgba(0, 242, 254, 0.5);
+    }
+
+    /* Bottom Trust Proof Bar */
+    .bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(11, 15, 25, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 80px;
+      z-index: 30;
+    }
+
+    .proof-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .proof-val {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 16px;
+      font-weight: 900;
+      color: #00F2FE;
+    }
+
+    .proof-val.emerald {
+      color: #00F5A0;
+    }
+
+    .proof-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #94A3B8;
+    }
+
+    .proof-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+  </style>
+</head>
+<body>
+  <div class="laser-border-top"></div>
+
+  <!-- Header Bar -->
+  <div class="header-bar">
+    <div class="brand-left">
+      <svg class="brand-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="16 -8 156 168" fill="none">
+        <defs>
+          <linearGradient id="svg-r" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00F2FE" />
+            <stop offset="45%" stop-color="#4FACFE" />
+            <stop offset="100%" stop-color="#6B11FF" />
+          </linearGradient>
+          <linearGradient id="svg-m" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#00F5A0" />
+            <stop offset="100%" stop-color="#00F5A0" />
+          </linearGradient>
+        </defs>
+        <g>
+          <rect x="20" y="4" width="18" height="144" rx="9" fill="url(#svg-r)" />
+          <path d="M 34 13 H 84 C 108 13 124 28 124 49 C 124 70 108 85 84 85 H 34" fill="none" stroke="url(#svg-r)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M 72 82 L 128 148" fill="none" stroke="url(#svg-r)" stroke-width="18" stroke-linecap="round" />
+          <path d="M 106 20 L 124 42 L 154 8" fill="none" stroke="#080c14" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M 106 20 L 124 42 L 154 8" fill="none" stroke="url(#svg-m)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="154" cy="8" r="6" fill="#FFFFFF" />
+          <circle cx="154" cy="8" r="2.5" fill="#00F5A0" />
+        </g>
+      </svg>
+      <div class="brand-text">
+        <div class="brand-name-row">
+          <span class="brand-name">Rotty<span class="brand-name-m">M</span></span>
+          <span class="brand-founder">· Rottman M. Mendez</span>
+        </div>
+        <span class="brand-tagline">FULL-STACK &amp; AI SOFTWARE ENGINEER</span>
+      </div>
+    </div>
+
+    <div class="location-pill">
+      <div class="status-dot"></div>
+      <span class="location-text">RESTON, VA &amp; NORTHERN VIRGINIA</span>
+    </div>
+  </div>
+
+  <!-- Main Grid Content -->
+  <div class="main-content">
+    
+    <!-- Left Column: Headline & Fixed Packages -->
+    <div class="left-col">
+      <div class="badge-pill">
+        ⚡ FIXED-SCOPE LOCAL PACKAGES &amp; SYSTEMS
+      </div>
+
+      <h1 class="headline">
+        High-Performance Web Platforms &amp; <span class="headline-accent">Custom Portals</span>
+      </h1>
+
+      <p class="subhead">
+        Replacing slow, fragile WordPress with modern serverless architecture. Complete code ownership, sub-second load times, and fixed pricing after a 15-minute call.
+      </p>
+
+      <!-- 3 Packages Row -->
+      <div class="packages-row">
+        <!-- Package 1: Launchpad -->
+        <div class="package-card">
+          <div>
+            <div class="card-top-tag">Entry &amp; Most Common</div>
+            <div class="card-title">Local Launchpad</div>
+            <div class="card-price">$2,500 – $3,500</div>
+            <div class="card-note">Fixed after 15-min call</div>
+            <div class="card-desc">High-performance 5–8 page site for local businesses ready to win search.</div>
+          </div>
+          <ul class="card-bullets">
+            <li><span class="bullet-check">✓</span> Sub-second load times</li>
+            <li><span class="bullet-check">✓</span> Reston &amp; NoVA SEO</li>
+            <li><span class="bullet-check">✓</span> 100% Code Ownership</li>
+          </ul>
+        </div>
+
+        <!-- Package 2: Booking & Intake (Featured) -->
+        <div class="package-card featured">
+          <div>
+            <div class="card-top-tag">★ Most Popular</div>
+            <div class="card-title">Booking &amp; Intake</div>
+            <div class="card-price">$4,200 – $5,800</div>
+            <div class="card-note">Fixed after 15-min call</div>
+            <div class="card-desc">Full build plus online booking or structured intake to cut admin time.</div>
+          </div>
+          <ul class="card-bullets">
+            <li><span class="bullet-check">✓</span> Automated calendar sync</li>
+            <li><span class="bullet-check">✓</span> Smart intake workflows</li>
+            <li><span class="bullet-check">✓</span> Optional client portal</li>
+          </ul>
+        </div>
+
+        <!-- Package 3: Performance Rebuild -->
+        <div class="package-card">
+          <div>
+            <div class="card-top-tag">WordPress Escape</div>
+            <div class="card-title">Performance Rebuild</div>
+            <div class="card-price">$3,800 – $6,500</div>
+            <div class="card-note">Fixed after 15-min call</div>
+            <div class="card-desc">Migrate off slow, bloated WordPress to modern serverless Next.js.</div>
+          </div>
+          <ul class="card-bullets">
+            <li><span class="bullet-check">✓</span> 95–100 Lighthouse score</li>
+            <li><span class="bullet-check">✓</span> Zero plugin vulnerabilities</li>
+            <li><span class="bullet-check">✓</span> Zero lock-in / serverless</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Live Work Device Mockup Stage -->
+    <div class="right-col">
+      <div class="mockup-aura"></div>
+
+      <div class="devices-stage">
+        <!-- Floating Glass Badge 1 -->
+        <div class="floating-badge badge-pos-1">
+          <span class="badge-icon">⚡</span>
+          <div>
+            <div class="badge-title">100% Code Ownership</div>
+            <div class="badge-sub">Zero Vendor Lock-In</div>
+          </div>
+        </div>
+
+        <!-- MacBook Pro Mockup -->
+        <div class="macbook-chassis">
+          <div class="macbook-notch"></div>
+          <div class="macbook-screen">
+            <img src="file:///D:/rottym/rottym.com/public/images/portfolio/northernvirginiawriters-home.png" alt="Northern Virginia Writers Club Portal" />
+          </div>
+          <div class="macbook-base">
+            <div class="macbook-indent"></div>
+          </div>
+        </div>
+
+        <!-- Floating iPhone Mockup -->
+        <div class="iphone-frame">
+          <div class="iphone-island"></div>
+          <div class="iphone-screen">
+            <img src="file:///D:/rottym/rottym.com/public/images/portfolio/northernvirginiawriters-home.png" alt="Mobile Experience" />
+          </div>
+        </div>
+
+        <!-- Floating Glass Badge 2 -->
+        <div class="floating-badge badge-pos-2">
+          <span class="badge-icon">🚀</span>
+          <div>
+            <div class="badge-title">99/100 Lighthouse Speed</div>
+            <div class="badge-sub">&lt;350ms TTFB on Global Edge</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Proof Bar -->
+  <div class="bottom-bar">
+    <div class="proof-item">
+      <span class="proof-val">100M+</span>
+      <span class="proof-label">Streaming Subscribers Supported (Disney)</span>
+    </div>
+    <div class="proof-divider"></div>
+    <div class="proof-item">
+      <span class="proof-val">$3B+</span>
+      <span class="proof-label">Annual Federal Grants Processed (FEMA)</span>
+    </div>
+    <div class="proof-divider"></div>
+    <div class="proof-item">
+      <span class="proof-val emerald">95–100</span>
+      <span class="proof-label">Google Lighthouse Performance Guarantee</span>
+    </div>
+    <div class="proof-divider"></div>
+    <div class="proof-item">
+      <span class="proof-val emerald">&lt;350ms</span>
+      <span class="proof-label">Average Serverless TTFB</span>
+    </div>
+    <div class="proof-divider"></div>
+    <div class="proof-item">
+      <span class="proof-val">Reston, VA</span>
+      <span class="proof-label">Direct Local Consultation · rottym.com</span>
+    </div>
+  </div>
+
+</body>
+</html>
+

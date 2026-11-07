@@ -200,7 +200,7 @@ export default function Portfolio() {
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeFilter === tab.id
                   ? 'bg-[#090D16] text-white dark:bg-accent dark:text-accent-foreground shadow-md shadow-black/10 dark:shadow-accent/20'
-                  : 'bg-white text-slate-600 hover:text-slate-950 border border-slate-200/90 shadow-xs dark:stitch-card dark:text-muted-foreground dark:hover:text-foreground dark:hover:border-accent/40'
+                  : 'bg-white text-slate-600 hover:text-slate-950 border border-slate-200/90 shadow-xs dark:bg-card dark:border-border dark:text-muted-foreground dark:hover:text-foreground dark:hover:border-accent/40'
               }`}
             >
               {tab.label}
@@ -294,7 +294,7 @@ export default function Portfolio() {
             </Link>
             <Link
               href="/packages"
-              className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:glass dark:text-foreground dark:border-border dark:hover:bg-muted px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base transition-all"
+              className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base transition-all"
             >
               View Fixed Packages &amp; Pricing
             </Link>
