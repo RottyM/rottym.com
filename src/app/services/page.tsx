@@ -81,9 +81,9 @@ export default function Services() {
       <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
       {/* Atmospheric Radial Ambient Lighting */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[480px] bg-gradient-to-b from-accent/15 via-emerald-500/10 to-transparent blur-[140px] rounded-full -z-10" />
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[480px] bg-gradient-to-b from-accent/10 via-sky-500/5 to-transparent dark:from-accent/15 dark:via-emerald-500/10 dark:to-transparent blur-[140px] rounded-full -z-10" />
       <div className="pointer-events-none absolute top-[850px] -right-40 w-[600px] h-[600px] bg-accent/5 blur-[160px] rounded-full -z-10" />
-      <div className="pointer-events-none absolute bottom-[400px] -left-32 w-[650px] h-[650px] bg-emerald-500/5 blur-[180px] rounded-full -z-10" />
+      <div className="pointer-events-none absolute bottom-[400px] -left-32 w-[650px] h-[650px] bg-accent/4 dark:bg-emerald-500/5 blur-[180px] rounded-full -z-10" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10 space-y-16">
         

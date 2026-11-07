@@ -100,7 +100,7 @@ export default function PackagesPage() {
       <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
       {/* Atmospheric Radial Ambient Lighting */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/15 via-emerald-500/10 to-transparent blur-[130px] rounded-full -z-10" />
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/10 via-sky-500/5 to-transparent dark:from-accent/15 dark:via-emerald-500/10 dark:to-transparent blur-[130px] rounded-full -z-10" />
       <div className="pointer-events-none absolute top-1/2 -left-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
 
       <div className="max-w-7xl mx-auto px-6 space-y-20 relative z-10">
