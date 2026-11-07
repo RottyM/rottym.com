@@ -29,6 +29,8 @@ const services = [
     sla: "SLA: 60 FPS • 100 Core Web Vitals",
     desc: "High-performance sites and modern web applications engineered for speed, reliability, and long-term maintainability. Built with architecture chosen specifically to match your operational needs, not rigid templates.",
     icon: <Rocket className="w-6 h-6" />,
+    accent: "text-orange-500",
+    bg: "bg-orange-500/10",
     features: ["Bespoke Architecture", "High Concurrency", "Long-Term Ownership"],
     telemetry: "Global Edge & Distributed Cache",
     packageNote: "Most Reston & NoVA projects start here — view packages",
@@ -39,6 +41,8 @@ const services = [
     sla: "Security: SOC-2 Hardened • Role RBAC",
     desc: "Custom portals for client intake, member management, document sharing, and workflow automation. Designed for teams that have outgrown basic forms or off-the-shelf tools.",
     icon: <Users className="w-6 h-6" />,
+    accent: "text-pink-500",
+    bg: "bg-pink-500/10",
     features: ["Role-Based Access", "Automated Workflows", "Client Portals"],
     telemetry: "Row-Level Security Vaults",
     packageNote: "Available with Booking & Intake packages — view details",
@@ -48,7 +52,9 @@ const services = [
     title: "Full-Stack Development",
     sla: "Architecture: Zero-Downtime Event Mesh",
     desc: "Next.js, React, and cloud-backed applications (Vercel, Firebase, AWS, GCP) with attention to performance, security, and maintainability. Includes work on subscription systems, e-commerce, and AI-assisted features where they create real value.",
-    icon: <Terminal className="w-6 h-6" />,
+    icon: <Cpu className="w-6 h-6" />,
+    accent: "text-blue-500",
+    bg: "bg-blue-500/10",
     features: ["Cloud Native", "Tailored Stacks", "Modern API Architecture"],
     telemetry: "Distributed Data & Vector Stores",
     packageNote: "Most Reston & NoVA projects start here — view packages",
@@ -59,6 +65,8 @@ const services = [
     sla: "Uptime: 99.99% • Multi-Region Edge",
     desc: "Multi-cloud deployment, secure automated CI/CD pipelines, and proactive observability so your platforms remain fast, secure, and resilient at every stage.",
     icon: <Globe className="w-6 h-6" />,
+    accent: "text-emerald-500",
+    bg: "bg-emerald-500/10",
     features: ["Multi-Cloud Infrastructure", "Zero-Downtime CI/CD", "Automated Security"],
     telemetry: "Automated SSL & DDoS Shield",
     packageNote: "Included in Ongoing Care maintenance — view add-on",
@@ -173,7 +181,7 @@ export default function Services() {
                 <div className="flex flex-col relative z-10">
                   {/* Card Header & Badge */}
                   <div className="flex items-start justify-between gap-4 mb-6">
-                    <div className="w-14 h-14 rounded-2xl bg-accent/10 dark:bg-accent/15 flex items-center justify-center text-accent group-hover:scale-110 group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300 shadow-sm">
+                    <div className={`w-14 h-14 rounded-2xl ${s.bg} ${s.accent} flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-sm shrink-0`}>
                       {s.icon}
                     </div>
                     <span className="font-mono text-[10px] uppercase tracking-wider font-semibold px-3 py-1 rounded-full bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-accent border border-white/20 dark:border-white/10 shadow-sm">

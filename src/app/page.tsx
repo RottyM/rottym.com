@@ -37,7 +37,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100vh-4.75rem)] flex items-center py-6 md:py-8 overflow-hidden">
+      <section className="relative pt-10 sm:pt-12 md:pt-14 pb-16 md:pb-24 overflow-hidden">
         {/* Architectural / Console Dot-Grid Texture */}
         <div className="absolute inset-0 bg-dot-grid opacity-70 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
