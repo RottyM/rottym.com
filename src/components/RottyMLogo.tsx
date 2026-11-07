@@ -88,14 +88,14 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
         { offset: '100%', color: '#6B11FF' },
       ],
       mStops: [
-        { offset: '0%', color: '#00F2FE' },
-        { offset: '100%', color: '#00F2FE' },
+        { offset: '0%', color: '#00F5A0' },
+        { offset: '100%', color: '#00F5A0' },
       ],
       rGradientCss: 'linear-gradient(135deg, #00F2FE 0%, #4FACFE 50%, #6B11FF 100%)',
-      mGradientCss: '#00F2FE',
-      statusGreen: '#00F2FE',
-      beaconRingPrimary: '#00F2FE',
-      beaconRingSecondary: '#38BDF8',
+      mGradientCss: '#00F5A0',
+      statusGreen: '#00F5A0',
+      beaconRingPrimary: '#00F5A0',
+      beaconRingSecondary: '#00F2FE',
       beaconCore: '#FFFFFF',
       diffuseAura: '#00F2FE',
       dividerBase: '#1E2A42',
@@ -108,10 +108,10 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
       ],
       mStops: [
         { offset: '0%', color: '#059669' },
-        { offset: '100%', color: '#0284C7' },
+        { offset: '100%', color: '#10B981' },
       ],
       rGradientCss: 'linear-gradient(135deg, #0284C7 0%, #2563EB 50%, #4F46E5 100%)',
-      mGradientCss: 'linear-gradient(90deg, #059669 0%, #0284C7 100%)',
+      mGradientCss: 'linear-gradient(90deg, #059669 0%, #10B981 100%)',
       statusGreen: '#10B981',
       beaconRingPrimary: '#059669',
       beaconRingSecondary: '#0284C7',
@@ -196,10 +196,10 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
             )}
           </filter>
 
-          {/* Dedicated Crisp Shadow Filter for 'M' Chevron in solid electric blue */}
+          {/* Dedicated Crisp Shadow Filter for 'M' Chevron */}
           <filter id={mShadowId} x="-30%" y="-30%" width="160%" height="160%">
             <feDropShadow dx="0" dy="1.5" stdDeviation="2" floodColor="#000000" floodOpacity="0.95" />
-            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#00F2FE" floodOpacity="0.35" />
+            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor={isDark ? "#00F5A0" : "#10B981"} floodOpacity="0.45" />
           </filter>
 
           {/* Kinetic animations when animated={true} - Queued on hover */}
@@ -249,6 +249,21 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
               .group:hover .rotty-apex-node {
                 animation: rottyApexGlow 1.8s ease-in-out infinite;
                 filter: drop-shadow(0 0 6px #00F5A0);
+              }
+
+              /* Wordmark typography: Rotty stays clean white / foreground */
+              .rotty-wordmark-m {
+                transition: filter 0.3s ease, text-shadow 0.3s ease;
+              }
+              .rotty-logo:hover .rotty-wordmark-m,
+              .group:hover .rotty-wordmark-m {
+                text-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+              }
+
+              /* Chevron glow in mint on hover */
+              .rotty-logo:hover .rotty-chevron,
+              .group:hover .rotty-chevron {
+                filter: drop-shadow(0 0 6px rgba(0, 245, 160, 0.85));
               }
             `}</style>
           )}
@@ -323,15 +338,16 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
             strokeLinejoin="round"
           />
 
-          {/* Crisp Monoglyphic 'M' Chevron in Solid Electric Blue */}
+          {/* Crisp Monoglyphic 'M' Chevron in Mint Green */}
           <path
             d="M 106 20 L 124 42 L 154 8"
             fill="none"
-            stroke={isDark ? "#00F2FE" : "#0284C7"}
+            stroke={isDark ? "#00F5A0" : "#059669"}
             strokeWidth="14"
             strokeLinecap="round"
             strokeLinejoin="round"
             filter={`url(#${mShadowId})`}
+            className="rotty-chevron transition-all duration-300"
           />
 
           {/* Dual-Phase Synapse Apex Radar Pulse Waves (Triggers on hover) */}
@@ -401,10 +417,15 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
 
       {/* Typography Lockup Group (Optical center aligned with the 'R' monogram) */}
       <div className="flex flex-col justify-center translate-y-[1px] md:translate-y-[1.5px]">
-        {/* Row 1: RottyM Wordmark with Solid Electric Blue 'M' */}
-        <div className="flex items-center leading-none">
-          <span className="font-extrabold text-[22px] sm:text-[24px] md:text-[25px] tracking-[-0.03em] text-foreground select-none inline-flex items-center">
-            Rotty<span className="text-[#0284C7] dark:text-[#00F2FE] font-black">M</span>
+        {/* Row 1: RottyM Wordmark with Solid Indigo 'M' & Interactive Hover */}
+        <div className="flex items-center leading-none rotty-wordmark">
+          <span className="font-extrabold text-[22px] sm:text-[24px] md:text-[25px] tracking-[-0.03em] select-none inline-flex items-center">
+            <span className="rotty-wordmark-rotty text-foreground transition-colors duration-300">
+              Rotty
+            </span>
+            <span className="rotty-wordmark-m text-[#2563EB] dark:text-[#3B82F6] font-black transition-all duration-300">
+              M
+            </span>
           </span>
         </div>
 

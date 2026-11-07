@@ -91,14 +91,14 @@ export default function Home() {
                     {headlineIndex === 0 ? (
                       <>
                         Building fast, modern sites that{" "}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-blue-500 to-indigo-500">
+                        <span className="tech-gradient-text">
                           replace slow WordPress
                         </span>
                       </>
                     ) : (
                       <>
                         Custom web platforms,{" "}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-blue-500 to-indigo-500">
+                        <span className="tech-gradient-text">
                           client portals
                         </span>
                         , and modern applications
