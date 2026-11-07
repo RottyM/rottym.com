@@ -113,11 +113,11 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             <Sparkles className="w-3.5 h-3.5" /> {project.category} · {project.role}
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-foreground">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
             {project.title}
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
             {cs ? cs.heroHeadline : project.summary}
           </p>
 

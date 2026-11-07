@@ -94,11 +94,11 @@ export default function Services() {
             <span className="font-mono text-xs text-muted-foreground uppercase">RESTON, NOVA &amp; GLOBAL</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-foreground max-w-4xl mb-6">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground max-w-4xl mb-6 leading-[1.12]">
             Premium <span className="tech-gradient-text">Services</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-10 font-medium">
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-10 font-medium">
             Engineering high-performance software, bespoke web applications, and resilient platforms for Reston &amp; Northern Virginia businesses that demand speed, scale, and uncompromising quality.
           </p>
 

@@ -79,11 +79,11 @@ export default function About() {
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-black tracking-tight text-foreground">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
             Rottman M. <span className="tech-gradient-text">Mendez</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium">
+          <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed font-medium max-w-3xl mx-auto">
             Full-Stack &amp; AI Software Engineer based in Reston, Virginia. With extensive experience engineering scalable enterprise microservices (Disney Streaming, FEMA, BAE Systems, FAA via Leidos) and delivering AI-augmented cloud platforms, I specialize in modern serverless web stacks (Next.js, React, TypeScript, Tailwind CSS, Sanity, Vercel) and enterprise backend systems (Java, Spring Boot, Scala, GCP, Firebase, AWS). I help organizations and technical teams replace fragile legacy systems with reliable, high-performance digital platforms.
           </p>
 

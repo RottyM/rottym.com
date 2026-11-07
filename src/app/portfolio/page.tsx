@@ -153,10 +153,10 @@ export default function Portfolio() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase border border-border">
             <Sparkles className="w-3.5 h-3.5" /> Production Systems &amp; Case Studies
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
             Selected Work &amp; <span className="tech-gradient-text">Case Studies</span>
           </h1>
-          <p className="text-muted-foreground text-base md:text-lg font-medium leading-relaxed">
+          <p className="text-lg sm:text-xl text-muted-foreground font-medium leading-relaxed max-w-2xl mx-auto">
             A crawlable archive of custom web platforms, WordPress-to-Next.js headless migrations, and enterprise systems built for speed, reliability, and scale.
           </p>
         </div>

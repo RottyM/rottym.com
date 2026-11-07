@@ -113,7 +113,7 @@ export default function PackagesPage() {
             </span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.2]">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
             Local Packages for{" "}
             <span className="tech-gradient-text inline-block pr-2.5">
               Reston &amp; NoVA
@@ -121,7 +121,7 @@ export default function PackagesPage() {
             Businesses
           </h1>
 
-          <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
             High-performance sites and custom tools that actually get used.
           </p>
 

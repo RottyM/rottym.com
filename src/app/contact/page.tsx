@@ -122,8 +122,8 @@ export default function Contact() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase border border-border">
               <Sparkles className="w-3.5 h-3.5" /> Get in Touch
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1]">Let&apos;s Build Something <span className="tech-gradient-text">Exceptional</span>.</h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-md font-medium leading-relaxed">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">Let&apos;s Build Something <span className="tech-gradient-text">Exceptional</span>.</h1>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-md font-medium leading-relaxed">
               Accepting new projects. Whether it&apos;s a modern website, client portal, or full-stack cloud application, let&apos;s build a reliable system together.
             </p>
           </div>

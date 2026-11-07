@@ -65,7 +65,7 @@ export default function Home() {
               {/* Ghost 1: keeps grid row sized to headline 0 */}
               <h1
                 aria-hidden="true"
-                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] 2xl:text-[50px] font-extrabold leading-[1.12] tracking-tight"
+                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-4xl sm:text-5xl md:text-6xl font-black leading-[1.12] tracking-tight"
               >
                 Building fast, modern sites that replace slow WordPress
               </h1>
@@ -73,7 +73,7 @@ export default function Home() {
               {/* Ghost 2: keeps grid row sized to headline 1 */}
               <h1
                 aria-hidden="true"
-                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] 2xl:text-[50px] font-extrabold leading-[1.12] tracking-tight"
+                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-4xl sm:text-5xl md:text-6xl font-black leading-[1.12] tracking-tight"
               >
                 Custom web platforms, client portals, and modern applications
               </h1>
@@ -87,7 +87,7 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
                     transition={{ duration: 0.35, ease: "easeInOut" }}
-                    className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] 2xl:text-[50px] font-extrabold text-foreground leading-[1.12] tracking-tight"
+                    className="text-4xl sm:text-5xl md:text-6xl font-black text-foreground leading-[1.12] tracking-tight"
                   >
                     {headlineIndex === 0 ? (
                       <>
@@ -110,7 +110,7 @@ export default function Home() {
               </div>
             </div>
 
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl">
+            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-xl font-medium">
               Reston-based full-stack developer and UX designer. I build high-performance sites, custom portals, and WordPress escape rebuilds with the precision of enterprise work at Disney, FEMA, and BAE Systems.
             </p>
 
