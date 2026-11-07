@@ -12,30 +12,32 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   metadataBase: new URL('https://rottym.com'),
   title: {
-    default: 'Rottman M. Mendez | Full-Stack Web Developer & UX Designer · Reston, VA',
-    template: '%s | RottyM · Reston, VA',
+    default: 'Rottman M. Mendez | Full-Stack & AI Software Engineer · Reston, VA',
+    template: '%s | RottyM · Full-Stack & AI Software Engineer',
   },
   description:
-    'High-performance Next.js websites, custom client portals, and WordPress migrations for businesses in Reston, Fairfax, and Northern Virginia. Enterprise-grade full-stack engineering with fixed pricing.',
+    'High-performance Next.js web applications, AI-augmented cloud platforms, and custom portals for businesses and technical teams in Reston and Northern Virginia. Enterprise full-stack engineering with fixed pricing.',
   keywords: [
-    'Reston web developer',
-    'Northern Virginia web development',
+    'Full-Stack & AI Software Engineer',
+    'AI software engineer Virginia',
+    'Reston software engineer',
     'NoVA full stack developer',
-    'WordPress migration specialist',
     'Next.js developer Virginia',
+    'LLM & RAG integration',
+    'UI/UX Architecture',
+    'WordPress migration specialist',
     'client portal development',
     'custom web applications Reston',
     'React developer DC metro',
-    'local business website design NoVA',
     'RottyM',
   ],
   authors: [{ name: 'Rottman M. Mendez', url: 'https://rottym.com' }],
   creator: 'Rottman M. Mendez',
   publisher: 'Rottman M. Mendez',
   openGraph: {
-    title: 'Rottman M. Mendez | Full-Stack Web Developer & UX Designer · Reston, VA',
+    title: 'Rottman M. Mendez | Full-Stack & AI Software Engineer · Reston, VA',
     description:
-      'Building fast, modern sites that replace slow WordPress. Fixed-price web development and custom client portals for Reston & Northern Virginia businesses.',
+      'Building high-performance web applications, custom portals, and AI-augmented platforms with deep UI/UX architecture expertise for Reston & Northern Virginia businesses.',
     url: 'https://rottym.com',
     siteName: 'RottyM · Full Stack & AI Software Engineer',
     locale: 'en_US',
@@ -45,15 +47,15 @@ export const metadata: Metadata = {
         url: '/images/portfolio/rottman-hero.jpg',
         width: 1200,
         height: 630,
-        alt: 'Rottman M. Mendez - Full-Stack Developer & UX Designer',
+        alt: 'Rottman M. Mendez - Full-Stack & AI Software Engineer',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Rottman M. Mendez | Full-Stack Web Developer · Reston, VA',
+    title: 'Rottman M. Mendez | Full-Stack & AI Software Engineer · Reston, VA',
     description:
-      'Building fast, modern sites that replace slow WordPress. Fixed-price web development and client portals for Reston & Northern Virginia businesses.',
+      'Building high-performance web applications, custom portals, and AI-augmented platforms with deep UI/UX architecture expertise for Reston & Northern Virginia businesses.',
     images: ['/images/portfolio/rottman-hero.jpg'],
   },
   robots: {
@@ -75,7 +77,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ProfessionalService',
-  name: 'RottyM - Full-Stack Developer & UX Designer',
+  name: 'RottyM - Full-Stack & AI Software Engineer',
   image: 'https://rottym.com/images/portfolio/rottman-hero.jpg',
   '@id': 'https://rottym.com',
   url: 'https://rottym.com',
@@ -105,21 +107,22 @@ const jsonLd = {
   founder: {
     '@type': 'Person',
     name: 'Rottman M. Mendez',
-    jobTitle: 'Full-Stack Software Engineer & UX Designer',
+    jobTitle: 'Full-Stack & AI Software Engineer',
     url: 'https://rottym.com',
   },
   knowsAbout: [
+    'AI Systems & LLM Orchestration',
     'Next.js',
     'React',
     'TypeScript',
+    'UI/UX Architecture',
+    'Cloud Architecture (GCP, AWS, Firebase)',
     'WordPress Migration',
     'Client Portals',
-    'Cloud Architecture',
-    'UX Design',
     'Full-Stack Web Development',
   ],
   description:
-    'High-performance web development, custom client portals, and WordPress escape rebuilds for businesses in Reston and Northern Virginia.',
+    'High-performance web development, custom client portals, and AI-augmented cloud platforms for businesses in Reston and Northern Virginia.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

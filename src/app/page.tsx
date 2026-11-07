@@ -110,7 +110,7 @@ export default function Home() {
             </div>
 
             <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-xl font-medium">
-              Reston-based full-stack developer and UX designer. I build high-performance sites, custom portals, and WordPress escape rebuilds with the precision of enterprise work at Disney, FEMA, and BAE Systems.
+              Reston-based Full-Stack &amp; AI Software Engineer with deep UI/UX architecture expertise. I build high-performance web platforms, custom portals, and AI-augmented applications with the precision of enterprise work at Disney, FEMA, and BAE Systems.
             </p>
 
             <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-200/90 dark:border-white/10 bg-slate-100/90 dark:bg-slate-900/60 backdrop-blur-md shadow-sm text-xs font-medium">
@@ -160,7 +160,7 @@ export default function Home() {
                 <div className="absolute -top-12 -right-12 w-40 h-40 bg-accent/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500 pointer-events-none z-10" />
                 <img
                   src="/images/portfolio/rottman-hero.jpg"
-                  alt="Rottman Mendez Portfolio"
+                  alt="Rottman Mendez - Full-Stack & AI Software Engineer Portfolio"
                   className="w-full h-auto object-cover grayscale-[15%] group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-40 group-hover:opacity-10 transition-opacity" />
