@@ -88,14 +88,14 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
         { offset: '100%', color: '#6B11FF' },
       ],
       mStops: [
-        { offset: '0%', color: '#00F5A0' },
-        { offset: '100%', color: '#00D9F5' },
+        { offset: '0%', color: '#00F2FE' },
+        { offset: '100%', color: '#00F2FE' },
       ],
       rGradientCss: 'linear-gradient(135deg, #00F2FE 0%, #4FACFE 50%, #6B11FF 100%)',
-      mGradientCss: 'linear-gradient(90deg, #00F5A0 0%, #00D9F5 100%)',
-      statusGreen: '#00F5A0',
-      beaconRingPrimary: '#00F5A0',
-      beaconRingSecondary: '#00F2FE',
+      mGradientCss: '#00F2FE',
+      statusGreen: '#00F2FE',
+      beaconRingPrimary: '#00F2FE',
+      beaconRingSecondary: '#38BDF8',
       beaconCore: '#FFFFFF',
       diffuseAura: '#00F2FE',
       dividerBase: '#1E2A42',
@@ -196,10 +196,10 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
             )}
           </filter>
 
-          {/* Dedicated Crisp Shadow Filter for 'M' Chevron to stand out with high contrast */}
+          {/* Dedicated Crisp Shadow Filter for 'M' Chevron in solid electric blue */}
           <filter id={mShadowId} x="-30%" y="-30%" width="160%" height="160%">
             <feDropShadow dx="0" dy="1.5" stdDeviation="2" floodColor="#000000" floodOpacity="0.95" />
-            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#00F5A0" floodOpacity="0.30" />
+            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#00F2FE" floodOpacity="0.35" />
           </filter>
 
           {/* Kinetic animations when animated={true} - Queued on hover */}
@@ -323,11 +323,11 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
             strokeLinejoin="round"
           />
 
-          {/* Crisp Monoglyphic 'M' Chevron with Dedicated High-Contrast Shadow */}
+          {/* Crisp Monoglyphic 'M' Chevron in Solid Electric Blue */}
           <path
             d="M 106 20 L 124 42 L 154 8"
             fill="none"
-            stroke={`url(#${gradMId})`}
+            stroke={isDark ? "#00F2FE" : "#0284C7"}
             strokeWidth="14"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -401,10 +401,10 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
 
       {/* Typography Lockup Group (Optical center aligned with the 'R' monogram) */}
       <div className="flex flex-col justify-center translate-y-[1px] md:translate-y-[1.5px]">
-        {/* Row 1: RottyM Wordmark with robust CSS gradient (eliminates SVG tspan glyph-box bug) */}
+        {/* Row 1: RottyM Wordmark with Solid Electric Blue 'M' */}
         <div className="flex items-center leading-none">
           <span className="font-extrabold text-[22px] sm:text-[24px] md:text-[25px] tracking-[-0.03em] text-foreground select-none inline-flex items-center">
-            Rotty<span className="bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 dark:from-emerald-400 dark:via-cyan-400 dark:to-sky-400 bg-clip-text text-transparent drop-shadow-sm font-black">M</span>
+            Rotty<span className="text-[#0284C7] dark:text-[#00F2FE] font-black">M</span>
           </span>
         </div>
 
