@@ -37,24 +37,24 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center px-6 overflow-hidden">
+      <section className="relative min-h-[calc(100vh-4.75rem)] flex items-center px-6 py-6 md:py-8 overflow-hidden">
         {/* Decorative Background */}
         <div className="absolute top-0 right-0 -z-10 w-1/2 h-full bg-gradient-to-l from-accent/10 to-transparent blur-3xl opacity-50 transition-colors" />
         <div className="absolute -top-24 -left-24 -z-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse-soft transition-colors" />
 
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-start pt-6 md:pt-10 lg:pt-12">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-14 items-center w-full">
           <motion.div
             initial={false}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="space-y-6 sm:space-y-8"
+            className="space-y-4 sm:space-y-5"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full text-accent shadow-sm">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
               </span>
-              <span className="text-sm font-semibold tracking-wide uppercase">Full-Stack Development · Reston, VA</span>
+              <span className="text-xs sm:text-sm font-semibold tracking-wide uppercase">Full-Stack Development · Reston, VA</span>
             </div>
 
             {/* Zero-shift layout-locked rotating headline */}
@@ -62,7 +62,7 @@ export default function Home() {
               {/* Ghost 1: keeps grid row sized to headline 0 */}
               <h1
                 aria-hidden="true"
-                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.15] tracking-tight"
+                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] 2xl:text-[50px] font-extrabold leading-[1.12] tracking-tight"
               >
                 Building fast, modern sites that replace slow WordPress
               </h1>
@@ -70,7 +70,7 @@ export default function Home() {
               {/* Ghost 2: keeps grid row sized to headline 1 */}
               <h1
                 aria-hidden="true"
-                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.15] tracking-tight"
+                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] 2xl:text-[50px] font-extrabold leading-[1.12] tracking-tight"
               >
                 Custom web platforms, client portals, and modern applications
               </h1>
@@ -84,19 +84,19 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
                     transition={{ duration: 0.35, ease: "easeInOut" }}
-                    className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold text-foreground leading-[1.15] tracking-tight"
+                    className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] 2xl:text-[50px] font-extrabold text-foreground leading-[1.12] tracking-tight"
                   >
                     {headlineIndex === 0 ? (
                       <>
                         Building fast, modern sites that{" "}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500">
                           replace slow WordPress
                         </span>
                       </>
                     ) : (
                       <>
                         Custom web platforms,{" "}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-1">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500">
                           client portals
                         </span>
                         , and modern applications
@@ -107,34 +107,34 @@ export default function Home() {
               </div>
             </div>
 
-            <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl">
               Reston-based full-stack developer and UX designer. I build high-performance sites, custom portals, and WordPress escape rebuilds with the precision of enterprise work at Disney, FEMA, and BAE Systems.
             </p>
 
-            <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-muted/60 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/60 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Fixed pricing after a short discovery call · Booking 2026 projects and beyond
             </div>
 
-            <div className="flex flex-wrap gap-4">
-              <Link href="/contact" className="group flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl shadow-accent/20">
+            <div className="flex flex-wrap gap-3.5">
+              <Link href="/contact" className="group flex items-center gap-2 bg-accent text-accent-foreground px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-bold text-base hover:scale-105 transition-all shadow-xl shadow-accent/20">
                 Book a Discovery Call
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link href="/packages" className="flex items-center gap-2 glass px-8 py-4 rounded-2xl font-bold text-lg hover:bg-muted transition-all text-foreground">
+              <Link href="/packages" className="flex items-center gap-2 glass px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-bold text-base hover:bg-muted transition-all text-foreground">
                 View Packages &amp; Pricing
               </Link>
             </div>
 
-            <div className="flex items-center gap-6 pt-2 text-muted-foreground">
-              <div className="flex -space-x-3">
+            <div className="flex items-center gap-4 pt-1 text-muted-foreground">
+              <div className="flex -space-x-2.5">
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[10px] font-bold">
+                  <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[9px] font-bold">
                     {['NY', 'SF', 'DC', 'LD'][i - 1]}
                   </div>
                 ))}
               </div>
-              <p className="text-sm font-medium">
+              <p className="text-xs sm:text-sm font-medium">
                 Serving local organizations and technical teams
               </p>
             </div>
@@ -144,7 +144,7 @@ export default function Home() {
             initial={false}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="relative lg:pt-6 w-full max-w-lg mx-auto lg:max-w-none"
+            className="relative w-full max-w-lg mx-auto lg:max-w-none"
           >
             <Link 
               href="/portfolio" 

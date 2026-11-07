@@ -37,6 +37,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
       
       root.setAttribute('data-theme', activeTheme);
+      root.classList.toggle('dark', activeTheme === 'dark');
       setResolvedTheme(activeTheme);
       
       if (theme !== 'system') {

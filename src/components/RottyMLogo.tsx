@@ -75,6 +75,8 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
   const gradMId = `rotty-m-${uniqueId}`;
   const glowId = `rotty-glow-${uniqueId}`;
   const neonFilterId = `rotty-neon-${uniqueId}`;
+  const depthShadowId = `rotty-shadow-${uniqueId}`;
+  const wordmarkMGradId = `rotty-wordmark-m-${uniqueId}`;
 
   // Palette from Stitch Modern Motion Suite v2.4
   const palette = {
@@ -177,6 +179,22 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
             </feMerge>
           </filter>
 
+          {/* Precision Depth & Drop Shadow Filter */}
+          <filter id={depthShadowId} x="-30%" y="-30%" width="160%" height="160%">
+            {isDark ? (
+              <>
+                <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#00F2FE" floodOpacity="0.45" />
+                <feDropShadow dx="0" dy="4" stdDeviation="10" floodColor="#4FACFE" floodOpacity="0.30" />
+                <feDropShadow dx="0" dy="8" stdDeviation="16" floodColor="#000000" floodOpacity="0.75" />
+              </>
+            ) : (
+              <>
+                <feDropShadow dx="0" dy="1.5" stdDeviation="3" floodColor="#0284C7" floodOpacity="0.30" />
+                <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#0F172A" floodOpacity="0.16" />
+              </>
+            )}
+          </filter>
+
           {/* Kinetic animations when animated={true} - Queued on hover */}
           {animated && (
             <style>{`
@@ -231,48 +249,60 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
 
         {/* Monogram Glyph Group */}
         <g>
-          {/* Diffuse Ambient Neon Aura (Dark mode enhanced) */}
-          {isDark && (
-            <path
-              d="M 28 148 L 28 22 C 28 10 37 0 49 0 L 88 0 C 114 0 134 18 134 44 C 134 68 116 85 92 88 L 138 148"
-              fill="none"
-              stroke={active.diffuseAura}
-              strokeWidth="24"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              opacity="0.22"
-              filter={`url(#${neonFilterId})`}
-            />
-          )}
-
-          {/* Stem of 'R' with Gradient */}
-          <rect
-            x="20"
-            y="4"
-            width="18"
-            height="144"
-            rx="9"
-            fill={`url(#${gradRId})`}
-          />
-
-          {/* Upper loop of 'R' */}
+          {/* Diffuse Ambient Neon Aura (Rendered in both dark and light modes) */}
           <path
-            d="M 34 13 H 84 C 108 13 124 28 124 49 C 124 70 108 85 84 85 H 34"
+            d="M 28 148 L 28 22 C 28 10 37 0 49 0 L 88 0 C 114 0 134 18 134 44 C 134 68 116 85 92 88 L 138 148"
             fill="none"
-            stroke={`url(#${gradRId})`}
-            strokeWidth="18"
+            stroke={isDark ? active.diffuseAura : '#38BDF8'}
+            strokeWidth={isDark ? "28" : "20"}
             strokeLinecap="round"
             strokeLinejoin="round"
+            opacity={isDark ? "0.30" : "0.16"}
+            filter={`url(#${neonFilterId})`}
           />
 
-          {/* Diagonal dynamic leg of 'R' */}
-          <path
-            d="M 72 82 L 128 148"
-            fill="none"
-            stroke={`url(#${gradRId})`}
-            strokeWidth="18"
-            strokeLinecap="round"
-          />
+          {/* Depth Shadow Layer on R Letterform & Chevron Accent */}
+          <g filter={`url(#${depthShadowId})`}>
+            {/* Stem of 'R' with Gradient */}
+            <rect
+              x="20"
+              y="4"
+              width="18"
+              height="144"
+              rx="9"
+              fill={`url(#${gradRId})`}
+            />
+
+            {/* Upper loop of 'R' */}
+            <path
+              d="M 34 13 H 84 C 108 13 124 28 124 49 C 124 70 108 85 84 85 H 34"
+              fill="none"
+              stroke={`url(#${gradRId})`}
+              strokeWidth="18"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+
+            {/* Diagonal dynamic leg of 'R' */}
+            <path
+              d="M 72 82 L 128 148"
+              fill="none"
+              stroke={`url(#${gradRId})`}
+              strokeWidth="18"
+              strokeLinecap="round"
+            />
+
+            {/* The 'M' / AI Chevron Apex Accent (Apex elevated to y=8) */}
+            <path
+              d="M 106 20 L 124 42 L 154 8"
+              fill="none"
+              stroke={`url(#${gradMId})`}
+              strokeWidth="14"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              filter={isDark ? `url(#${neonFilterId})` : undefined}
+            />
+          </g>
 
           {/* High-Velocity Laser Photons Streaming over R contour (Triggers on hover) */}
           {animated && (
@@ -365,25 +395,37 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
 
       {/* Typography Lockup Group (Shifted down ~2.5px to align with the optical center of the 'R' letterform) */}
       <div className="flex flex-col justify-center translate-y-[2px] md:translate-y-[2.5px]">
-        {/* Row 1: RottyM Wordmark */}
+        {/* Row 1: RottyM Wordmark with native SVG gradient fill (zero background-clip bugs) */}
         <div className="flex items-center leading-none">
-          <span className="font-extrabold text-[21px] md:text-[23px] tracking-tight text-foreground leading-none">
-            Rotty
-            <span
-              style={{
-                background: active.rGradientCss,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
+          <svg
+            viewBox="0 0 96 26"
+            className="h-[21px] md:h-[23px] w-auto overflow-visible select-none block"
+            aria-label="RottyM"
+          >
+            <defs>
+              <linearGradient id={wordmarkMGradId} x1="0%" y1="0%" x2="100%" y2="100%">
+                {active.rStops.map((stop, i) => (
+                  <stop key={i} offset={stop.offset} stopColor={stop.color} />
+                ))}
+              </linearGradient>
+            </defs>
+            <text
+              x="0"
+              y="20"
+              fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif"
+              fontSize="23"
+              fontWeight="800"
+              letterSpacing="-0.03em"
+              fill={isDark ? '#F8FAFC' : '#0F172A'}
             >
-              M
-            </span>
-          </span>
+              Rotty<tspan fill={`url(#${wordmarkMGradId})`}>M</tspan>
+            </text>
+          </svg>
         </div>
 
-        {/* Row 2: Title Tagline (Just a subtle nip of letter spacing) */}
+        {/* Row 2: Title Tagline (Matched to exact menu item slate gray with clear contrast) */}
         {!isCompact && !hideSubtitle && (
-          <div className="text-[9px] md:text-[9.5px] font-semibold tracking-[0.09em] text-foreground/80 dark:text-slate-300 uppercase leading-none whitespace-nowrap mt-[2.5px]">
+          <div className="text-[9px] md:text-[9.5px] font-bold tracking-[0.09em] text-foreground/80 dark:text-foreground/80 uppercase leading-none whitespace-nowrap mt-[3px]">
             {subtitle}
           </div>
         )}
