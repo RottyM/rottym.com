@@ -82,7 +82,7 @@ const jsonLd = {
   '@id': 'https://rottym.com',
   url: 'https://rottym.com',
   email: 'rmendez@rottym.com',
-  priceRange: '$2,500 - $8,000',
+  priceRange: '$3,500 - $15,000',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Reston',
