@@ -38,9 +38,12 @@ export default function Home() {
     <>
       {/* Hero Section */}
       <section className="relative min-h-[calc(100vh-4.75rem)] flex items-center px-6 py-6 md:py-8 overflow-hidden">
+        {/* Architectural / Console Dot-Grid Texture */}
+        <div className="absolute inset-0 bg-dot-grid opacity-70 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
+
         {/* Decorative Background */}
-        <div className="absolute top-0 right-0 -z-10 w-1/2 h-full bg-gradient-to-l from-accent/10 to-transparent blur-3xl opacity-50 transition-colors" />
-        <div className="absolute -top-24 -left-24 -z-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse-soft transition-colors" />
+        <div className="absolute top-0 right-0 -z-10 w-2/3 h-full bg-gradient-to-l from-accent/15 via-blue-500/10 to-transparent blur-3xl opacity-60 transition-colors" />
+        <div className="absolute -top-24 -left-24 -z-10 w-[28rem] h-[28rem] bg-gradient-to-br from-emerald-500/10 via-accent/5 to-transparent rounded-full blur-3xl animate-pulse-soft transition-colors" />
 
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-14 items-center w-full">
           <motion.div
@@ -49,7 +52,7 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="space-y-4 sm:space-y-5"
           >
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full text-accent shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full text-accent shadow-sm border border-accent/20">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
@@ -89,14 +92,14 @@ export default function Home() {
                     {headlineIndex === 0 ? (
                       <>
                         Building fast, modern sites that{" "}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-blue-500 to-indigo-500">
                           replace slow WordPress
                         </span>
                       </>
                     ) : (
                       <>
                         Custom web platforms,{" "}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-blue-500 to-indigo-500">
                           client portals
                         </span>
                         , and modern applications
@@ -111,7 +114,7 @@ export default function Home() {
               Reston-based full-stack developer and UX designer. I build high-performance sites, custom portals, and WordPress escape rebuilds with the precision of enterprise work at Disney, FEMA, and BAE Systems.
             </p>
 
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/60 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 dark:border-emerald-500/30 rounded-xl text-xs font-semibold text-emerald-900 dark:text-emerald-300">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Fixed pricing after a short discovery call · Booking 2026 projects and beyond
             </div>
@@ -152,6 +155,8 @@ export default function Home() {
               title="View Portfolio"
             >
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border group-hover:border-accent/50 group-hover:shadow-accent/15 transition-all duration-500 bg-card">
+                {/* Ambient Chromatic Corner Light */}
+                <div className="absolute -top-12 -right-12 w-40 h-40 bg-accent/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500 pointer-events-none z-10" />
                 <img
                   src="/images/portfolio/rottman-hero.jpg"
                   alt="Rottman Mendez Portfolio"
@@ -165,8 +170,9 @@ export default function Home() {
       </section>
 
       {/* Trust Section */}
-      <section className="py-24 border-y border-border bg-muted/30 transition-colors">
-        <div className="max-w-7xl mx-auto px-6 text-center">
+      <section className="py-24 border-y border-border bg-muted/30 transition-colors relative overflow-hidden">
+        <div className="absolute inset-0 bg-dot-grid opacity-50 pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
           <p className="text-sm font-bold tracking-widest uppercase text-muted-foreground mb-12">Previously engineered for</p>
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
             {['Disney', 'FEMA', 'BAE Systems', 'FAA', 'Leidos', 'USA Today'].map(c => (
@@ -226,13 +232,15 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="group p-8 rounded-3xl border border-border hover:border-accent/40 hover:bg-card transition-all shadow-sm hover:shadow-xl"
+                className="group relative p-8 rounded-3xl border border-border/80 hover:border-accent/50 bg-card/70 dark:bg-card/90 backdrop-blur-sm transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1 overflow-hidden"
               >
-                <div className={`w-12 h-12 rounded-2xl ${service.bg} flex items-center justify-center ${service.accent} mb-6 group-hover:scale-110 transition-transform`}>
+                {/* Ambient Chromatic Corner Light */}
+                <div className="absolute -right-12 -top-12 w-36 h-36 bg-accent/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
+                <div className={`w-12 h-12 rounded-2xl ${service.bg} flex items-center justify-center ${service.accent} mb-6 group-hover:scale-110 transition-transform relative z-10`}>
                   {service.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-4">{service.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <h3 className="text-xl font-bold mb-4 relative z-10">{service.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed relative z-10">
                   {service.desc}
                 </p>
               </motion.div>
@@ -285,9 +293,11 @@ export default function Home() {
             ].map((p) => (
               <div
                 key={p.step}
-                className="p-8 rounded-[2rem] border border-border bg-card/60 hover:bg-card hover:border-accent/30 transition-all duration-300 shadow-sm flex flex-col justify-between group"
+                className="group relative p-8 rounded-[2rem] border border-border/80 bg-card/70 dark:bg-card/90 backdrop-blur-sm hover:border-accent/40 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1 flex flex-col justify-between overflow-hidden"
               >
-                <div>
+                {/* Ambient Corner Light */}
+                <div className="absolute -right-10 -top-10 w-28 h-28 bg-accent/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
+                <div className="relative z-10">
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-2xl font-black font-mono text-accent">
                       {p.step}
@@ -376,11 +386,15 @@ export default function Home() {
             ].map((pkg) => (
               <div
                 key={pkg.title}
-                className={`p-8 rounded-[2.5rem] border bg-card flex flex-col justify-between transition-all duration-300 shadow-sm hover:shadow-xl ${
-                  pkg.featured ? 'border-accent shadow-accent/10 ring-1 ring-accent/20' : 'border-border'
+                className={`group relative p-8 rounded-[2.5rem] border bg-card/70 dark:bg-card/90 backdrop-blur-sm flex flex-col justify-between transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 overflow-hidden ${
+                  pkg.featured
+                    ? 'border-accent shadow-accent/10 ring-1 ring-accent/30'
+                    : 'border-border/80 hover:border-accent/40 hover:shadow-accent/5'
                 }`}
               >
-                <div className="space-y-4">
+                {/* Ambient Chromatic Corner Light */}
+                <div className="absolute -right-12 -top-12 w-36 h-36 bg-accent/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
+                <div className="space-y-4 relative z-10">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black uppercase tracking-widest text-accent bg-accent/10 px-3 py-1 rounded-full">
                       {pkg.badge}
@@ -437,15 +451,15 @@ export default function Home() {
                 desc: "A custom operating system concept for motorcycle riders — built as a high-performance Next.js application with real-time data handling, user accounts, and cloud-backed features. Focused on clean architecture and mobile-first interaction.",
                 image: "/images/apps/throttlelife.png",
                 badge: "Next.js Application",
-                icon: <Zap className="w-6 h-6" />
+                icon: <Zap className="w-5 h-5" />
               },
               {
                 slug: "found-archives",
-                name: "Found Archives (Next.js Rebuild)",
+                name: "Found Archives",
                 desc: "WordPress Escape Case Study: Replaced a slow, 28-plugin monolithic WordPress installation with a modern decoupled Next.js App Router and Sanity CMS setup on Vercel. Result: 99/100 Lighthouse performance and sub-350ms TTFB.",
                 image: "/images/portfolio/found-archives-homepage.png",
                 badge: "WordPress Escape Case Study",
-                icon: <Globe className="w-6 h-6" />
+                icon: <Globe className="w-5 h-5" />
               },
               {
                 slug: "northern-virginia-writers",
@@ -453,7 +467,7 @@ export default function Home() {
                 desc: "Proof of deep WordPress & BuddyBoss internals: managing custom user roles, membership databases, and recurring Stripe subscriptions. This deep CMS mastery is what makes our headless migrations seamless and risk-free.",
                 image: "/images/portfolio/northernvirginiawriters-home.png",
                 badge: "WordPress Mastery & Portals",
-                icon: <Users className="w-6 h-6" />
+                icon: <Users className="w-5 h-5" />
               }
             ].map((app, idx) => (
               <motion.div
@@ -466,28 +480,32 @@ export default function Home() {
               >
                 <Link
                   href={`/portfolio/${app.slug}`}
-                  className="relative aspect-[16/10] bg-card rounded-[2.5rem] border border-border overflow-hidden shadow-2xl group-hover:border-accent/40 group-hover:shadow-accent/10 transition-all duration-500 block"
+                  className="relative aspect-[16/11] bg-card/80 dark:bg-card/90 backdrop-blur-sm rounded-[2.25rem] border border-border/80 overflow-hidden shadow-xl hover:shadow-2xl hover:border-accent/50 hover:-translate-y-1 transition-all duration-300 block"
                 >
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
+                  {/* App Info Overlay */}
+                  <div className="absolute top-6 left-6 right-6 flex items-center gap-3.5 z-20">
+                    <div className="w-11 h-11 bg-accent rounded-xl flex items-center justify-center text-accent-foreground shadow-md shrink-0">
+                      {app.icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-lg font-black text-foreground group-hover:text-accent transition-colors tracking-tight truncate leading-tight">
+                        {app.name}
+                      </h3>
+                      <p className="text-[11px] font-black uppercase tracking-wider text-accent truncate mt-0.5">
+                        {app.badge}
+                      </p>
+                    </div>
+                  </div>
+
                   {/* App Screen Mockup */}
-                  <div className="absolute -bottom-8 left-6 right-6 top-24 rounded-[2rem] border border-border shadow-2xl overflow-hidden bg-background">
+                  <div className="absolute -bottom-8 left-6 right-6 top-[5.75rem] rounded-[1.75rem] border border-border/80 shadow-2xl overflow-hidden bg-background">
                     <img
                       src={app.image}
                       alt={app.name}
-                      className="w-full h-full object-cover object-top grayscale-[15%] group-hover:grayscale-0 transition-all duration-700"
+                      className="w-full h-full object-cover object-top grayscale-[10%] group-hover:grayscale-0 transition-all duration-500"
                     />
-                  </div>
-
-                  {/* App Info Overlay */}
-                  <div className="absolute top-8 left-8 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center text-accent-foreground shadow-lg">
-                      {app.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-black text-foreground group-hover:text-accent transition-colors">{app.name}</h3>
-                      <p className="text-xs font-black uppercase tracking-widest text-accent">{app.badge}</p>
-                    </div>
                   </div>
                 </Link>
                 <div className="mt-6 px-2 space-y-3">
