@@ -94,12 +94,19 @@ const packages = [
 
 export default function PackagesPage() {
   return (
-    <div className="min-h-screen py-16 md:py-24 px-6">
-      <div className="max-w-7xl mx-auto space-y-24">
+    <div className="relative min-h-screen py-16 md:py-24 px-6 overflow-hidden">
+      {/* Background Dot-Grid Texture */}
+      <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
+
+      {/* Atmospheric Radial Ambient Lighting */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/15 via-emerald-500/10 to-transparent blur-[130px] rounded-full -z-10" />
+      <div className="pointer-events-none absolute top-1/2 -left-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
+
+      <div className="max-w-7xl mx-auto space-y-24 relative z-10">
 
         {/* Hero Section */}
         <div className="text-center space-y-6 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm border border-border">
             <Sparkles className="w-4 h-4" />
             <span className="text-xs md:text-sm font-bold tracking-wide uppercase">
               Reston &amp; Northern Virginia Fixed-Scope Packages
@@ -108,7 +115,7 @@ export default function PackagesPage() {
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.2]">
             Local Packages for{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500 inline-block pr-2.5">
+            <span className="tech-gradient-text inline-block pr-2.5">
               Reston &amp; NoVA
             </span>{" "}
             Businesses
@@ -160,24 +167,27 @@ export default function PackagesPage() {
           {packages.map((pkg) => (
             <div
               key={pkg.id}
-              className={`relative rounded-[2.5rem] border bg-card p-8 md:p-10 flex flex-col justify-between transition-all duration-300 shadow-lg hover:shadow-2xl ${pkg.borderHover} ${
+              className={`stitch-card relative rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent ${pkg.borderHover} ${
                 pkg.featured 
                   ? 'border-accent shadow-accent/10 ring-2 ring-accent/20 scale-[1.02] lg:-translate-y-2' 
                   : 'border-border'
               }`}
             >
+              {/* Chromatic Corner Aura */}
+              <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+
               {pkg.badge && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-md">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-md z-10">
                   {pkg.badge}
                 </div>
               )}
 
-              <div className="space-y-6">
+              <div className="space-y-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div className={`w-14 h-14 rounded-2xl ${pkg.accentBg} ${pkg.accent} flex items-center justify-center shadow-sm`}>
                     {pkg.icon}
                   </div>
-                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">
                     {pkg.subtitle}
                   </span>
                 </div>
@@ -228,17 +238,23 @@ export default function PackagesPage() {
           ))}
         </div>
 
+        {/* Laser Divider */}
+        <div className="laser-divider my-8" />
+
         {/* Ongoing Care & Optional Add-ons Row */}
         <div className="grid lg:grid-cols-2 gap-8 items-stretch">
           
           {/* Ongoing Care */}
-          <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-lg flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300">
-            <div className="space-y-6">
+          <div className="stitch-card p-8 md:p-10 rounded-[2.5rem] shadow-lg flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
+            {/* Chromatic Corner Aura */}
+            <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+            
+            <div className="space-y-6 relative z-10">
               <div className="flex items-center justify-between">
                 <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
-                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-black uppercase tracking-widest">
+                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-black uppercase tracking-widest font-mono">
                   Optional Add-on
                 </span>
               </div>
@@ -264,7 +280,7 @@ export default function PackagesPage() {
                   "Optional light AI-assisted content or form optimization",
                   "Can be added to any package above. Cancel anytime."
                 ].map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-foreground/90">
+                  <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-foreground/90 font-medium">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                     <span>{item}</span>
                   </li>
@@ -272,10 +288,10 @@ export default function PackagesPage() {
               </ul>
             </div>
 
-            <div className="pt-8">
+            <div className="pt-8 relative z-10">
               <Link
                 href="/contact?service=ongoing-care"
-                className="w-full py-4 px-6 rounded-2xl font-black text-base bg-muted hover:bg-accent hover:text-accent-foreground text-foreground flex items-center justify-center gap-2 transition-all"
+                className="w-full py-4 px-6 rounded-2xl font-black text-base bg-muted hover:bg-accent hover:text-accent-foreground text-foreground flex items-center justify-center gap-2 transition-all shadow-sm"
               >
                 Add Ongoing Care <ArrowRight className="w-4 h-4" />
               </Link>
@@ -283,13 +299,16 @@ export default function PackagesPage() {
           </div>
 
           {/* Optional Add-Ons */}
-          <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-lg flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300">
-            <div className="space-y-6">
+          <div className="stitch-card p-8 md:p-10 rounded-[2.5rem] shadow-lg flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
+            {/* Chromatic Corner Aura */}
+            <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+            
+            <div className="space-y-6 relative z-10">
               <div className="flex items-center justify-between">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
                   <Sparkles className="w-6 h-6" />
                 </div>
-                <span className="px-3 py-1 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-black uppercase tracking-widest">
+                <span className="px-3 py-1 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-black uppercase tracking-widest font-mono">
                   Custom Modules
                 </span>
               </div>
@@ -300,7 +319,7 @@ export default function PackagesPage() {
               </div>
 
               <div className="space-y-4 border-t border-border/60 pt-6">
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
+                <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 flex items-start gap-4">
                   <div className="p-2.5 rounded-xl bg-accent/10 text-accent shrink-0">
                     <Languages className="w-5 h-5" />
                   </div>
@@ -315,7 +334,7 @@ export default function PackagesPage() {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-4">
+                <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 flex items-start gap-4">
                   <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-500 shrink-0">
                     <Bot className="w-5 h-5" />
                   </div>

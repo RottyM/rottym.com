@@ -104,19 +104,26 @@ export default function Contact() {
   }
 
   return (
-    <section className="py-24 px-6 min-h-screen">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20">
+    <section className="relative py-20 md:py-24 px-6 min-h-screen overflow-hidden">
+      {/* Background Dot-Grid Texture */}
+      <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
+
+      {/* Atmospheric Radial Ambient Lighting */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/15 via-emerald-500/10 to-transparent blur-[130px] rounded-full -z-10" />
+      <div className="pointer-events-none absolute bottom-1/4 -right-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
+
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 relative z-10">
         <motion.div
           initial={false}
           animate={{ opacity: 1, x: 0 }}
           className="space-y-12"
         >
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase border border-border">
               <Sparkles className="w-3.5 h-3.5" /> Get in Touch
             </div>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1]">Let&apos;s Build Something <span className="text-accent">Exceptional</span>.</h1>
-            <p className="text-xl text-muted-foreground max-w-md font-medium leading-relaxed">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1]">Let&apos;s Build Something <span className="tech-gradient-text">Exceptional</span>.</h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-md font-medium leading-relaxed">
               Accepting new projects. Whether it&apos;s a modern website, client portal, or full-stack cloud application, let&apos;s build a reliable system together.
             </p>
           </div>
@@ -127,7 +134,7 @@ export default function Contact() {
                 <Mail className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Direct Access</p>
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">Direct Access</p>
                 <p className="text-lg font-bold">rmendez@rottym.com</p>
               </div>
             </div>
@@ -140,13 +147,13 @@ export default function Contact() {
                 <Phone className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Direct Line</p>
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">Direct Line</p>
                 {phoneRevealed ? (
-                  <a href="tel:2028540954" className="text-lg font-bold hover:text-accent transition-colors">(202) 854-0954</a>
+                  <a href="tel:2028540954" className="text-lg font-bold hover:text-accent transition-colors font-mono">(202) 854-0954</a>
                 ) : (
                   <button
                     onClick={() => setPhoneRevealed(true)}
-                    className="text-lg font-bold text-foreground/50 border-b border-dashed border-foreground/30 hover:text-accent hover:border-accent transition-all text-left"
+                    className="text-lg font-bold text-foreground/50 border-b border-dashed border-foreground/30 hover:text-accent hover:border-accent transition-all text-left cursor-pointer"
                   >
                     Click to Reveal
                   </button>
@@ -159,7 +166,7 @@ export default function Contact() {
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">HQ Location</p>
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">HQ Location</p>
                 <p className="text-lg font-bold">Virginia, USA · Global Delivery</p>
               </div>
             </div>
@@ -181,7 +188,7 @@ export default function Contact() {
             </Link>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-10 rounded-[3rem] bg-card border border-border shadow-2xl space-y-6">
+          <form onSubmit={handleSubmit} className="stitch-card p-8 md:p-10 rounded-[3rem] shadow-2xl space-y-6 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label htmlFor="name" className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Full Name</label>

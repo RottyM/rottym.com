@@ -174,11 +174,14 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Laser Divider */}
+      <div className="laser-divider" />
+
       {/* Trust Section */}
-      <section className="py-24 border-y border-border bg-muted/30 transition-colors relative overflow-hidden">
+      <section className="py-24 bg-muted/30 transition-colors relative overflow-hidden">
         <div className="absolute inset-0 bg-dot-grid opacity-50 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-          <p className="text-sm font-bold tracking-widest uppercase text-muted-foreground mb-12">Previously engineered for</p>
+          <p className="text-sm font-bold tracking-widest uppercase text-muted-foreground mb-12 font-mono">Previously engineered for</p>
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
             {['Disney', 'FEMA', 'BAE Systems', 'FAA', 'Leidos', 'USA Today'].map(c => (
               <span key={c} className="text-2xl md:text-3xl font-black tracking-tighter text-foreground">{c}</span>
@@ -190,11 +193,15 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Laser Divider */}
+      <div className="laser-divider" />
+
       {/* Services Section */}
-      <section className="py-32 px-6">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-32 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center space-y-4 mb-20 text-balance">
-            <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight">Everything you need to <span className="text-accent underline decoration-accent/30 underline-offset-8">scale</span></h2>
+            <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight">Everything you need to <span className="tech-gradient-text">scale</span></h2>
             <p className="text-muted-foreground text-xl max-w-2xl mx-auto font-medium">
               I don&apos;t just build websites. I engineer high-performance digital ecosystems using the most modern stacks.
             </p>
@@ -254,15 +261,19 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Laser Divider */}
+      <div className="laser-divider" />
+
       {/* How We Work Section */}
-      <section className="py-24 px-6 border-t border-border bg-background transition-colors">
-        <div className="max-w-7xl mx-auto space-y-16">
+      <section className="py-24 px-6 bg-background transition-colors relative overflow-hidden">
+        <div className="absolute inset-0 bg-dot-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
+        <div className="max-w-7xl mx-auto space-y-16 relative z-10">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
-              <Sparkles className="w-3 h-3" /> The Process
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full text-accent text-xs font-bold uppercase tracking-widest border border-border">
+              <Sparkles className="w-3.5 h-3.5" /> The Process
             </div>
             <h2 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
-              How a project works
+              How a Project <span className="tech-gradient-text">Works</span>
             </h2>
             <p className="text-muted-foreground text-lg font-medium">
               A clear, predictable roadmap from first conversation to live deployment. No open-ended hourly surprises.
@@ -341,16 +352,20 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Laser Divider */}
+      <div className="laser-divider" />
+
       {/* Local Packages / Start Here Teaser */}
-      <section className="py-24 px-6 border-t border-border bg-muted/20 transition-colors">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-24 px-6 bg-muted/20 transition-colors relative overflow-hidden">
+        <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
-                <Sparkles className="w-3 h-3" /> Fixed-Scope Packages
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full text-accent text-xs font-bold uppercase tracking-widest border border-border">
+                <Sparkles className="w-3.5 h-3.5" /> Fixed-Scope Packages
               </div>
               <h2 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
-                Local Packages &amp; Pricing
+                Local Packages &amp; <span className="tech-gradient-text">Pricing</span>
               </h2>
               <p className="text-muted-foreground text-lg max-w-xl font-medium">
                 High-performance modern stacks with transparent starting ranges. Exact price fixed after a 15-min call.
@@ -428,17 +443,20 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Laser Divider */}
+      <div className="laser-divider" />
+
       {/* Selected Work & Projects Section */}
       <section className="py-32 px-6 bg-accent/[0.03] transition-colors relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
-                <Sparkles className="w-3 h-3" /> Platforms & Applications
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 glass rounded-full text-accent text-xs font-bold uppercase tracking-widest border border-border">
+                <Sparkles className="w-3.5 h-3.5" /> Platforms &amp; Applications
               </div>
-              <h2 className="text-4xl md:text-6xl font-black tracking-tight">Selected Work & <span className="text-accent">Projects</span>.</h2>
+              <h2 className="text-4xl md:text-6xl font-black tracking-tight text-foreground">Selected Work &amp; <span className="tech-gradient-text">Projects</span>.</h2>
               <p className="text-muted-foreground text-xl max-w-2xl font-medium">
                 A mix of client platforms and self-initiated systems that demonstrate full-stack development, product thinking, and modern deployment practices.
               </p>

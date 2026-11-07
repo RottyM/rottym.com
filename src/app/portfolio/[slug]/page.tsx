@@ -83,8 +83,15 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
   const cs = project.caseStudy;
 
   return (
-    <div className="py-16 md:py-24 px-6 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-16">
+    <div className="relative py-16 md:py-24 px-6 min-h-screen overflow-hidden">
+      {/* Background Dot-Grid Texture */}
+      <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
+
+      {/* Atmospheric Radial Ambient Lighting */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/15 via-emerald-500/10 to-transparent blur-[130px] rounded-full -z-10" />
+      <div className="pointer-events-none absolute top-1/2 -right-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
+
+      <div className="max-w-7xl mx-auto space-y-16 relative z-10">
         {/* Top Breadcrumb & Tag */}
         <div className="flex items-center justify-between border-b border-border/80 pb-4">
           <Link
@@ -95,14 +102,14 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             Back to Selected Work
           </Link>
 
-          <span className="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-card text-foreground border border-border shadow-sm">
+          <span className="px-3 py-1 rounded-lg text-[10px] font-mono font-black uppercase tracking-wider bg-card text-foreground border border-border shadow-sm">
             {project.tag}
           </span>
         </div>
 
         {/* Hero Header (Centered to match /services, /packages, and site layout) */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase border border-border">
             <Sparkles className="w-3.5 h-3.5" /> {project.category} · {project.role}
           </div>
 
@@ -115,7 +122,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
           </p>
 
           <div className="pt-2">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/70 border border-border/80 rounded-xl text-xs sm:text-sm font-semibold text-foreground/90 shadow-sm">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/80 border border-border/80 rounded-xl text-xs sm:text-sm font-mono font-semibold text-foreground/90 shadow-sm">
               <Zap className="w-4 h-4 text-accent shrink-0" />
               <span>{project.highlightMetric}</span>
             </div>
@@ -137,8 +144,8 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
 
           {/* Proof Overlay Bar attached to snapshot */}
           {cs?.proofBar && (
-            <div className="p-5 md:p-6 bg-card border border-border/80 rounded-2xl shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
+            <div className="stitch-card p-5 md:p-6 rounded-2xl shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
+              <div className="flex items-center gap-3 relative z-10">
                 <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shrink-0">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
@@ -150,7 +157,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 relative z-10">
                 {cs.proofBar.chips.map((chip) => (
                   <span
                     key={chip}
@@ -179,9 +186,9 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
         {cs ? (
           <div className="max-w-5xl mx-auto space-y-16">
             {/* High-Visibility Metadata & Spec Grid */}
-            <div className="p-6 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-xl space-y-8">
+            <div className="stitch-card p-6 md:p-10 rounded-[2.5rem] shadow-xl space-y-8 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
               {/* 4-Column Top Data Metrics */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pb-8 border-b border-border/80">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pb-8 border-b border-border/80 relative z-10">
                 {cs.metrics.map((m, idx) => (
                   <div key={m.label} className="space-y-1">
                     <div className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-semibold">
@@ -619,7 +626,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
               href={`/portfolio/${prevProject.slug}`}
               className="flex flex-col items-start gap-1 text-sm font-bold text-foreground hover:text-accent transition-colors group"
             >
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1 font-mono">
                 <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" /> Previous Project
               </span>
               <span>{prevProject.title}</span>
@@ -633,7 +640,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
               href={`/portfolio/${nextProject.slug}`}
               className="flex flex-col items-end gap-1 text-sm font-bold text-foreground hover:text-accent transition-colors group text-right"
             >
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1 font-mono">
                 Next Project <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
               </span>
               <span>{nextProject.title}</span>
@@ -643,15 +650,19 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
           )}
         </div>
 
+        {/* Laser Divider */}
+        <div className="max-w-5xl mx-auto laser-divider my-8" />
+
         {/* Signature Call to Action (Matching site layout) */}
-        <div className="max-w-5xl mx-auto p-10 md:p-14 rounded-[3rem] glass border border-accent/20 text-center space-y-6">
-          <h2 className="text-3xl md:text-4xl font-black text-foreground">
+        <div className="max-w-5xl mx-auto p-10 md:p-14 rounded-[3rem] glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
+          <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent/15 rounded-full blur-3xl" />
+          <h2 className="text-3xl md:text-4xl font-black text-foreground relative z-10">
             Have a project or migration in mind? Let&apos;s talk scope.
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base">
+          <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base md:text-lg relative z-10 leading-relaxed">
             Fixed pricing after a 15-minute discovery call. We build high-performance platforms with zero runaway hourly surprises.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4 relative z-10 pt-2">
             <Link
               href="/contact"
               className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-black text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20"

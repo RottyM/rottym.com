@@ -58,51 +58,59 @@ const skillsets = [
 
 export default function About() {
   return (
-    <section className="py-16 md:py-24 px-6 max-w-5xl mx-auto space-y-20">
-      {/* Intro Header */}
-      <div className="text-center space-y-6 max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span className="text-xs font-bold tracking-wide uppercase">
-            Full-Stack &amp; AI Software Engineer · Reston, VA
-          </span>
-        </div>
+    <section className="relative py-16 md:py-24 px-6 min-h-screen overflow-hidden">
+      {/* Background Dot-Grid Texture */}
+      <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
-        <h1 className="text-5xl md:text-6xl font-black tracking-tight text-foreground">
-          Rottman M. Mendez
-        </h1>
+      {/* Atmospheric Radial Ambient Lighting */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/15 via-emerald-500/10 to-transparent blur-[130px] rounded-full -z-10" />
+      <div className="pointer-events-none absolute top-1/2 -right-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
 
-        <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium">
-          Full-Stack &amp; AI Software Engineer based in Reston, Virginia. With extensive experience engineering scalable enterprise microservices (Disney Streaming, FEMA, BAE Systems, FAA via Leidos) and delivering AI-augmented cloud platforms, I specialize in modern serverless web stacks (Next.js, React, TypeScript, Tailwind CSS, Sanity, Vercel) and enterprise backend systems (Java, Spring Boot, Scala, GCP, Firebase, AWS). I help organizations and technical teams replace fragile legacy systems with reliable, high-performance digital platforms.
-        </p>
-
-        {/* Action Buttons directly under the bio */}
-        <div className="pt-2 flex flex-col items-center gap-4">
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-7 py-3.5 rounded-2xl font-bold text-sm hover:scale-105 transition-all shadow-lg shadow-accent/20"
-            >
-              Hire Me / Get in Touch <ArrowRight className="w-4 h-4" />
-            </Link>
-            <a
-              href="/resume.pdf"
-              download="Rottman_Mendez_Resume.pdf"
-              className="inline-flex items-center gap-2 glass px-7 py-3.5 rounded-2xl font-bold text-sm hover:bg-muted transition-all text-foreground border border-border shadow-sm"
-            >
-              <Download className="w-4 h-4 text-accent" /> Download Resume (PDF)
-            </a>
+      <div className="max-w-5xl mx-auto space-y-20 relative z-10">
+        {/* Intro Header */}
+        <div className="text-center space-y-6 max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm border border-border">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-xs font-bold tracking-wide uppercase font-mono">
+              Full-Stack &amp; AI Software Engineer · Reston, VA
+            </span>
           </div>
 
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-muted/70 border border-border/80 rounded-xl text-xs sm:text-sm font-semibold text-foreground/90 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Looking for Full Stack &amp; AI Software Engineer roles and technical partners</span>
+          <h1 className="text-5xl md:text-6xl font-black tracking-tight text-foreground">
+            Rottman M. <span className="tech-gradient-text">Mendez</span>
+          </h1>
+
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium">
+            Full-Stack &amp; AI Software Engineer based in Reston, Virginia. With extensive experience engineering scalable enterprise microservices (Disney Streaming, FEMA, BAE Systems, FAA via Leidos) and delivering AI-augmented cloud platforms, I specialize in modern serverless web stacks (Next.js, React, TypeScript, Tailwind CSS, Sanity, Vercel) and enterprise backend systems (Java, Spring Boot, Scala, GCP, Firebase, AWS). I help organizations and technical teams replace fragile legacy systems with reliable, high-performance digital platforms.
+          </p>
+
+          {/* Action Buttons directly under the bio */}
+          <div className="pt-2 flex flex-col items-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-7 py-3.5 rounded-2xl font-bold text-sm hover:scale-105 transition-all shadow-lg shadow-accent/20"
+              >
+                Hire Me / Get in Touch <ArrowRight className="w-4 h-4" />
+              </Link>
+              <a
+                href="/resume.pdf"
+                download="Rottman_Mendez_Resume.pdf"
+                className="inline-flex items-center gap-2 glass px-7 py-3.5 rounded-2xl font-bold text-sm hover:bg-muted transition-all text-foreground border border-border shadow-sm"
+              >
+                <Download className="w-4 h-4 text-accent" /> Download Resume (PDF)
+              </a>
+            </div>
+
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-muted/80 border border-border/80 rounded-xl text-xs sm:text-sm font-semibold text-foreground/90 shadow-sm font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Looking for Full Stack &amp; AI Software Engineer roles and technical partners</span>
+            </div>
           </div>
         </div>
-      </div>
 
       <div className="grid md:grid-cols-2 gap-12 items-start">
         {/* Core Experience Column */}
@@ -131,8 +139,8 @@ export default function About() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {skillsets.map((skillset, idx) => (
-              <div key={idx} className="p-4 rounded-2xl bg-muted/30 border border-border transition-colors">
-                <h4 className="font-bold text-xs mb-3 text-foreground/80 uppercase tracking-widest">{skillset.category}</h4>
+              <div key={idx} className="stitch-card p-4 rounded-2xl relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
+                <h4 className="font-bold text-xs mb-3 text-foreground/80 uppercase tracking-widest font-mono">{skillset.category}</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {skillset.skills.map(skill => (
                     <span key={skill} className="px-2 py-0.5 text-[10px] font-bold bg-accent/5 text-accent rounded-md border border-accent/10">
@@ -150,28 +158,28 @@ export default function About() {
               <Award className="w-6 h-6" />
               <h2 className="text-2xl font-bold tracking-tight text-foreground">Enterprise &amp; Mission Impact</h2>
             </div>
-            <div className="p-6 glass rounded-2xl border border-border space-y-4">
+            <div className="stitch-card p-6 rounded-2xl space-y-4 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
-                  <p className="text-2xl font-black text-accent">100M+</p>
+                  <p className="text-2xl font-black font-mono text-accent">100M+</p>
                   <p className="text-xs text-muted-foreground font-semibold mt-1">
                     Engineer on Disney Streaming platform serving 100M+ global subscribers
                   </p>
                 </div>
                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
-                  <p className="text-2xl font-black text-accent">$3B+</p>
+                  <p className="text-2xl font-black font-mono text-accent">$3B+</p>
                   <p className="text-xs text-muted-foreground font-semibold mt-1">
                     Full-stack engineer on FEMA GO platform processing $3B+ in annual federal grant funding
                   </p>
                 </div>
                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
-                  <p className="text-2xl font-black text-accent">95–100</p>
+                  <p className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">95–100</p>
                   <p className="text-xs text-muted-foreground font-semibold mt-1">
                     Google Lighthouse performance &amp; production quality benchmarks
                   </p>
                 </div>
                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
-                  <p className="text-2xl font-black text-accent">45%+</p>
+                  <p className="text-2xl font-black font-mono text-accent">45%+</p>
                   <p className="text-xs text-muted-foreground font-semibold mt-1">
                     Faster prototyping &amp; delivery via agentic workflows vs. traditional manual scaffolding
                   </p>
@@ -182,9 +190,13 @@ export default function About() {
         </div>
       </div>
 
+      {/* Laser Divider */}
+      <div className="laser-divider my-8" />
+
       {/* Recruiter & Strategic Partnership CTA Banner */}
-      <div className="p-10 rounded-[2.5rem] glass border border-accent/20 text-center space-y-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest">
+      <div className="p-10 rounded-[2.5rem] glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
+        <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent/15 rounded-full blur-3xl" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-black uppercase tracking-widest relative z-10">
           <Sparkles className="w-3 h-3" /> Career Opportunities
         </div>
         <h2 className="text-3xl md:text-4xl font-black text-foreground">
@@ -209,6 +221,7 @@ export default function About() {
           </a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
   );
 }

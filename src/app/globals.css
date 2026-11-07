@@ -53,8 +53,59 @@ body {
 }
 
 .bg-dot-grid {
-  background-image: radial-gradient(color-mix(in srgb, var(--foreground) 6%, transparent) 1px, transparent 1px);
+  background-image: radial-gradient(color-mix(in srgb, var(--foreground) 7%, transparent) 1px, transparent 1px);
   background-size: 20px 20px;
+}
+
+.laser-divider {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.laser-divider::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: -35%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, var(--accent), #00f5a0, transparent);
+  animation: laserScan 7s ease-in-out infinite;
+}
+
+@keyframes laserScan {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+.tech-gradient-text {
+  background-image: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #059669 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+[data-theme='dark'] .tech-gradient-text {
+  background-image: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #00f5a0 100%);
+}
+
+.stitch-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stitch-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.08), 0 0 1px 1px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+[data-theme='dark'] .stitch-card:hover {
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7), 0 0 1px 1px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 @keyframes pulse-soft {

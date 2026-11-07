@@ -24,12 +24,15 @@ export default function Portfolio() {
   const renderCard = (project: Project) => (
     <div
       key={project.slug}
-      className="group flex flex-col rounded-[2.25rem] bg-card border border-border hover:border-accent/40 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden"
+      className="stitch-card group flex flex-col rounded-[2.25rem] shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden relative before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent"
     >
+      {/* Chromatic Corner Aura */}
+      <div className="pointer-events-none absolute -right-12 -top-12 w-36 h-36 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+
       {/* Thumbnail Image Container */}
       <Link
         href={`/portfolio/${project.slug}`}
-        className="relative aspect-[16/10] bg-muted/50 overflow-hidden block select-none border-b border-border/50"
+        className="relative aspect-[16/10] bg-muted/50 overflow-hidden block select-none border-b border-border/60"
         title={`View ${project.title} Case Study`}
       >
         <Image
@@ -40,14 +43,14 @@ export default function Portfolio() {
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-20 group-hover:opacity-0 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-30 group-hover:opacity-0 transition-opacity" />
 
         {/* Top Badges Overlay */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none">
-          <span className="h-5 inline-flex items-center px-2 rounded-md text-[9px] font-black uppercase tracking-wider bg-card/90 text-foreground border border-border/80 backdrop-blur-md shadow-sm">
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none z-10">
+          <span className="h-5 inline-flex items-center px-2 rounded-md text-[9px] font-black uppercase tracking-wider bg-card/95 text-foreground border border-border/80 backdrop-blur-md shadow-sm">
             {project.tag}
           </span>
-          <span className="h-5 inline-flex items-center gap-1 px-2 rounded-md text-[9px] font-bold uppercase tracking-wider bg-card/90 text-muted-foreground border border-border/80 backdrop-blur-md shadow-sm">
+          <span className="h-5 inline-flex items-center gap-1 px-2 rounded-md text-[9px] font-bold uppercase tracking-wider bg-card/95 text-muted-foreground border border-border/80 backdrop-blur-md shadow-sm">
             <Monitor className="w-2.5 h-2.5 text-accent shrink-0" />
             <span>{project.role}</span>
           </span>
@@ -55,10 +58,10 @@ export default function Portfolio() {
       </Link>
 
       {/* Card Body */}
-      <div className="p-7 flex-1 flex flex-col justify-between space-y-5">
+      <div className="p-7 flex-1 flex flex-col justify-between space-y-5 relative z-10">
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] font-black uppercase tracking-wider text-accent">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-accent">
               {project.category}
             </span>
           </div>
@@ -75,12 +78,12 @@ export default function Portfolio() {
 
           {/* Before / After Callout for Migrations */}
           {project.beforeAfter && (
-            <div className="p-3.5 rounded-xl bg-accent/5 border border-accent/15 text-xs space-y-1">
-              <div className="flex items-center gap-1.5 font-bold text-accent">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+            <div className="p-3.5 rounded-xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                 <span>Outcome Highlight:</span>
               </div>
-              <p className="text-foreground/80 font-medium">
+              <p className="text-foreground/90 font-medium">
                 {project.beforeAfter.result}
               </p>
             </div>
@@ -88,7 +91,7 @@ export default function Portfolio() {
 
           {/* Highlight Metric Pill */}
           {!project.beforeAfter && project.highlightMetric && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted/60 rounded-xl text-xs font-semibold text-foreground/80 border border-border/60">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted/80 rounded-xl text-xs font-mono font-semibold text-foreground/90 border border-border/80">
               <Zap className="w-3 h-3 text-accent shrink-0" />
               <span>{project.highlightMetric}</span>
             </div>
@@ -101,13 +104,13 @@ export default function Portfolio() {
             {project.tech.slice(0, 3).map((t) => (
               <span
                 key={t}
-                className="px-2 py-0.5 rounded-md bg-muted text-[10px] font-bold text-muted-foreground"
+                className="px-2 py-0.5 rounded-md bg-muted/80 border border-border/60 text-[10px] font-mono font-semibold text-muted-foreground"
               >
                 {t}
               </span>
             ))}
             {project.tech.length > 3 && (
-              <span className="px-1.5 py-0.5 rounded-md bg-muted text-[10px] font-bold text-muted-foreground">
+              <span className="px-1.5 py-0.5 rounded-md bg-muted/80 border border-border/60 text-[10px] font-mono font-semibold text-muted-foreground">
                 +{project.tech.length - 3}
               </span>
             )}
@@ -125,15 +128,22 @@ export default function Portfolio() {
   );
 
   return (
-    <section className="pt-10 pb-24 px-4 md:px-6 min-h-screen">
-      <div className="max-w-7xl mx-auto w-full space-y-12">
+    <section className="relative pt-10 pb-24 px-4 md:px-6 min-h-screen overflow-hidden">
+      {/* Background Dot-Grid Texture */}
+      <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
+
+      {/* Atmospheric Radial Ambient Lighting */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/15 via-emerald-500/10 to-transparent blur-[130px] rounded-full -z-10" />
+      <div className="pointer-events-none absolute top-1/3 -left-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
+
+      <div className="max-w-7xl mx-auto w-full space-y-12 relative z-10">
         {/* Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase border border-border">
             <Sparkles className="w-3.5 h-3.5" /> Production Systems &amp; Case Studies
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-foreground">
-            Selected Work &amp; Case Studies
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground">
+            Selected Work &amp; <span className="tech-gradient-text">Case Studies</span>
           </h1>
           <p className="text-muted-foreground text-base md:text-lg font-medium leading-relaxed">
             A crawlable archive of custom web platforms, WordPress-to-Next.js headless migrations, and enterprise systems built for speed, reliability, and scale.
@@ -141,22 +151,22 @@ export default function Portfolio() {
         </div>
 
         {/* Quick-Skim Proof Bar for Recruiters & Clients */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-card border border-border shadow-sm text-center">
-          <div className="p-3">
-            <p className="text-xl md:text-2xl font-black text-accent">100M+</p>
-            <p className="text-xs text-muted-foreground font-semibold mt-0.5">Subscribers Supported (Disney Streaming)</p>
+        <div className="stitch-card grid grid-cols-2 md:grid-cols-4 gap-4 p-5 md:p-6 rounded-2xl shadow-sm text-center relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
+          <div className="p-2 md:border-r md:border-border/60">
+            <p className="text-2xl md:text-3xl font-black font-mono text-accent">100M+</p>
+            <p className="text-xs text-muted-foreground font-semibold mt-1">Subscribers Supported (Disney Streaming)</p>
           </div>
-          <div className="p-3">
-            <p className="text-xl md:text-2xl font-black text-accent">$3B+</p>
-            <p className="text-xs text-muted-foreground font-semibold mt-0.5">Grants Processed (FEMA Modernization)</p>
+          <div className="p-2 md:border-r md:border-border/60">
+            <p className="text-2xl md:text-3xl font-black font-mono text-accent">$3B+</p>
+            <p className="text-xs text-muted-foreground font-semibold mt-1">Grants Processed (FEMA Modernization)</p>
           </div>
-          <div className="p-3">
-            <p className="text-xl md:text-2xl font-black text-accent">99/100</p>
-            <p className="text-xs text-muted-foreground font-semibold mt-0.5">Lighthouse Score on Headless Rebuilds</p>
+          <div className="p-2 md:border-r md:border-border/60">
+            <p className="text-2xl md:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400">99/100</p>
+            <p className="text-xs text-muted-foreground font-semibold mt-1">Lighthouse Score on Headless Rebuilds</p>
           </div>
-          <div className="p-3">
-            <p className="text-xl md:text-2xl font-black text-accent">&lt;350ms</p>
-            <p className="text-xs text-muted-foreground font-semibold mt-0.5">Average TTFB on Vercel Serverless Deployments</p>
+          <div className="p-2">
+            <p className="text-2xl md:text-3xl font-black font-mono text-accent">&lt;350ms</p>
+            <p className="text-xs text-muted-foreground font-semibold mt-1">Average TTFB on Vercel Deployments</p>
           </div>
         </div>
 
@@ -174,7 +184,7 @@ export default function Portfolio() {
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeFilter === tab.id
                   ? 'bg-accent text-accent-foreground shadow-md shadow-accent/20'
-                  : 'bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted'
+                  : 'stitch-card text-muted-foreground hover:text-foreground hover:border-accent/40'
               }`}
             >
               {tab.label}
@@ -244,15 +254,19 @@ export default function Portfolio() {
           </div>
         )}
 
+        {/* Laser Divider */}
+        <div className="laser-divider my-10" />
+
         {/* Bottom CTA */}
-        <div className="p-10 md:p-14 rounded-[3rem] glass border border-accent/20 text-center space-y-6">
-          <h2 className="text-3xl md:text-4xl font-black text-foreground">
+        <div className="p-10 md:p-14 rounded-[3rem] glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
+          <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent/15 rounded-full blur-3xl" />
+          <h2 className="text-3xl md:text-4xl font-black text-foreground relative z-10">
             Have a project or migration in mind? Let&apos;s talk scope.
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base">
+          <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base md:text-lg relative z-10 leading-relaxed">
             Fixed pricing after a 15-minute discovery call. We build high-performance platforms with zero runaway hourly surprises.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4 relative z-10 pt-2">
             <Link
               href="/contact"
               className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-black text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20"
