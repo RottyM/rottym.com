@@ -4,7 +4,21 @@
 import { Briefcase, Code2, Award, ArrowRight, Download, Sparkles, Fingerprint, Compass } from 'lucide-react';
 import Link from 'next/link';
 
-const experiences = [
+interface Placement {
+  client: string;
+  period: string;
+  desc: string;
+}
+
+interface Experience {
+  role: string;
+  company: string;
+  period: string;
+  desc?: string;
+  placements?: Placement[];
+}
+
+const experiences: Experience[] = [
   {
     role: "Full-Stack & AI Software Engineer (Independent Consultant)",
     company: "RottyM Designs",
@@ -13,15 +27,20 @@ const experiences = [
   },
   {
     role: "Full-Stack Software Engineer (Contract)",
-    company: "Insight Global – Disney Streaming",
-    period: "05/2022 – 11/2023",
-    desc: "Scaled distributed microservices supporting 100M+ global streaming subscribers using Java, Scala, Spring Boot, TypeScript, and AWS (S3, Athena, Lambda) within Docker/Kubernetes environments. Led front-end JWT auth migration (reducing session token errors by 30%) and integrated real-time Adobe Analytics compliance telemetry."
-  },
-  {
-    role: "Full-Stack Software Engineer (Contract)",
-    company: "Insight Global – BAE Systems",
-    period: "09/2021 – 04/2022",
-    desc: "Engineered mission-critical production expense-tracking systems for the Defense Intelligence Agency (DIA) within a secure, high-compliance distributed engineering team using React/Redux on the front end, backed by Java and SQL, maintaining 99.9% system availability."
+    company: "Insight Global",
+    period: "09/2021 – 11/2023",
+    placements: [
+      {
+        client: "Disney Streaming",
+        period: "05/2022 – 11/2023",
+        desc: "Scaled distributed microservices supporting 100M+ global streaming subscribers using Java, Scala, Spring Boot, TypeScript, and AWS (S3, Athena, Lambda) within Docker/Kubernetes environments. Led front-end JWT auth migration (reducing session token errors by 30%) and integrated real-time Adobe Analytics compliance telemetry."
+      },
+      {
+        client: "BAE Systems",
+        period: "09/2021 – 04/2022",
+        desc: "Engineered mission-critical production expense-tracking systems for the Defense Intelligence Agency (DIA) within a secure, high-compliance distributed engineering team using React/Redux on the front end, backed by Java and SQL, maintaining 99.9% system availability."
+      }
+    ]
   },
   {
     role: "Senior Software Engineer",
@@ -71,9 +90,9 @@ export default function About() {
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm backdrop-blur-md border border-border max-w-full">
             <Fingerprint className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
-            <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FULL-STACK &amp; AI ENGINEER</span>
-            <span className="text-border">|</span>
-            <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">RESTON, VA</span>
+            <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FULL-STACK &amp; AI SOFTWARE ENGINEER</span>
+            <span className="text-border hidden sm:inline">|</span>
+            <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, VA</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
@@ -104,7 +123,7 @@ export default function About() {
 
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-muted/80 border border-border/80 rounded-xl text-[11px] sm:text-xs font-semibold text-foreground/90 shadow-sm font-mono max-w-full">
               <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
-              <span className="truncate">Looking for Full Stack &amp; AI Engineer roles &amp; partners</span>
+              <span className="truncate">Looking for Full-Stack &amp; AI Software Engineer roles &amp; partners</span>
             </div>
           </div>
         </div>
@@ -122,7 +141,34 @@ export default function About() {
                 <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-border group-hover:bg-accent transition-colors" />
                 <h3 className="font-bold text-lg text-foreground leading-snug">{exp.role}</h3>
                 <p className="text-sm text-accent font-semibold mt-0.5">{exp.company} · {exp.period}</p>
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{exp.desc}</p>
+                {exp.desc && (
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{exp.desc}</p>
+                )}
+                {exp.placements && (
+                  <div className="mt-3.5 space-y-3">
+                    {exp.placements.map((p, pIdx) => (
+                      <div
+                        key={pIdx}
+                        className="p-3.5 sm:p-4 rounded-xl bg-slate-50/80 dark:bg-card/60 border border-slate-200/80 dark:border-border/70 space-y-1.5 transition-colors shadow-sm"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
+                            <span className="font-bold text-sm text-foreground">
+                              Client: <span className="text-accent">{p.client}</span>
+                            </span>
+                          </div>
+                          <span className="font-mono text-xs text-muted-foreground font-semibold shrink-0">
+                            {p.period}
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed pl-3.5">
+                          {p.desc}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -201,10 +247,10 @@ export default function About() {
           <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">ROLES &amp; COLLABS</span>
         </div>
         <h2 className="text-3xl md:text-4xl font-black text-foreground">
-          Looking for a Full Stack &amp; AI Software Engineer or Technical Partner?
+          Looking for a Full-Stack &amp; AI Software Engineer or Technical Partner?
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base">
-          I&apos;m looking for Full Stack &amp; AI Software Engineer roles and technical partners. If you&apos;re a recruiter, hiring manager, or organization seeking a technical collaborator, let&apos;s connect.
+          I&apos;m looking for Full-Stack &amp; AI Software Engineer roles and technical partners. If you&apos;re a recruiter, hiring manager, or organization seeking a technical collaborator, let&apos;s connect.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 w-full sm:w-auto">
           <Link

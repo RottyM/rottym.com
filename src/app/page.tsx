@@ -54,10 +54,9 @@ export default function Home() {
           >
             <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm backdrop-blur-md border border-border max-w-full">
               <Braces className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
-              <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FULL-STACK &amp; AI</span>
-              <span className="text-border">|</span>
+              <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FULL-STACK &amp; AI SOFTWARE ENGINEER</span>
+              <span className="text-border hidden sm:inline">|</span>
               <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, VA &amp; GLOBAL</span>
-              <span className="font-mono text-[9px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON, VA</span>
             </div>
 
             {/* Zero-shift layout-locked rotating headline */}

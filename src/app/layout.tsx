@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     description:
       'Building high-performance web applications, custom portals, and AI-augmented platforms with deep UI/UX architecture expertise for Reston & Northern Virginia businesses.',
     url: 'https://rottym.com',
-    siteName: 'RottyM · Full Stack & AI Software Engineer',
+    siteName: 'RottyM · Full-Stack & AI Software Engineer',
     locale: 'en_US',
     type: 'website',
     images: [
