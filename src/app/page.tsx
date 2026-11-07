@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(() => {
       setHeadlineIndex((prev) => (prev + 1) % 2);
-    }, 4500);
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
   useEffect(() => {
@@ -85,7 +85,7 @@ export default function Home() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
-                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    transition={{ duration: 0.45, ease: "easeInOut" }}
                     className="text-4xl sm:text-5xl md:text-6xl font-black text-foreground leading-[1.12] tracking-tight drop-shadow-sm"
                   >
                     {headlineIndex === 0 ? (
