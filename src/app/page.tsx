@@ -45,7 +45,7 @@ export default function Home() {
         <div className="absolute top-0 right-0 -z-10 w-2/3 h-full bg-gradient-to-l from-accent/15 via-blue-500/10 to-transparent blur-3xl opacity-60 transition-colors" />
         <div className="absolute -top-24 -left-24 -z-10 w-[28rem] h-[28rem] bg-gradient-to-br from-emerald-500/10 via-accent/5 to-transparent rounded-full blur-3xl animate-pulse-soft transition-colors" />
 
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 lg:gap-14 items-center w-full">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 lg:gap-14 items-start w-full">
           <motion.div
             initial={false}
             animate={{ opacity: 1, x: 0 }}
@@ -148,7 +148,7 @@ export default function Home() {
             initial={false}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="relative w-full max-w-lg mx-auto lg:max-w-none"
+            className="relative w-full max-w-lg mx-auto lg:max-w-none lg:pt-[50px]"
           >
             <Link 
               href="/portfolio" 
