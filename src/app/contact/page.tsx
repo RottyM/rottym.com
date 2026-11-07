@@ -12,7 +12,7 @@ export default function Contact() {
   const [status, setStatus] = useState('');
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedService, setSelectedService] = useState('Local Launchpad ($3,500 – $4,500)');
+  const [selectedService, setSelectedService] = useState('Local Launchpad ($2,500 – $3,500)');
   const [attribution, setAttribution] = useState<{ source?: string; campaign?: string; ref?: string }>({});
 
   useEffect(() => {
@@ -32,13 +32,13 @@ export default function Contact() {
 
       const serviceParam = params.get('service');
       if (serviceParam === 'local-launchpad') {
-        setSelectedService('Local Launchpad ($3,500 – $4,500)');
+        setSelectedService('Local Launchpad ($2,500 – $3,500)');
       } else if (serviceParam === 'booking-intake') {
-        setSelectedService('Booking & Intake ($5,500 – $7,500)');
+        setSelectedService('Booking & Intake ($4,200 – $5,800)');
       } else if (serviceParam === 'performance-rebuild') {
-        setSelectedService('Performance Rebuild ($5,000 – $9,000)');
+        setSelectedService('Performance Rebuild ($3,800 – $6,500)');
       } else if (serviceParam === 'ongoing-care') {
-        setSelectedService('Ongoing Care ($150 – $350/mo)');
+        setSelectedService('Ongoing Care ($99 – $250/mo)');
       }
     }
   }, []);
@@ -214,10 +214,10 @@ export default function Contact() {
                 className="w-full p-3.5 sm:p-4 bg-muted/50 border border-border rounded-xl sm:rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all font-medium text-sm"
               >
                 <optgroup label="Fixed-Scope Local Packages">
-                  <option value="Local Launchpad ($3,500 – $4,500)">Local Launchpad ($3,500 – $4,500)</option>
-                  <option value="Booking & Intake ($5,500 – $7,500)">Booking &amp; Intake ($5,500 – $7,500)</option>
-                  <option value="Performance Rebuild ($5,000 – $9,000)">Performance Rebuild ($5,000 – $9,000)</option>
-                  <option value="Ongoing Care ($150 – $350/mo)">Ongoing Care ($150 – $350/mo)</option>
+                  <option value="Local Launchpad ($2,500 – $3,500)">Local Launchpad ($2,500 – $3,500)</option>
+                  <option value="Booking & Intake ($4,200 – $5,800)">Booking &amp; Intake ($4,200 – $5,800)</option>
+                  <option value="Performance Rebuild ($3,800 – $6,500)">Performance Rebuild ($3,800 – $6,500)</option>
+                  <option value="Ongoing Care ($99 – $250/mo)">Ongoing Care ($99 – $250/mo)</option>
                 </optgroup>
                 <optgroup label="Custom & Full-Stack Capabilities">
                   <option value="Websites & Digital Platforms">Websites &amp; Digital Platforms</option>

@@ -74,7 +74,7 @@ export default function Footer() {
             <ul className="space-y-2.5 text-sm font-medium">
               <li>
                 <Link href="/packages#local-launchpad" className="text-muted-foreground hover:text-accent transition-colors">
-                  Local Launchpad ($3.5k–$4.5k)
+                  Local Launchpad ($2.5k–$3.5k)
                 </Link>
               </li>
               <li>

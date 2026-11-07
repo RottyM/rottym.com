@@ -22,7 +22,7 @@ const packages = [
     id: "local-launchpad",
     name: "Local Launchpad",
     subtitle: "Entry & Most Common",
-    price: "$3,500 – $4,500",
+    price: "$2,500 – $3,500",
     priceNote: "Starting range · Fixed after 15-min call",
     desc: "A clean, fast site built for local service businesses that need to show up and get inquiries.",
     icon: <Rocket className="w-7 h-7" />,
@@ -30,6 +30,9 @@ const packages = [
     accentBg: "bg-orange-500/10",
     borderHover: "hover:border-orange-500/40",
     featured: false,
+    pickThisIf: "You need a fast, professional site that brings in inquiries — no booking, no portal, just a site that works.",
+    bestFor: "Restaurants, home services, dental, auto shops, independent professionals.",
+    whyTheRange: "A 5-page site with standard quote forms lands near $2,500. Additional custom service pages or expanded local SEO sections push it toward $3,500.",
     included: [
       "5–8 page high-performance site (modern stack or clean WordPress escape)",
       "Mobile-first design and sub-second load times",
@@ -38,7 +41,6 @@ const packages = [
       "Basic local SEO setup and Google Business Profile optimization notes",
       "Short post-launch support window"
     ],
-    bestFor: "Restaurants, home services, dental, auto shops, independent professionals.",
     cta: "Start with Local Launchpad",
     href: "/contact?service=local-launchpad"
   },
@@ -46,24 +48,26 @@ const packages = [
     id: "booking-intake",
     name: "Booking & Intake",
     subtitle: "Booking & Client Workflows",
-    price: "$5,500 – $7,500",
-    priceNote: "Starting range · Fixed after 15-min call",
-    desc: "Everything in Local Launchpad, plus the tools that reduce back-and-forth and capture more of the work you’re already getting.",
+    price: "$4,200 – $5,800",
+    priceNote: "Fixed after 15-min call",
+    desc: "Everything in Local Launchpad, plus online booking and intake that cut the phone tag and capture more of the work you're already getting.",
     icon: <CalendarCheck className="w-7 h-7" />,
     accent: "text-accent",
     accentBg: "bg-accent/10",
     borderHover: "hover:border-accent/60",
     featured: true,
     badge: "Most Popular",
+    pickThisIf: "your front desk spends its day on appointment calls, reschedules, and chasing forms — and you want that handled online instead.",
+    bestFor: "Dental offices, salons, home service companies, and professional practices with appointment or form volume.",
+    whyTheRange: "A single service with one booking calendar lands near $4,200. Multiple services, staff calendars, or a client portal push it toward $5,800. Your exact number is fixed after the 15-min call — no surprise invoices.",
     included: [
       "Full Local Launchpad build included",
       "Online booking or structured intake forms",
-      "Optional simple client portal or document upload",
-      "Cleaner client workflows so your team spends less time on admin",
       "Automated confirmation & notification routing",
+      "Cleaner client workflows so your team spends less time on admin",
+      "Optional simple client portal or document upload",
       "Priority post-launch support window"
     ],
-    bestFor: "Dental offices, salons, home service companies, and professional practices with appointment or form volume.",
     cta: "Add Booking & Intake",
     href: "/contact?service=booking-intake"
   },
@@ -71,7 +75,7 @@ const packages = [
     id: "performance-rebuild",
     name: "Performance Rebuild",
     subtitle: "WordPress Escape",
-    price: "$5,000 – $9,000",
+    price: "$3,800 – $6,500",
     priceNote: "Scales with size · Fixed after 15-min call",
     desc: "Move off a slow or bloated WordPress site to a modern stack that loads faster, breaks less, and is easier to maintain.",
     icon: <RefreshCw className="w-7 h-7" />,
@@ -79,6 +83,9 @@ const packages = [
     accentBg: "bg-blue-500/10",
     borderHover: "hover:border-blue-500/40",
     featured: false,
+    pickThisIf: "Your current WordPress site is slow, breaks on updates, or keeps throwing security alerts.",
+    bestFor: "Businesses that have outgrown their current site and are tired of plugin conflicts, security alerts, and slow mobile performance.",
+    whyTheRange: "Smaller brochure sites land near $3,800. Complex sites with large blog archives, WooCommerce, or custom databases scale toward $6,500.",
     included: [
       "Full migration from WordPress (or template builder) to modern stack (Vercel + headless CMS)",
       "Complete content, asset, and SEO structure migration",
@@ -87,7 +94,6 @@ const packages = [
       "Zero brittle plugins or security vulnerabilities",
       "Dedicated transition and post-launch verification"
     ],
-    bestFor: "Businesses that have outgrown their current site and are tired of plugin conflicts, security alerts, and slow mobile performance.",
     cta: "Start a Performance Rebuild",
     href: "/contact?service=performance-rebuild"
   }
@@ -129,7 +135,7 @@ export default function PackagesPage() {
 
           <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-muted/40 border border-border inline-block">
             <p className="text-xs sm:text-base text-foreground font-semibold">
-              Most local projects land between <span className="text-accent font-black">$3,500–$8,000</span>. Price is fixed after a short call.
+              Most local projects land between <span className="text-accent font-black">$2,500–$6,500</span>. Price is fixed after a short call.
             </p>
           </div>
 
@@ -265,6 +271,21 @@ export default function PackagesPage() {
                   {pkg.desc}
                 </p>
 
+                {pkg.pickThisIf && (
+                  <div
+                    className={`p-3 sm:p-3.5 rounded-xl text-xs leading-relaxed ${
+                      pkg.featured
+                        ? 'bg-[#00D8F6]/10 border border-[#00D8F6]/25 text-slate-200'
+                        : 'bg-accent/5 border border-accent/20 text-foreground'
+                    }`}
+                  >
+                    <strong className={pkg.featured ? 'text-[#4cd7f6] font-bold' : 'text-accent font-bold'}>
+                      Pick this if:{" "}
+                    </strong>
+                    <span>{pkg.pickThisIf}</span>
+                  </div>
+                )}
+
                 <div
                   className={`p-3 sm:p-3.5 rounded-xl text-xs ${
                     pkg.featured
@@ -314,6 +335,25 @@ export default function PackagesPage() {
                     ))}
                   </ul>
                 </div>
+
+                {pkg.whyTheRange && (
+                  <div
+                    className={`p-3 sm:p-3.5 rounded-xl text-xs leading-relaxed ${
+                      pkg.featured
+                        ? 'bg-white/5 border border-white/10 text-slate-300'
+                        : 'bg-muted/30 border border-border/50 text-muted-foreground'
+                    }`}
+                  >
+                    <strong
+                      className={`font-bold block mb-1 ${
+                        pkg.featured ? 'text-[#4cd7f6]' : 'text-accent'
+                      }`}
+                    >
+                      Why the range?
+                    </strong>
+                    <span>{pkg.whyTheRange}</span>
+                  </div>
+                )}
               </div>
 
               <div className="pt-6 sm:pt-8 relative z-10">
@@ -361,7 +401,7 @@ export default function PackagesPage() {
               <div>
                 <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground">Ongoing Care</h3>
                 <div className="mt-1 sm:mt-2">
-                  <span className="text-2xl sm:text-3xl font-extrabold text-foreground">$150 – $350</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-foreground">$99 – $250</span>
                   <span className="text-muted-foreground font-medium text-xs sm:text-sm"> / month</span>
                 </div>
               </div>
@@ -425,7 +465,7 @@ export default function PackagesPage() {
                   <div>
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-foreground text-xs sm:text-sm">Bilingual (Spanish) Key Pages &amp; Forms</h4>
-                      <span className="text-[11px] sm:text-xs font-black text-accent ml-2">+$800 – $1,500</span>
+                      <span className="text-[11px] sm:text-xs font-black text-accent ml-2">+$500 – $950</span>
                     </div>
                     <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
                       Native Spanish translation and localized intake forms for Northern Virginia&apos;s diverse audience.
@@ -492,7 +532,7 @@ export default function PackagesPage() {
               Ready to see what fits?
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl font-bold opacity-95 text-[#00D8F6] dark:text-inherit">
-              Most Reston and Northern Virginia projects land between $3,500 and $8,000.
+              Most Reston and Northern Virginia projects land between $2,500 and $6,500.
             </p>
             <p className="text-sm sm:text-base md:text-lg opacity-90 max-w-2xl mx-auto leading-relaxed text-slate-300 dark:text-inherit">
               The number you get after a short discovery call is the exact number you’re billed. No ranges that turn into surprise invoices.
