@@ -1,43 +1,25 @@
 // src/components/footer.tsx
 import Link from 'next/link';
 import { Mail, MapPin, ArrowRight, ShieldCheck, Sparkles, Code2, CheckCircle2 } from 'lucide-react';
+import RottyMLogo from './RottyMLogo';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-card text-foreground border-t border-border mt-24 transition-colors">
+    <footer className="bg-card text-foreground border-t border-border mt-24 transition-colors px-6">
       {/* Top Footer Section */}
-      <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
+      <div className="max-w-7xl mx-auto py-16 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
           
           {/* Brand & Positioning Column (Span 2) */}
           <div className="lg:col-span-2 space-y-6">
-            <Link href="/" className="inline-flex items-center gap-3.5 group" aria-label="RottyM Home">
-              {/* Logo: RM Monogram */}
-              <svg viewBox="6.5 8 30.5 27" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-11 w-auto shrink-0 group-hover:scale-105 transition-transform duration-500">
-                <path d="M8 10H16C20.4183 10 24 13.5817 24 18V24H18V18C18 16.8954 17.1046 16 16 16H14V34H8V10Z" fill="url(#footer_paint0)" />
-                <path d="M22 20L32 34H25L18 24H24V20H22Z" fill="url(#footer_paint1)" />
-                <path d="M26 10L30 16L34 10" stroke="url(#footer_paint2)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                <defs>
-                  <linearGradient id="footer_paint0" x1="8" y1="10" x2="24" y2="34" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="var(--accent)" />
-                    <stop offset="1" stopColor="#6366f1" />
-                  </linearGradient>
-                  <linearGradient id="footer_paint1" x1="18" y1="20" x2="32" y2="34" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#6366f1" />
-                    <stop offset="1" stopColor="var(--accent)" />
-                  </linearGradient>
-                  <linearGradient id="footer_paint2" x1="26" y1="10" x2="34" y2="10" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#10b981" />
-                    <stop offset="1" stopColor="#3b82f6" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="flex flex-col justify-center">
-                <span className="text-2xl font-black tracking-tight text-foreground leading-none group-hover:text-accent transition-colors">RottyM</span>
-                <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mt-1.5 leading-none">Full Stack &amp; AI Software Engineer</span>
-              </div>
+            <Link href="/" className="inline-flex items-center group pl-1.5 sm:pl-2" aria-label="RottyM Home">
+              <RottyMLogo
+                variant="full"
+                size={46}
+                animated={true}
+              />
             </Link>
 
             <p className="text-muted-foreground text-sm leading-relaxed max-w-sm font-medium">

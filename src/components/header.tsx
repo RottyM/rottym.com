@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useTheme } from './ThemeProvider';
 import { Sun, Moon, Sparkles } from 'lucide-react';
+import RottyMLogo from './RottyMLogo';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -13,33 +14,14 @@ export default function Header() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm transition-all">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-3.5 group transition-all" aria-label="Rottman M. Mendez Home">
-          {/* Logo: RM Monogram - Geometric & Gradient */}
-          <svg viewBox="6.5 8 30.5 27" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-12 md:h-14 w-auto shrink-0 group-hover:scale-105 transition-transform duration-500">
-            <path d="M8 10H16C20.4183 10 24 13.5817 24 18V24H18V18C18 16.8954 17.1046 16 16 16H14V34H8V10Z" fill="url(#paint0_linear)" />
-            <path d="M22 20L32 34H25L18 24H24V20H22Z" fill="url(#paint1_linear)" />
-            <path d="M26 10L30 16L34 10" stroke="url(#paint2_linear)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            <defs>
-              <linearGradient id="paint0_linear" x1="8" y1="10" x2="24" y2="34" gradientUnits="userSpaceOnUse">
-                <stop stopColor="var(--accent)" />
-                <stop offset="1" stopColor="#6366f1" />
-              </linearGradient>
-              <linearGradient id="paint1_linear" x1="18" y1="20" x2="32" y2="34" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#6366f1" />
-                <stop offset="1" stopColor="var(--accent)" />
-              </linearGradient>
-              <linearGradient id="paint2_linear" x1="26" y1="10" x2="34" y2="10" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#10b981" />
-                <stop offset="1" stopColor="#3b82f6" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div className="flex flex-col justify-center translate-y-1 md:translate-y-1.5">
-            <span className="text-xl md:text-2xl font-black tracking-tight text-foreground leading-none group-hover:text-accent transition-colors">RottyM</span>
-            <span className="text-[10px] md:text-xs font-bold tracking-wider text-muted-foreground uppercase mt-1.5 leading-none">{"Full Stack & AI Software Engineer"}</span>
-          </div>
+    <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm transition-all px-6">
+      <div className="max-w-7xl mx-auto py-3.5 flex justify-between items-center">
+        <Link href="/" className="inline-flex items-center group pl-1.5 sm:pl-2" aria-label="Rottman M. Mendez Home">
+          <RottyMLogo
+            variant="full"
+            size={46}
+            animated={true}
+          />
         </Link>
         <nav className="hidden md:flex gap-7 text-sm font-medium items-center">
           <Link href="/" className="text-foreground/80 hover:text-accent transition-colors">Home</Link>
