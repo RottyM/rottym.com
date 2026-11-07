@@ -166,22 +166,27 @@ export default function PackagesPage() {
         </div>
 
         {/* 3 Core Packages Grid */}
-        <div className="grid lg:grid-cols-3 gap-8 items-stretch">
+        <div className="grid lg:grid-cols-3 gap-8 items-stretch pt-4">
           {packages.map((pkg) => (
             <div
               key={pkg.id}
-              className={`stitch-card relative rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between transition-all duration-300 shadow-lg hover:shadow-2xl overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent ${pkg.borderHover} ${
+              id={pkg.id}
+              className={`stitch-card relative rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between transition-all duration-300 shadow-lg hover:shadow-2xl ${pkg.borderHover} ${
                 pkg.featured 
                   ? 'border-accent shadow-accent/10 ring-2 ring-accent/20 scale-[1.02] lg:-translate-y-2' 
                   : 'border-border'
               }`}
             >
-              {/* Chromatic Corner Aura */}
-              <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+              {/* Inner Aura with overflow-hidden and border matching rounded corners */}
+              <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none">
+                <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+                <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+              </div>
 
               {pkg.badge && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-md z-10">
-                  {pkg.badge}
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-accent text-accent-foreground font-mono text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-accent/25 border border-white/20 z-20 whitespace-nowrap">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{pkg.badge}</span>
                 </div>
               )}
 
@@ -248,7 +253,7 @@ export default function PackagesPage() {
         <div className="grid lg:grid-cols-2 gap-8 items-stretch">
           
           {/* Ongoing Care */}
-          <div className="stitch-card p-8 md:p-10 rounded-[2.5rem] shadow-lg flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
+          <div id="ongoing-care" className="stitch-card p-8 md:p-10 rounded-[2.5rem] shadow-lg flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
             {/* Chromatic Corner Aura */}
             <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
             
