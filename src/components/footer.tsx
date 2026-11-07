@@ -41,7 +41,7 @@ export default function Footer() {
           </div>
 
           {/* Quick Navigation Links */}
-          <div className="space-y-4">
+          <div className="space-y-4 md:pt-3">
             <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Navigation</h3>
             <ul className="space-y-2.5 text-sm font-medium">
               <li>
@@ -69,7 +69,7 @@ export default function Footer() {
           </div>
 
           {/* SEO Solutions & Packages Links */}
-          <div className="space-y-4">
+          <div className="space-y-4 md:pt-3">
             <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Solutions</h3>
             <ul className="space-y-2.5 text-sm font-medium">
               <li>
@@ -106,7 +106,7 @@ export default function Footer() {
           </div>
 
           {/* Contact & Service Areas Column */}
-          <div className="space-y-4">
+          <div className="space-y-4 md:pt-3">
             <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Get In Touch</h3>
             <div className="space-y-3 text-sm">
               <a 
