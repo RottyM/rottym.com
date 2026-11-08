@@ -44,7 +44,7 @@ export default function Home() {
     },
     {
       name: 'FEMA',
-      whiteSrc: '/images/logos/clients/fema-white.svg',
+      whiteSrc: '/images/logos/clients/fema-dark.svg',
       stdSrc: '/images/logos/clients/fema.svg',
       heightClass: 'h-8 sm:h-9 md:h-10',
       maxWidth: 'max-w-[115px] sm:max-w-[135px]'
@@ -58,7 +58,7 @@ export default function Home() {
     },
     {
       name: 'FAA',
-      whiteSrc: '/images/logos/clients/faa-white.svg',
+      whiteSrc: '/images/logos/clients/faa-dark.svg',
       stdSrc: '/images/logos/clients/faa.svg',
       heightClass: 'h-8 sm:h-9 md:h-10',
       maxWidth: 'max-w-[115px] sm:max-w-[135px]'
