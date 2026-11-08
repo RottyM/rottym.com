@@ -34,6 +34,51 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
+  const clientLogos = [
+    {
+      name: 'Disney',
+      whiteSrc: '/images/logos/clients/disney-white.svg',
+      stdSrc: '/images/logos/clients/disney.svg',
+      heightClass: 'h-7 sm:h-8 md:h-9',
+      maxWidth: 'max-w-[110px] sm:max-w-[130px]'
+    },
+    {
+      name: 'FEMA',
+      whiteSrc: '/images/logos/clients/fema-white.svg',
+      stdSrc: '/images/logos/clients/fema.svg',
+      heightClass: 'h-8 sm:h-9 md:h-10',
+      maxWidth: 'max-w-[115px] sm:max-w-[135px]'
+    },
+    {
+      name: 'BAE Systems',
+      whiteSrc: '/images/logos/clients/bae-systems-white.svg',
+      stdSrc: '/images/logos/clients/bae-systems.svg',
+      heightClass: 'h-5 sm:h-6 md:h-7',
+      maxWidth: 'max-w-[130px] sm:max-w-[155px]'
+    },
+    {
+      name: 'FAA',
+      whiteSrc: '/images/logos/clients/faa-white.svg',
+      stdSrc: '/images/logos/clients/faa.svg',
+      heightClass: 'h-7 sm:h-8 md:h-9',
+      maxWidth: 'max-w-[115px] sm:max-w-[135px]'
+    },
+    {
+      name: 'Leidos',
+      whiteSrc: '/images/logos/clients/leidos-white.svg',
+      stdSrc: '/images/logos/clients/leidos.svg',
+      heightClass: 'h-6 sm:h-7 md:h-8',
+      maxWidth: 'max-w-[115px] sm:max-w-[135px]'
+    },
+    {
+      name: 'USA Today',
+      whiteSrc: '/images/logos/clients/usa-today-white.svg',
+      stdSrc: '/images/logos/clients/usa-today.svg',
+      heightClass: 'h-5 sm:h-6 md:h-7',
+      maxWidth: 'max-w-[130px] sm:max-w-[155px]'
+    }
+  ];
+
   return (
     <>
       {/* Hero Section */}
@@ -185,9 +230,26 @@ export default function Home() {
         <div className="absolute inset-0 bg-dot-grid opacity-60 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
           <p className="text-xs font-bold tracking-widest uppercase text-slate-500 dark:text-muted-foreground mb-10 font-mono">Previously engineered systems for</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-14 text-slate-700 dark:text-foreground font-mono font-bold tracking-wider text-base md:text-xl">
-            {['Disney', 'FEMA', 'BAE Systems', 'FAA', 'Leidos', 'USA Today'].map(c => (
-              <span key={c} className="hover:text-accent transition-colors">{c}</span>
+          <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-10 md:gap-14 lg:gap-16">
+            {clientLogos.map((client) => (
+              <div
+                key={client.name}
+                className="flex items-center justify-center opacity-75 hover:opacity-100 transition-all duration-300 hover:scale-105"
+                title={client.name}
+              >
+                {/* Dark mode: white SVG */}
+                <img
+                  src={client.whiteSrc}
+                  alt={`${client.name} Logo`}
+                  className={`hidden dark:block w-auto ${client.heightClass} ${client.maxWidth} object-contain`}
+                />
+                {/* Light mode: standard SVG */}
+                <img
+                  src={client.stdSrc}
+                  alt={`${client.name} Logo`}
+                  className={`block dark:hidden w-auto ${client.heightClass} ${client.maxWidth} object-contain`}
+                />
+              </div>
             ))}
           </div>
           <p className="mt-8 text-xs sm:text-sm font-medium text-slate-600 dark:text-muted-foreground max-w-2xl mx-auto">
