@@ -60,7 +60,7 @@ export default function Home() {
       name: 'FAA',
       whiteSrc: '/images/logos/clients/faa-white.svg',
       stdSrc: '/images/logos/clients/faa.svg',
-      heightClass: 'h-7 sm:h-8 md:h-9',
+      heightClass: 'h-8 sm:h-9 md:h-10',
       maxWidth: 'max-w-[115px] sm:max-w-[135px]'
     },
     {
