@@ -37,16 +37,16 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'RottyM | Fast, Modern Websites for Northern Virginia',
     description:
-      "AI can generate a website. It can't run your business. Fast Next.js sites, booking systems, and client portals for NoVA businesses.",
-    url: 'https://rottym.com',
+      'AI can generate a website. It can’t run your business. Fast Next.js sites, booking systems, and client portals for NoVA businesses.',
+    url: 'https://www.rottym.com/',
     siteName: 'RottyM · Fast, Modern Websites for Northern Virginia',
     locale: 'en_US',
     type: 'website',
     images: [
       {
-        url: '/images/og-image.jpg',
+        url: 'https://www.rottym.com/og-image.png',
         width: 1200,
-        height: 630,
+        height: 627,
         alt: 'RottyM | Fast, Modern Websites for Northern Virginia',
       },
     ],
@@ -55,8 +55,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'RottyM | Fast, Modern Websites for Northern Virginia',
     description:
-      "AI can generate a website. It can't run your business. Fast Next.js sites, booking systems, and client portals for NoVA businesses.",
-    images: ['/images/og-image.jpg'],
+      'AI can generate a website. It can’t run your business. Fast Next.js sites, booking systems, and client portals for NoVA businesses.',
+    images: ['https://www.rottym.com/og-image.png'],
   },
   robots: {
     index: true,
@@ -78,7 +78,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ProfessionalService',
   name: 'RottyM - Full-Stack & AI Software Engineer',
-  image: 'https://rottym.com/images/og-image.jpg',
+  image: 'https://www.rottym.com/og-image.png',
   '@id': 'https://rottym.com',
   url: 'https://rottym.com',
   email: 'rmendez@rottym.com',
