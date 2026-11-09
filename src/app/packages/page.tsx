@@ -15,7 +15,9 @@ import {
   Clock,
   Check,
   Boxes,
-  FileText
+  FileText,
+  Star,
+  Quote
 } from 'lucide-react';
 
 const packages = [
@@ -98,6 +100,19 @@ const packages = [
     cta: "Start a Performance Rebuild",
     href: "/contact?service=performance-rebuild"
   }
+];
+
+const testimonials = [
+  {
+    id: "isabelle-deeme",
+    quote:
+      "I highly recommend Rotty Mendez. Working with him was awesome! He took the time to understand what I wanted, and was very patient with my technology impaired brain. His advice was invaluable and he built the most amazing website for me. Rotty was very professional and responsive to my many requests. It was worth every penny!",
+    author: "Isabelle Deeme",
+    role: "Author, The Enchanted Series",
+    category: "Website client",
+    initials: "ID",
+    rating: 5,
+  },
 ];
 
 export default function PackagesPage() {
@@ -377,6 +392,66 @@ export default function PackagesPage() {
             </div>
           ))}
         </div>
+
+        {/* Client Testimonials Spotlight */}
+        <section aria-label="Client Feedback" className="pt-2 sm:pt-4">
+          <div className="max-w-5xl mx-auto">
+            {testimonials.map((t) => (
+              <div
+                key={t.id}
+                className="relative rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-10 md:p-12 overflow-hidden border border-border/80 shadow-lg transition-all duration-300 bg-gradient-to-br from-white via-slate-50/80 to-sky-50/30 dark:from-[#111928] dark:via-[#0e1624] dark:to-[#0a121f] dark:border-slate-800/80 dark:shadow-2xl before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r before:from-transparent before:via-[#00F2FE]/70 before:to-[#00F5A0]/70"
+              >
+                {/* Ambient Corner Auras */}
+                <div className="pointer-events-none absolute -right-20 -bottom-20 w-72 h-72 rounded-full bg-accent/5 dark:bg-[#00F2FE]/10 blur-3xl" />
+                <div className="pointer-events-none absolute -left-20 -top-20 w-64 h-64 rounded-full bg-emerald-500/5 dark:bg-[#00F5A0]/10 blur-3xl" />
+
+                {/* Decorative Watermark Quote Icon */}
+                <div className="absolute top-6 right-8 text-slate-200/60 dark:text-white/[0.04] select-none pointer-events-none">
+                  <Quote className="w-24 h-24 sm:w-32 sm:h-32" />
+                </div>
+
+                <div className="relative z-10 space-y-5 sm:space-y-6">
+                  {/* Rating & Verified Badge Row */}
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5 text-amber-500 dark:text-amber-400">
+                      {[...Array(t.rating)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400 text-amber-400" />
+                      ))}
+                      <span className="ml-2 font-mono text-[10px] sm:text-xs font-black tracking-wider text-slate-700 dark:text-slate-300 uppercase">
+                        5.0 · Verified Client Review
+                      </span>
+                    </div>
+
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      {t.category}
+                    </span>
+                  </div>
+
+                  {/* The Quote */}
+                  <blockquote className="text-base sm:text-lg md:text-xl lg:text-[1.3rem] font-medium leading-relaxed text-slate-800 dark:text-slate-100">
+                    &ldquo;{t.quote}&rdquo;
+                  </blockquote>
+
+                  {/* Author Attribution */}
+                  <div className="flex items-center gap-3.5 pt-3 border-t border-border/70 dark:border-slate-800/80">
+                    <div className="w-12 h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#00F2FE]/20 to-[#00F5A0]/20 border border-[#00F2FE]/30 dark:border-[#00F2FE]/40 flex items-center justify-center font-bold text-accent dark:text-[#00F2FE] text-base tracking-tight shadow-sm shrink-0">
+                      {t.initials}
+                    </div>
+                    <div>
+                      <div className="text-base sm:text-lg font-black text-foreground">
+                        {t.author}
+                      </div>
+                      <div className="text-xs sm:text-sm font-medium text-muted-foreground">
+                        {t.role}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* Laser Divider */}
         <div className="laser-divider my-8" />
