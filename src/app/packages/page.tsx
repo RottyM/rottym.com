@@ -411,20 +411,13 @@ export default function PackagesPage() {
                 </div>
 
                 <div className="relative z-10 space-y-5 sm:space-y-6">
-                  {/* Rating & Verified Badge Row */}
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-1.5 text-amber-500 dark:text-amber-400">
-                      {[...Array(t.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400 text-amber-400" />
-                      ))}
-                      <span className="ml-2 font-mono text-[10px] sm:text-xs font-black tracking-wider text-slate-700 dark:text-slate-300 uppercase">
-                        5.0 · Verified Client Review
-                      </span>
-                    </div>
-
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      {t.category}
+                  {/* Rating Row */}
+                  <div className="flex items-center gap-1.5 text-amber-500 dark:text-amber-400">
+                    {[...Array(t.rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400 text-amber-400" />
+                    ))}
+                    <span className="ml-2 font-mono text-[10px] sm:text-xs font-black tracking-wider text-slate-700 dark:text-slate-300 uppercase">
+                      5.0 · Verified Client Review
                     </span>
                   </div>
 
@@ -433,19 +426,26 @@ export default function PackagesPage() {
                     &ldquo;{t.quote}&rdquo;
                   </blockquote>
 
-                  {/* Author Attribution */}
-                  <div className="flex items-center gap-3.5 pt-3 border-t border-border/70 dark:border-slate-800/80">
-                    <div className="w-12 h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#00F2FE]/20 to-[#00F5A0]/20 border border-[#00F2FE]/30 dark:border-[#00F2FE]/40 flex items-center justify-center font-bold text-accent dark:text-[#00F2FE] text-base tracking-tight shadow-sm shrink-0">
-                      {t.initials}
-                    </div>
-                    <div>
-                      <div className="text-base sm:text-lg font-black text-foreground">
-                        {t.author}
+                  {/* Author Attribution & Category Pill Row */}
+                  <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-border/70 dark:border-slate-800/80">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-12 h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#00F2FE]/20 to-[#00F5A0]/20 border border-[#00F2FE]/30 dark:border-[#00F2FE]/40 flex items-center justify-center font-bold text-accent dark:text-[#00F2FE] text-base tracking-tight shadow-sm shrink-0">
+                        {t.initials}
                       </div>
-                      <div className="text-xs sm:text-sm font-medium text-muted-foreground">
-                        {t.role}
+                      <div>
+                        <div className="text-base sm:text-lg font-black text-foreground">
+                          {t.author}
+                        </div>
+                        <div className="text-xs sm:text-sm font-medium text-muted-foreground">
+                          {t.role}
+                        </div>
                       </div>
                     </div>
+
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      {t.category}
+                    </span>
                   </div>
                 </div>
               </div>
