@@ -35,28 +35,28 @@ export const metadata: Metadata = {
   creator: 'Rottman M. Mendez',
   publisher: 'Rottman M. Mendez',
   openGraph: {
-    title: 'Rottman M. Mendez | Full-Stack & AI Software Engineer · Reston, VA',
+    title: 'RottyM | Fast, Modern Websites for Northern Virginia',
     description:
-      'Building high-performance web applications, custom portals, and AI-augmented platforms with deep UI/UX architecture expertise for Reston & Northern Virginia businesses.',
+      "AI can generate a website. It can't run your business. Fast Next.js sites, booking systems, and client portals for NoVA businesses.",
     url: 'https://rottym.com',
-    siteName: 'RottyM · Full-Stack & AI Software Engineer',
+    siteName: 'RottyM · Fast, Modern Websites for Northern Virginia',
     locale: 'en_US',
     type: 'website',
     images: [
       {
-        url: '/images/portfolio/rottman-hero.jpg',
+        url: '/images/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Rottman M. Mendez - Full-Stack & AI Software Engineer',
+        alt: 'RottyM | Fast, Modern Websites for Northern Virginia',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Rottman M. Mendez | Full-Stack & AI Software Engineer · Reston, VA',
+    title: 'RottyM | Fast, Modern Websites for Northern Virginia',
     description:
-      'Building high-performance web applications, custom portals, and AI-augmented platforms with deep UI/UX architecture expertise for Reston & Northern Virginia businesses.',
-    images: ['/images/portfolio/rottman-hero.jpg'],
+      "AI can generate a website. It can't run your business. Fast Next.js sites, booking systems, and client portals for NoVA businesses.",
+    images: ['/images/og-image.jpg'],
   },
   robots: {
     index: true,
@@ -78,7 +78,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ProfessionalService',
   name: 'RottyM - Full-Stack & AI Software Engineer',
-  image: 'https://rottym.com/images/portfolio/rottman-hero.jpg',
+  image: 'https://rottym.com/images/og-image.jpg',
   '@id': 'https://rottym.com',
   url: 'https://rottym.com',
   email: 'rmendez@rottym.com',
