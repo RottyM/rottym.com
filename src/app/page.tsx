@@ -90,23 +90,22 @@ export default function Home() {
             className="space-y-4 sm:space-y-5"
           >
             <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm backdrop-blur-md border border-border max-w-full">
-              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">
-                WEBSITES FOR NORTHERN VIRGINIA SMALL BUSINESS
+                Serving Northern Virginia and Beyond
               </span>
               <span className="text-border hidden sm:inline">·</span>
               <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">
-                RESTON, VA
+                Reston, VA
               </span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground leading-[1.12] tracking-tight drop-shadow-sm">
               A fast website that turns local searches into{" "}
-              <span className="tech-gradient-text">booked jobs.</span>
+              <span className="tech-gradient-text">new customers.</span>
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl font-medium">
-              I build fast, modern websites for NoVA home services, restaurants, and local pros — with online booking, quote forms, and Google setup included.{" "}
+              I build fast, modern websites for any Northern Virginia business that needs one — restaurants, contractors, authors, shops, nonprofits, you name it — with online booking, quote forms, and custom workflows included.{" "}
               <strong className="text-foreground font-bold">From $2,500, and you own 100% of it.</strong>
             </p>
 
@@ -178,101 +177,94 @@ export default function Home() {
                 </div>
                 <div className="flex items-center justify-center flex-1 max-w-[220px] sm:max-w-[260px] mx-auto px-3 py-0.5 rounded-md bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-inner">
                   <span className="font-mono text-[10px] sm:text-[11px] text-muted-foreground truncate">
-                    sample-client-site.com
+                    rottym.com/portfolio
                   </span>
                 </div>
                 <div className="w-10 shrink-0" />
               </div>
 
-              {/* Mock Client Website Content */}
-              <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 bg-gradient-to-b from-slate-50/50 to-white dark:from-[#0d1627] dark:to-[#0a111e]">
-                {/* Mock Nav */}
-                <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800/80 pb-3">
-                  <div className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white">
-                    NoVA Home <span className="text-[#e07b24] dark:text-orange-400">Pros</span>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-300 font-mono">
-                    <span className="hidden sm:inline">Services</span>
-                    <span className="hidden sm:inline">Reviews</span>
-                    <span className="px-2.5 py-1 rounded-md bg-[#e07b24]/10 dark:bg-orange-500/15 text-[#e07b24] dark:text-orange-400 font-bold border border-[#e07b24]/20">
-                      Book Online
-                    </span>
-                  </div>
-                </div>
+              {/* Portfolio Showcase Header */}
+              <div className="p-4 sm:p-5 pb-2 sm:pb-3 space-y-1 bg-gradient-to-b from-slate-50/50 to-white dark:from-[#0d1627] dark:to-[#0a111e]">
+                <p className="font-mono text-[10.5px] font-bold tracking-wider uppercase text-accent dark:text-[#00F2FE]">
+                  Real work · Real businesses
+                </p>
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-snug">
+                  Websites for <span className="text-accent dark:text-[#00F2FE]">every kind</span> of business.
+                </h3>
+                <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-400 leading-normal">
+                  Authors, archives, a writers club, a storefront, a motorcycle platform — if it needs a website, it belongs here.
+                </p>
+              </div>
 
-                {/* Mock Hero Intro */}
-                <div className="space-y-2">
-                  <h3 className="text-base sm:text-xl font-black leading-tight text-slate-900 dark:text-white tracking-tight">
-                    Heating, cooling &amp; plumbing —{" "}
-                    <span className="text-[#e07b24] dark:text-orange-400">booked in two minutes.</span>
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-normal">
-                    Serving Reston, Herndon &amp; Fairfax. Pick a time that works for you — no phone tag.
-                  </p>
+              {/* Work List */}
+              <div className="px-3 sm:px-4 py-1.5 sm:py-2 space-y-2 bg-white dark:bg-[#0c1424]">
+                {[
+                  {
+                    monogram: 'FA',
+                    bg: 'bg-[#28536b]',
+                    title: 'Found Archives',
+                    subtitle: 'Archives & research business',
+                    href: '/portfolio/found-archives',
+                  },
+                  {
+                    monogram: 'NV',
+                    bg: 'bg-[#0e7a4f]',
+                    title: 'Northern Virginia Writers Club',
+                    subtitle: 'Nonprofit / membership platform',
+                    href: '/portfolio/northern-virginia-writers',
+                  },
+                  {
+                    monogram: 'TL',
+                    bg: 'bg-[#10222f]',
+                    title: 'ThrottleLife',
+                    subtitle: 'Motorcycle Mile Challenge',
+                    href: '/portfolio/throttlelife',
+                  },
+                  {
+                    monogram: 'B',
+                    bg: 'bg-[#9a5410]',
+                    title: 'Brevic',
+                    subtitle: 'Real Estate Development',
+                    href: '/portfolio',
+                    desktopOnly: true,
+                  },
+                ].map((item) => (
+                  <Link
+                    key={item.title}
+                    href={item.href}
+                    className={`items-center gap-3 p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/80 hover:border-accent/40 transition-all group ${
+                      item.desktopOnly ? 'hidden sm:flex' : 'flex'
+                    }`}
+                  >
+                    <div
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg ${item.bg} flex items-center justify-center font-black text-white text-xs sm:text-sm shrink-0 shadow-sm`}
+                    >
+                      {item.monogram}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <b className="text-xs sm:text-[13.5px] font-bold text-slate-900 dark:text-white leading-tight block truncate group-hover:text-accent transition-colors">
+                        {item.title}
+                      </b>
+                      <span className="text-[10.5px] sm:text-[11.5px] text-slate-500 dark:text-slate-400 leading-tight block truncate mt-0.5">
+                        {item.subtitle}
+                      </span>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 text-accent shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                ))}
+              </div>
 
-                  {/* Service Pills */}
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {['AC Repair', 'Furnace Install', 'Drain Cleaning', 'Water Heaters'].map((service) => (
-                      <span
-                        key={service}
-                        className="text-[10px] sm:text-[11px] font-bold font-mono px-2 sm:px-2.5 py-0.5 rounded-full bg-[#e07b24]/10 dark:bg-orange-500/15 text-[#9a5410] dark:text-orange-300 border border-[#e07b24]/20"
-                      >
-                        {service}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Booking Form Card */}
-                <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-sm space-y-3">
-                  <div className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Book a service call
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-left">
-                    <div className="p-2 sm:p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/60">
-                      <span className="block font-mono text-[8.5px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold">
-                        Service
-                      </span>
-                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
-                        AC repair
-                      </span>
-                    </div>
-                    <div className="p-2 sm:p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/60">
-                      <span className="block font-mono text-[8.5px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold">
-                        Date
-                      </span>
-                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
-                        Pick a day
-                      </span>
-                    </div>
-                    <div className="p-2 sm:p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/60">
-                      <span className="block font-mono text-[8.5px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold">
-                        Time
-                      </span>
-                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 truncate block">
-                        Morning · 8–11 AM
-                      </span>
-                    </div>
-                    <div className="p-2 sm:p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/60">
-                      <span className="block font-mono text-[8.5px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold">
-                        ZIP
-                      </span>
-                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
-                        20190
-                      </span>
-                    </div>
-                  </div>
-                  <div className="w-full py-2 sm:py-2.5 rounded-lg bg-[#e07b24] hover:bg-[#d06f1d] text-white font-bold text-xs sm:text-sm text-center shadow-sm font-sans cursor-pointer transition-colors">
-                    Request My Appointment
-                  </div>
-                </div>
+              {/* Bottom CTA Button */}
+              <div className="px-3 sm:px-4 pt-1 pb-3.5 sm:pb-4 bg-white dark:bg-[#0c1424]">
+                <Link
+                  href="/portfolio"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 sm:py-3 rounded-xl bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground font-mono font-bold text-xs sm:text-sm tracking-wider uppercase shadow-md transition-all group"
+                >
+                  <span>See the full portfolio</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#00D8F6] dark:text-inherit group-hover:translate-x-1 transition-transform" />
+                </Link>
               </div>
             </div>
-
-            {/* Mock Caption */}
-            <p className="text-[11px] sm:text-xs text-center text-muted-foreground mt-3 font-medium">
-              Example of a client site — the kind of page a cold lead should picture themselves getting.
-            </p>
           </div>
         </div>
       </section>
