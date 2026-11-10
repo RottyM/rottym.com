@@ -10,7 +10,6 @@ import { trackEvent } from '@/lib/analytics';
 export default function Contact() {
   // TODO: Create a Google App Password for 'no-reply@rottym.com' and set it as SMTP_PASS in your deployment vars.
   const [status, setStatus] = useState('');
-  const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedService, setSelectedService] = useState('Local Launchpad ($2,500 – $3,500)');
   const [attribution, setAttribution] = useState<{ source?: string; campaign?: string; ref?: string }>({});
@@ -143,25 +142,16 @@ export default function Contact() {
             </div>
 
             <div className="flex items-center gap-4 group">
-              <div
-                onClick={() => setPhoneRevealed(true)}
+              <a
+                href="tel:2028540954"
                 className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center text-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-all cursor-pointer"
+                aria-label="Call (202) 854-0954"
               >
                 <Phone className="w-5 h-5" />
-              </div>
+              </a>
               <div>
                 <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">Direct Line</p>
-                {phoneRevealed ? (
-                  <a href="tel:2028540954" className="text-lg font-bold hover:text-accent transition-colors font-mono">(202) 854-0954</a>
-                ) : (
-                  <button
-                    onClick={() => setPhoneRevealed(true)}
-                    className="text-lg font-bold text-foreground/50 border-b border-dashed border-foreground/30 hover:text-accent hover:border-accent transition-all text-left cursor-pointer"
-                    aria-label="Click to reveal direct phone number"
-                  >
-                    Click to Reveal
-                  </button>
-                )}
+                <a href="tel:2028540954" className="text-lg font-bold hover:text-accent transition-colors font-mono">(202) 854-0954</a>
               </div>
             </div>
 

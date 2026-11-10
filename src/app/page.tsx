@@ -3,17 +3,9 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Rocket, Zap, Globe, Cpu, Sparkles, Users, Braces, CalendarCheck, Workflow, Boxes, Layers, Compass } from 'lucide-react';
+import { ArrowRight, Rocket, Zap, Globe, Cpu, Sparkles, Users, Braces, CalendarCheck, Workflow, Boxes, Layers, Compass, Phone, Quote, Star, CheckCircle2 } from 'lucide-react';
 
 export default function Home() {
-  const [headlineIndex, setHeadlineIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHeadlineIndex((prev) => (prev + 1) % 2);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!localStorage.getItem('audit-shown')) {
@@ -82,7 +74,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative pt-10 pb-16 md:pb-24 overflow-hidden">
+      <section className="relative pt-10 pb-6 sm:pb-8 md:pb-10 overflow-hidden">
         {/* Architectural / Console Dot-Grid Texture */}
         <div className="absolute inset-0 bg-dot-grid opacity-70 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
@@ -98,127 +90,248 @@ export default function Home() {
             className="space-y-4 sm:space-y-5"
           >
             <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm backdrop-blur-md border border-border max-w-full">
-              <Braces className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
-              <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FULL-STACK &amp; AI SOFTWARE ENGINEER</span>
-              <span className="text-border hidden sm:inline">|</span>
-              <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, VA &amp; GLOBAL</span>
-            </div>
-
-            {/* Zero-shift layout-locked rotating headline */}
-            <div className="grid grid-cols-1 grid-rows-1 items-start">
-              {/* Ghost 1: keeps grid row sized to headline 0 */}
-              <h1
-                aria-hidden="true"
-                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.12] tracking-tight"
-              >
-                Building fast, modern sites that replace slow WordPress
-              </h1>
-
-              {/* Ghost 2: keeps grid row sized to headline 1 */}
-              <h1
-                aria-hidden="true"
-                className="col-start-1 row-start-1 invisible select-none pointer-events-none text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.12] tracking-tight"
-              >
-                Custom web platforms, client portals, and modern applications
-              </h1>
-
-              {/* Active visible animated headline */}
-              <div className="col-start-1 row-start-1 w-full">
-                <AnimatePresence mode="wait">
-                  <motion.h1
-                    key={headlineIndex}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    transition={{ duration: 0.45, ease: "easeInOut" }}
-                    className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground leading-[1.12] tracking-tight drop-shadow-sm"
-                  >
-                    {headlineIndex === 0 ? (
-                      <>
-                        Building fast, modern sites that{" "}
-                        <span className="tech-gradient-text">
-                          replace slow WordPress
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        Custom web platforms,{" "}
-                        <span className="tech-gradient-text">
-                          client portals
-                        </span>
-                        , and modern applications
-                      </>
-                    )}
-                  </motion.h1>
-                </AnimatePresence>
-              </div>
-            </div>
-
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl font-medium">
-              Reston-based Full-Stack &amp; AI Software Engineer with deep UI/UX architecture expertise. I build high-performance web platforms, custom portals, and AI-augmented applications with the precision of enterprise work at Disney, FEMA, and BAE Systems.
-            </p>
-
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full border border-slate-200/90 dark:border-white/10 bg-slate-100/90 dark:bg-slate-900/60 backdrop-blur-md shadow-sm text-[10px] sm:text-xs font-medium max-w-full">
-              <CalendarCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="text-slate-800 dark:text-slate-200 leading-none truncate">
-                <span className="hidden sm:inline">Fixed pricing after discovery call · </span>
-                <span className="text-emerald-700 dark:text-emerald-400 font-bold font-mono">Booking 2026 Projects &amp; Beyond</span>
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">
+                WEBSITES FOR NORTHERN VIRGINIA SMALL BUSINESS
+              </span>
+              <span className="text-border hidden sm:inline">·</span>
+              <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">
+                RESTON, VA
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-1 w-full sm:w-auto">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-foreground leading-[1.12] tracking-tight drop-shadow-sm">
+              A fast website that turns local searches into{" "}
+              <span className="tech-gradient-text">booked jobs.</span>
+            </h1>
+
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl font-medium">
+              I build fast, modern websites for NoVA home services, restaurants, and local pros — with online booking, quote forms, and Google setup included.{" "}
+              <strong className="text-foreground font-bold">From $2,500, and you own 100% of it.</strong>
+            </p>
+
+            {/* Trust Quote Line */}
+            <div className="flex items-start gap-3 p-3 sm:p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white/70 dark:bg-card/70 backdrop-blur-md border-l-4 border-l-accent shadow-sm max-w-xl">
+              <Quote className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 italic">
+                  &ldquo;It was worth every penny!&rdquo;
+                </p>
+                <p className="text-xs text-slate-600 dark:text-muted-foreground font-medium">
+                  — Isabelle Deeme, Author, The Enchanted Series
+                </p>
+              </div>
+            </div>
+
+            {/* CTAs Row */}
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1 w-full">
               <Link 
                 href="/contact" 
-                className="group flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent"
+                className="group flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent"
               >
                 <span>Book a Discovery Call</span>
                 <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link 
-                href="/packages" 
-                className="flex items-center justify-center gap-2 bg-white text-slate-900 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all"
+                href="#examples" 
+                className="flex items-center justify-center gap-2 bg-white text-slate-900 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all"
               >
-                View Packages &amp; Pricing
+                See examples ↓
               </Link>
-            </div>
-
-            <div className="flex items-center gap-4 pt-1 text-muted-foreground">
-              <div className="flex -space-x-2.5">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[9px] font-bold">
-                    {['NY', 'SF', 'DC', 'LD'][i - 1]}
+              <a
+                href="tel:2028540954"
+                className="flex items-center justify-center gap-2.5 bg-accent/15 hover:bg-accent/25 text-foreground border border-accent/40 dark:border-accent/50 px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-mono text-xs sm:text-sm font-bold transition-all shadow-sm group"
+                aria-label="Call (202) 854-0954"
+              >
+                <Phone className="w-4 h-4 text-accent shrink-0" />
+                <div className="text-left leading-tight">
+                  <div className="font-bold text-accent dark:text-[#00F2FE]">(202) 854-0954</div>
+                  <div className="text-[9px] sm:text-[10px] text-muted-foreground font-sans font-medium tracking-normal opacity-85">
+                    Direct line · Tap to call
                   </div>
-                ))}
-              </div>
-              <p className="text-xs sm:text-sm font-medium">
-                Serving local organizations and technical teams
-              </p>
+                </div>
+              </a>
             </div>
+
+            {/* Note below CTAs */}
+            <p className="font-mono text-xs sm:text-[12.5px] text-muted-foreground pt-1 leading-relaxed">
+              <strong className="text-foreground font-bold">From $2,500</strong> · No runaway hourly billing
+              <span className="hidden sm:inline">
+                {" "}· <strong className="text-accent font-bold">Prefer to talk?</strong> Call directly via the button above.
+              </span>
+            </p>
           </motion.div>
 
-          <motion.div
-            initial={false}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="relative w-full max-w-lg mx-auto lg:max-w-none lg:pt-[50px]"
-          >
-            <Link 
-              href="/portfolio" 
-              className="block group focus:outline-none"
-              title="View Portfolio"
-            >
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border group-hover:border-accent/50 group-hover:shadow-accent/15 transition-all duration-500 bg-card">
-                {/* Ambient Chromatic Corner Light */}
-                <div className="absolute -top-12 -right-12 w-40 h-40 bg-accent/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500 pointer-events-none z-10" />
-                <img
-                  src="/images/portfolio/rottman-hero.jpg"
-                  alt="Rottman Mendez - Full-Stack & AI Software Engineer Portfolio"
-                  className="w-full h-auto object-cover grayscale-[15%] group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-40 group-hover:opacity-10 transition-opacity" />
+          <div className="relative w-full max-w-lg mx-auto lg:max-w-none">
+            {/* Ambient Corner Glow */}
+            <div className="absolute -top-10 -right-10 w-48 h-48 bg-accent/20 dark:bg-accent/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Browser Frame */}
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#0c1424]">
+              {/* Browser Window Bar */}
+              <div className="flex items-center justify-between px-3.5 sm:px-4 py-2 sm:py-2.5 bg-slate-100/90 dark:bg-slate-900/90 border-b border-slate-200/80 dark:border-slate-800">
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+                </div>
+                <div className="flex items-center justify-center flex-1 max-w-[220px] sm:max-w-[260px] mx-auto px-3 py-0.5 rounded-md bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-inner">
+                  <span className="font-mono text-[10px] sm:text-[11px] text-muted-foreground truncate">
+                    sample-client-site.com
+                  </span>
+                </div>
+                <div className="w-10 shrink-0" />
               </div>
-            </Link>
-          </motion.div>
+
+              {/* Mock Client Website Content */}
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 bg-gradient-to-b from-slate-50/50 to-white dark:from-[#0d1627] dark:to-[#0a111e]">
+                {/* Mock Nav */}
+                <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800/80 pb-3">
+                  <div className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white">
+                    NoVA Home <span className="text-[#e07b24] dark:text-orange-400">Pros</span>
+                  </div>
+                  <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-300 font-mono">
+                    <span className="hidden sm:inline">Services</span>
+                    <span className="hidden sm:inline">Reviews</span>
+                    <span className="px-2.5 py-1 rounded-md bg-[#e07b24]/10 dark:bg-orange-500/15 text-[#e07b24] dark:text-orange-400 font-bold border border-[#e07b24]/20">
+                      Book Online
+                    </span>
+                  </div>
+                </div>
+
+                {/* Mock Hero Intro */}
+                <div className="space-y-2">
+                  <h3 className="text-base sm:text-xl font-black leading-tight text-slate-900 dark:text-white tracking-tight">
+                    Heating, cooling &amp; plumbing —{" "}
+                    <span className="text-[#e07b24] dark:text-orange-400">booked in two minutes.</span>
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-normal">
+                    Serving Reston, Herndon &amp; Fairfax. Pick a time that works for you — no phone tag.
+                  </p>
+
+                  {/* Service Pills */}
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {['AC Repair', 'Furnace Install', 'Drain Cleaning', 'Water Heaters'].map((service) => (
+                      <span
+                        key={service}
+                        className="text-[10px] sm:text-[11px] font-bold font-mono px-2 sm:px-2.5 py-0.5 rounded-full bg-[#e07b24]/10 dark:bg-orange-500/15 text-[#9a5410] dark:text-orange-300 border border-[#e07b24]/20"
+                      >
+                        {service}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Booking Form Card */}
+                <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-sm space-y-3">
+                  <div className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Book a service call
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-left">
+                    <div className="p-2 sm:p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/60">
+                      <span className="block font-mono text-[8.5px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold">
+                        Service
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
+                        AC repair
+                      </span>
+                    </div>
+                    <div className="p-2 sm:p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/60">
+                      <span className="block font-mono text-[8.5px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold">
+                        Date
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
+                        Pick a day
+                      </span>
+                    </div>
+                    <div className="p-2 sm:p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/60">
+                      <span className="block font-mono text-[8.5px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold">
+                        Time
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 truncate block">
+                        Morning · 8–11 AM
+                      </span>
+                    </div>
+                    <div className="p-2 sm:p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/60">
+                      <span className="block font-mono text-[8.5px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold">
+                        ZIP
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
+                        20190
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-full py-2 sm:py-2.5 rounded-lg bg-[#e07b24] hover:bg-[#d06f1d] text-white font-bold text-xs sm:text-sm text-center shadow-sm font-sans cursor-pointer transition-colors">
+                    Request My Appointment
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mock Caption */}
+            <p className="text-[11px] sm:text-xs text-center text-muted-foreground mt-3 font-medium">
+              Example of a client site — the kind of page a cold lead should picture themselves getting.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Laser Divider */}
+      <div className="laser-divider" />
+
+      {/* Client Testimonial Spotlight */}
+      <section aria-label="Client Feedback" className="pt-4 sm:pt-6 pb-12 sm:pb-16 relative overflow-hidden">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="relative rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-10 md:p-12 overflow-hidden border border-border/80 shadow-lg transition-all duration-300 bg-gradient-to-br from-white via-slate-50/80 to-sky-50/30 dark:from-[#111928] dark:via-[#0e1624] dark:to-[#0a121f] dark:border-slate-800/80 dark:shadow-2xl before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r before:from-transparent before:via-[#00F2FE]/70 before:to-[#00F5A0]/70">
+            {/* Ambient Corner Auras */}
+            <div className="pointer-events-none absolute -right-20 -bottom-20 w-72 h-72 rounded-full bg-accent/5 dark:bg-[#00F2FE]/10 blur-3xl" />
+            <div className="pointer-events-none absolute -left-20 -top-20 w-64 h-64 rounded-full bg-emerald-500/5 dark:bg-[#00F5A0]/10 blur-3xl" />
+
+            {/* Decorative Watermark Quote Icon */}
+            <div className="absolute top-6 right-8 text-slate-200/60 dark:text-white/[0.04] select-none pointer-events-none">
+              <Quote className="w-24 h-24 sm:w-32 sm:h-32" />
+            </div>
+
+            <div className="relative z-10 space-y-5 sm:space-y-6">
+              {/* Rating Row */}
+              <div className="flex items-center gap-1.5 text-amber-500 dark:text-amber-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400 text-amber-400" />
+                ))}
+                <span className="ml-2 font-mono text-[10px] sm:text-xs font-black tracking-wider text-slate-700 dark:text-slate-300 uppercase">
+                  5.0 · Verified Client Review
+                </span>
+              </div>
+
+              {/* The Quote */}
+              <blockquote className="text-base sm:text-lg md:text-xl lg:text-[1.3rem] font-medium leading-relaxed text-slate-800 dark:text-slate-100">
+                &ldquo;I highly recommend Rotty Mendez. Working with him was awesome! He took the time to understand what I wanted, and was very patient with my technology impaired brain. His advice was invaluable and he built the most amazing website for me. Rotty was very professional and responsive to my many requests. It was worth every penny!&rdquo;
+              </blockquote>
+
+              {/* Author Attribution & Category Pill Row */}
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-border/70 dark:border-slate-800/80">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#00F2FE]/20 to-[#00F5A0]/20 border border-[#00F2FE]/30 dark:border-[#00F2FE]/40 flex items-center justify-center font-bold text-accent dark:text-[#00F2FE] text-base tracking-tight shadow-sm shrink-0">
+                    ID
+                  </div>
+                  <div>
+                    <div className="text-base sm:text-lg font-black text-foreground">
+                      Isabelle Deeme
+                    </div>
+                    <div className="text-xs sm:text-sm font-medium text-muted-foreground">
+                      Author, The Enchanted Series
+                    </div>
+                  </div>
+                </div>
+
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Website client
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -538,7 +651,7 @@ export default function Home() {
       <div className="laser-divider" />
 
       {/* Selected Work & Projects Section */}
-      <section className="py-16 sm:py-24 md:py-32 bg-accent/[0.03] transition-colors relative overflow-hidden">
+      <section id="examples" className="py-16 sm:py-24 md:py-32 bg-accent/[0.03] transition-colors relative overflow-hidden">
         <div className="absolute inset-0 bg-dot-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
