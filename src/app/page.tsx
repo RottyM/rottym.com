@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Rocket, Zap, Globe, Cpu, Sparkles, Users, Braces, CalendarCheck, Workflow, Boxes, Layers, Compass, Phone, Quote, Star, CheckCircle2 } from 'lucide-react';
 
 export default function Home() {
+  /* Disabled first-visit Strategic Consultation pop-up for now (keep for later reuse)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!localStorage.getItem('audit-shown')) {
@@ -25,6 +26,7 @@ export default function Home() {
     }, 5000);
     return () => clearTimeout(timer);
   }, []);
+  */
 
   const clientLogos = [
     {
@@ -126,7 +128,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1 w-full">
               <Link 
                 href="/contact" 
-                className="group flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent"
+                className="group flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent"
               >
                 <span>Book a Discovery Call</span>
                 <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current group-hover:translate-x-1 transition-transform" />
@@ -258,7 +260,7 @@ export default function Home() {
               <div className="px-3 sm:px-4 pt-1 pb-3.5 sm:pb-4 bg-white dark:bg-[#0c1424]">
                 <Link
                   href="/portfolio"
-                  className="flex items-center justify-center gap-2 w-full py-2.5 sm:py-3 rounded-xl bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground font-mono font-bold text-xs sm:text-sm tracking-wider uppercase shadow-md transition-all group"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 sm:py-3 rounded-xl bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground font-mono font-bold text-xs sm:text-sm tracking-wider uppercase shadow-md hover:scale-[1.01] transition-all group border border-[#090D16] dark:border-transparent"
                 >
                   <span>See the full portfolio</span>
                   <ArrowRight className="w-3.5 h-3.5 text-[#00D8F6] dark:text-inherit group-hover:translate-x-1 transition-transform" />
@@ -517,7 +519,7 @@ export default function Home() {
             </div>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground px-5 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm hover:scale-105 transition-all shadow-md shrink-0 w-full sm:w-auto border border-[#090D16] dark:border-transparent font-mono uppercase tracking-wider text-xs"
+              className="inline-flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground px-5 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm hover:scale-105 transition-all shadow-md shrink-0 w-full sm:w-auto border border-[#090D16] dark:border-transparent font-mono uppercase tracking-wider text-xs"
             >
               <span>Book a Discovery Call</span> <ArrowRight className="w-4 h-4 text-[#00D8F6] dark:text-current" />
             </Link>
@@ -764,7 +766,7 @@ export default function Home() {
                 Booking 2026 projects and beyond. Let&apos;s discuss your organization&apos;s goals and how to build a reliable, high-performance platform.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-2.5 sm:gap-3.5 w-full sm:w-auto pt-2">
-                <Link href="/contact" className="inline-flex items-center justify-center gap-2 bg-[#00D8F6] hover:bg-[#00F2FE] text-[#090D16] dark:bg-accent-foreground dark:text-accent px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-105 transition-transform shadow-xl">
+                <Link href="/contact" className="inline-flex items-center justify-center gap-2 bg-[#00D8F6] hover:bg-[#00F2FE] text-[#090D16] dark:bg-accent-foreground dark:text-accent dark:hover:bg-[#151D2F] dark:hover:text-accent px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-105 transition-transform shadow-xl">
                   <span>Book a Discovery Call</span> <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link href="/packages" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 dark:bg-accent/20 dark:hover:bg-accent/30 dark:text-accent-foreground dark:border-accent-foreground/30 px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all">

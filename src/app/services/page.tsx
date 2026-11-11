@@ -363,7 +363,7 @@ export default function Services() {
             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-8 w-full sm:w-auto">
               <Link
                 href="/contact"
-                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-all shadow-xl shadow-black/10 dark:shadow-accent/20 flex items-center justify-center gap-2 border border-[#090D16] dark:border-transparent hover:scale-105"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-all shadow-xl shadow-black/10 dark:shadow-accent/20 flex items-center justify-center gap-2 border border-[#090D16] dark:border-transparent hover:scale-105"
               >
                 <span>Start the Conversation</span>
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#00D8F6] dark:text-current" />

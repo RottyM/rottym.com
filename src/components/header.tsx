@@ -38,7 +38,7 @@ export default function Header() {
           <Link href="/packages" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors">Packages</Link>
           <Link href="/portfolio" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors">Portfolio</Link>
           <Link href="/about" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors">About</Link>
-          <Link href="/contact" className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white dark:bg-accent dark:text-accent-foreground rounded-full hover:scale-105 transition-all shadow-sm font-semibold font-mono text-xs uppercase tracking-wider">
+          <Link href="/contact" className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground rounded-full hover:scale-105 transition-all shadow-sm font-semibold font-mono text-xs uppercase tracking-wider">
             <span>Contact</span>
             <span className="text-[#00D8F6] dark:text-current font-bold">→</span>
           </Link>
@@ -75,7 +75,7 @@ export default function Header() {
             <Link href="/packages" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Packages</Link>
             <Link href="/portfolio" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Portfolio</Link>
             <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">About</Link>
-            <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="px-5 py-2.5 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground rounded-xl font-bold font-mono text-xs uppercase tracking-wider text-center inline-flex items-center justify-center gap-2 shadow-md">
+            <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="px-5 py-2.5 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground rounded-xl font-bold font-mono text-xs uppercase tracking-wider text-center inline-flex items-center justify-center gap-2 shadow-md">
               <span>Contact</span>
               <span className="text-[#00D8F6] dark:text-current font-bold">→</span>
             </Link>
