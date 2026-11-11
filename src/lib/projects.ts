@@ -176,43 +176,43 @@ export const projects: Project[] = [
     featured: true,
     tech: ["WordPress", "PMPro", "BuddyBoss", "MailChimp API", "PayPal IPN", "MySQL"],
     img: "/images/portfolio/northernvirginiawriters-home.png",
-    highlightMetric: "12+ hrs weekly admin saved · 0.00% sync error rate · v4.0 SOP Playbook",
-    summary: "Architecting a sovereign, automated community operating system for a prominent regional literary organization — eliminating 12+ hours of weekly spreadsheet triage, securing tiered author databases, and providing bulletproof documentation for volunteer sustainability.",
-    challenge: "A volunteer board buried under manual spreadsheet forensics, risking unvetted intrusions into manuscript critique rooms and accidental member lockouts.",
-    solution: "Engineered a sovereign, connected membership platform with staging queues, redundant IPN server logging, real-time 3-way webhook sync, and versioned SOP documentation.",
-    details: "Deep WordPress & membership platform internals: managing custom user roles, staging verification queues, IPN webhook telemetry, and automated MailChimp synchronization.",
+    highlightMetric: "Membership nearly doubled · 90% auto-renewal opt-in · 12+ hrs/wk saved",
+    summary: "Architecting a modern collaboration portal and 12-month rolling subscription system for the largest writers club in Virginia — nearly doubling membership in the first year, achieving 90% automated renewal opt-in, and freeing officers to focus on creative programming.",
+    challenge: "Modernizing Virginia's largest writers club from manual spreadsheet tracking and rigid calendar-year billing to 12-month rolling subscriptions and a secure online collaboration portal.",
+    solution: "Engineered a connected membership and Facebook-like collaboration portal with 12-month rolling subscriptions, manuscript critique and query groups, meeting recording archives, real-time 3-way webhook sync, and versioned SOP documentation.",
+    details: "Deep WordPress & membership platform internals: managing 12-month rolling subscription lifecycles, BuddyBoss collaboration spaces, IPN webhook telemetry, and automated MailChimp synchronization.",
     beforeAfter: {
-      before: "Volunteer board spent 12 to 15 hours every week manually checking PayPal notifications and re-entering names into Excel rosters.",
-      after: "Autonomous member platform with one-click officer approvals, automated recurring billing sync, and real-time MailChimp list integration.",
-      result: "Admin overhead collapsed by over 90% with 0.00% sync error rate across rosters, forums, and email broadcasts."
+      before: "Volunteer board spent 12 to 15 hours every week reconciling spreadsheets under a calendar-year billing model, with no online member collaboration portal.",
+      after: "Connected collaboration portal with 12-month rolling subscriptions, automated recurring renewals, meeting archives, and real-time MailChimp integration.",
+      result: "Membership nearly doubled in the first year with 90% opting in for automated renewals, freeing officers to secure speakers, afford a dedicated meeting space, and publish an anthology."
     },
     caseStudy: {
-      eyebrow: "CASE STUDY · NORTHERN VIRGINIA WRITERS CLUB · FULL-STACK & MEMBERSHIP ARCHITECTURE",
-      heroHeadline: "How a Writers Club Replaced Manual Membership Admin with a Connected Member Platform",
-      heroSubtitle: "Architecting a sovereign, automated community operating system for a prominent regional literary organization — eliminating 12+ hours of weekly spreadsheet triage, securing tiered author databases, and providing bulletproof documentation for volunteer sustainability.",
+      eyebrow: "CASE STUDY · NORTHERN VIRGINIA WRITERS CLUB · COLLABORATION PORTAL & MEMBERSHIP ARCHITECTURE",
+      heroHeadline: "How Virginia's Largest Writers Club Modernized Membership & Launched a Collaboration Portal",
+      heroSubtitle: "Architecting an automated 12-month rolling subscription platform and secure Facebook-like collaboration portal for the largest writers club in the state — nearly doubling membership in the first year and freeing volunteer officers to focus on creative programming.",
       verifiedBadge: "PRODUCTION DEPLOYMENT · VERIFIED 2026",
       liveUrl: "https://northernvirginiawriters.org/",
       liveUrlLabel: "Live Site",
       proofBar: {
         title: "Active Production Infrastructure",
-        description: "Multi-device community dashboard, authenticated author directory & live IPN ledger",
-        chips: ["100% Code Ownership", "Zero Desync", "Playbook v4.0"]
+        description: "Facebook-like member collaboration portal, meeting archive, authenticated author directory & live IPN ledger",
+        chips: ["Nearly 2x Membership", "90% Auto-Renewal", "Playbook v4.0"]
       },
       metrics: [
         {
+          label: "First-Year Growth",
+          value: "~2x",
+          subtext: "Membership nearly doubled in Year 1"
+        },
+        {
+          label: "Auto-Renewal Opt-In",
+          value: "90%",
+          subtext: "On 12-month rolling subscriptions"
+        },
+        {
           label: "Weekly Admin Time",
           value: "12+ hrs",
-          subtext: "Direct volunteer time saved / wk"
-        },
-        {
-          label: "Renewal Pipeline",
-          value: "100%",
-          subtext: "Automated recurring billing sync"
-        },
-        {
-          label: "Sync Error Rate",
-          value: "0.00%",
-          subtext: "Across rosters, forums & MailChimp"
+          subtext: "Saved weekly for creative programming"
         },
         {
           label: "Volunteer Handover",
@@ -224,7 +224,7 @@ export const projects: Project[] = [
         {
           label: "Client Organization",
           value: "Northern Virginia Writers Club",
-          subtext: "Est. 2007 · Reston & NoVA Region"
+          subtext: "Est. 2007 · Largest Writers Club in Virginia"
         },
         {
           label: "Role & Ownership",
@@ -234,7 +234,7 @@ export const projects: Project[] = [
         {
           label: "Timeline & Engagement",
           value: "Initial Deploy + Multi-Year Support",
-          subtext: "Sustained platform maintenance through 2026"
+          subtext: "Approaching 20th Anniversary · Unchanged Dues"
         },
         {
           label: "Integrated Stack",
@@ -243,43 +243,43 @@ export const projects: Project[] = [
         }
       ],
       crisis: {
-        eyebrow: "THE ADMINISTRATIVE CRISIS",
-        heading: "A volunteer board buried under manual spreadsheet forensics.",
+        eyebrow: "THE MODERNIZATION CHALLENGE",
+        heading: "Outgrowing manual spreadsheets and calendar-year billing.",
         description: [
-          "The Northern Virginia Writers Club (NVWC) brings together published authors, journalists, poets, and aspiring wordsmiths across the greater DC area. While community passion was thriving, behind the scenes volunteer board members were burning out under an overwhelming operational bottleneck.",
-          "With zero automated integration between member billing, private community forums, and broadcast communication, every single club action required manual cross-examination across three disconnected tools."
+          "The Northern Virginia Writers Club (NVWC) is the largest writers club in the state of Virginia, bringing together published authors, journalists, poets, and aspiring wordsmiths. While community passion was thriving, volunteer board members were burdened by manual administrative tasks and lacked a unified online collaboration portal for members.",
+          "With zero automated integration between member billing, rosters, and broadcast email — combined with a legacy calendar-year subscription cutoff — routine administrative chores were taking valuable time away from creative club initiatives."
         ],
-        threat: "Unvetted internet users were entering members-only manuscript critique rooms, while long-time paying supporters were being inadvertently dropped from workshop newsletters due to human sync delay.",
+        threat: "Under the legacy calendar-year billing model, members who paid full subscription price near year-end did not receive a full 12 months of membership — resulting in irritated, non-renewing members — while human sync delays left paying supporters off workshop newsletters.",
         painPoints: [
           {
             title: "12–15 Hours of Weekly Manual Spreadsheet Re-typing",
             description: "Officers spent nights reconciling PayPal notification emails against static Excel roster sheets, manually exporting CSVs, and importing them into MailChimp lists. One typo severed a member's communications."
           },
           {
-            title: "Unvetted Infiltration & Abrupt Member Lockouts",
-            description: "Without structured membership lifecycle states, accidental cancellations occurred mid-billing term, triggering rude automated lockouts for senior authors while completely unverified signups slipped past unmonitored gates."
+            title: "Calendar-Year Billing Friction & No Collaboration Portal",
+            description: "Without 12-month rolling subscriptions, members joining late in the year paid full price without receiving a full 12 months, leading to frustrated, non-renewing members. At the same time, members had no central online portal to share manuscripts, collaborate on pitches, or access meeting recordings."
           },
           {
             title: "Silent Payment Webhook Failures & Missing Addresses",
-            description: "Standard checkout plugins frequently dropped transaction payloads when users closed browser tabs prior to redirect, leading to untracked payments, missing tax records, and awkward manual payment audits."
+            description: "Standard checkout plugins frequently dropped transaction payloads when users closed browser tabs prior to redirect, leading to untracked payments and awkward manual payment audits."
           }
         ]
       },
-      pillarsHeading: "The Connected Member Platform: 6 Strategic Solutions",
-      pillarsSubheading: "Instead of stacking incompatible SaaS subscriptions, RottyM engineered a sovereign, fully orchestrated ecosystem giving the organization absolute ownership, zero vendor rent, and total operational automation.",
+      pillarsHeading: "The Connected Member & Collaboration Platform: 6 Core Pillars",
+      pillarsSubheading: "Instead of stacking incompatible SaaS tools, RottyM engineered a unified collaboration portal and automated subscription architecture that nearly doubled membership in its first year while keeping member dues unchanged.",
       pillars: [
         {
-          index: "01 / QUEUE",
-          tag: "Vetting Workflow",
-          title: "Pending-Member Vetting Workflow",
-          description: "New submissions do not grant instant community credentials. A dedicated administrative staging queue holds registrations until elected officers review literary eligibility and ethics agreements.",
-          bullets: ["Eliminates email back-and-forth", "One-click officer approvals"]
+          index: "01 / PORTAL",
+          tag: "Collaboration Hub",
+          title: "Facebook-Like Secure Collaboration Portal",
+          description: "In a secure, Facebook-like social interface, members now share book releases, collaborate on pitches and queries, exchange manuscripts in online critique groups, and access an archive of all club meetings and recordings.",
+          bullets: ["Online pitch, query & manuscript collaboration", "Full archive of club meetings & recordings"]
         },
         {
           index: "02 / BILLING",
           tag: "Payment Flow & IPN",
           title: "Frictionless Payment & IPN Server Logging",
-          description: "Integrated PayPal engine capturing thorough billing addresses for regional non-profit tax reporting, coupled with redundant server-side Instant Payment Notification (IPN) telemetry logging.",
+          description: "Integrated PayPal engine capturing complete member billing addresses for chapter administration, coupled with redundant server-side Instant Payment Notification (IPN) telemetry logging.",
           bullets: ["Zero silent webhook drops", "Automated receipt generation"]
         },
         {
@@ -290,11 +290,11 @@ export const projects: Project[] = [
           bullets: ["Zero manual CSV roster exports", "Real-time audience segmentation"]
         },
         {
-          index: "04 / LIFECYCLE",
-          tag: "Grace Period",
-          title: "Grace-Period & \"Cancel Renewal Only\"",
-          description: "Human-centric member lifecycle logic allowing writers to turn off recurring subscription rebilling while fully maintaining portal access and community privileges until their paid annual expiration date.",
-          bullets: ["Prevents jarring auto-lockouts", "Configurable renewal buffer intervals"]
+          index: "04 / SUBSCRIPTIONS",
+          tag: "Rolling 12-Month",
+          title: "12-Month Rolling Subscriptions & Auto-Renewals",
+          description: "Modernized the club from fixed year-end cutoffs to true 12-month rolling subscriptions so every member gets a full year of value, paired with 'Cancel Renewal Only' controls that maintain access through the paid term.",
+          bullets: ["90% of members opt in for automated renewals", "Full 12-month value from any join date"]
         },
         {
           index: "05 / SHOWCASE",
@@ -307,20 +307,20 @@ export const projects: Project[] = [
           index: "06 / HANDOFF",
           tag: "Playbook v4.0",
           title: "Documentation SOP: Playbook v4.0",
-          description: "Engineered for true volunteer longevity. Rottman authored a 40-page, continuously maintained living operations manual complete with annotated walkthroughs for rotating non-technical board members.",
-          bullets: ["Zero agency dependency or lock-in", "Seamless annual board transitions"]
+          description: "Engineered for smooth officer transitions. Rottman authored a 40-page, continuously maintained living operations manual complete with annotated walkthroughs for rotating non-technical board members.",
+          bullets: ["Zero agency dependency or lock-in", "Streamlined annual officer transitions"]
         }
       ],
       topology: {
         eyebrow: "SYSTEM TOPOLOGY",
         heading: "Real-Time Event Orchestration",
-        subtext: "How membership states execute without manual administrative touchpoints",
+        subtext: "How rolling subscriptions and collaboration access execute without manual administrative touchpoints",
         pulseBadge: "HTTP 200 OK · Webhook Pulse",
         steps: [
           {
             step: "STEP 01",
-            title: "User Checkout",
-            description: "Applicant selects tier, enters verification data & completes PayPal auth.",
+            title: "Member Checkout",
+            description: "Writer selects 12-month rolling membership & completes PayPal checkout.",
             code: "POST /checkout"
           },
           {
@@ -331,41 +331,41 @@ export const projects: Project[] = [
           },
           {
             step: "STEP 03",
-            title: "Vetting Ledger",
-            description: "Officer approval triggers synchronized status unlock across user roles.",
-            code: "Role: Author_Active"
+            title: "Rolling 12-Month Term",
+            description: "Full 12-month subscription lifecycle & automated renewal preferences activate.",
+            code: "Role: Member_Active"
           },
           {
             step: "STEP 04",
-            title: "3-Way Sync Broadcast",
-            description: "BuddyBoss directory listing activates; MailChimp tags update in 140ms.",
+            title: "3-Way Sync & Portal",
+            description: "BuddyBoss collaboration portal, critique groups & MailChimp tags sync in 140ms.",
             code: "API Dispatch"
           }
         ]
       },
       comparison: {
-        beforeTitle: "Manual Fragile State",
-        beforeSubtitle: "PRIOR TO 2024",
+        beforeTitle: "Legacy Manual Workflow",
+        beforeSubtitle: "PRIOR TO MODERNIZATION",
         beforeItems: [
           "Volunteer board spent 12 to 15 hours every week manually checking PayPal notifications and re-entering names into Excel.",
-          "Spam bots and non-paying users routinely registered into critique discussion channels due to missing staging queues.",
-          "Member renewals expired silently; members received sudden lockouts instead of gentle notice grace periods.",
-          "Officers had zero operational documentation, resulting in chaos whenever board seats turned over during elections."
+          "Members had no online collaboration portal to share book releases, workshop pitches and manuscripts, or access past meeting recordings.",
+          "Fixed calendar-year billing disappointed members who paid full subscription price near year-end without getting a full 12 months, resulting in irritated, non-renewing members.",
+          "Officers had limited operational documentation, resulting in time-consuming transitions whenever officer seats turned over during elections."
         ],
-        afterTitle: "Autonomous Modern Platform",
+        afterTitle: "Connected Collaboration Portal",
         afterSubtitle: "ROTTYM DEPLOYMENT",
         afterItems: [
-          "Admin overhead collapsed by over 90% — from 15 hours down to routine periodic oversight.",
-          "Bulletproof vetting workflow guarantees zero unverified accounts access confidential author manuscripts.",
-          "Fully automated MailChimp sync and grace periods prevent accidental churn or abrupt member friction.",
-          "Playbook v4.0 documentation empowers any elected volunteer to administer the entire portal with confidence."
+          "In the first year, membership nearly doubled using the seamless 12-month rolling subscription system, with 90% of members opting in for automated renewals.",
+          "In a Facebook-like secure interface, members now share book releases, collaborate on pitches and queries, share manuscripts, and access an archive of all club meetings and recordings.",
+          "Automation freed up officers' time to focus on the creative aspects of a writers club, including securing high-quality speakers and publishing an anthology.",
+          "The club has kept dues the same in the second year since launch while offering much more functionality, affording a dedicated meeting space, and preparing to celebrate its 20th anniversary."
         ]
       },
       testimonial: {
         quote: "Before Rottman redesigned our architecture, our volunteer officers were spending whole weekends drowning in spreadsheet checks, missing email notifications, and resolving accidental member drops. The connected system he built didn't just solve our tech headaches — it saved our volunteer team from burnout and gave our authors a professional home they are genuinely proud of.",
-        author: "Executive Board Leadership",
-        role: "Northern Virginia Writers Club · Established 2007",
-        avatarText: "NV"
+        author: "Carolyn McBride, President",
+        role: "Northern Virginia Writers Club · Largest Writers Club in Virginia",
+        avatarText: "CM"
       },
       guarantees: [
         "100% Code & Database Ownership",
