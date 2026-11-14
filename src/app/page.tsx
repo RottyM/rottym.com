@@ -247,7 +247,7 @@ export default function Home() {
                         <ArrowRight className="w-3.5 h-3.5 text-accent shrink-0 group-hover:translate-x-0.5 transition-transform" />
                       ) : (
                         <span className="font-mono text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300/60 dark:border-slate-700/70 shrink-0">
-                          {item.statusLabel}
+                          {'statusLabel' in item ? String(item.statusLabel) : 'Soon'}
                         </span>
                       )}
                     </>
