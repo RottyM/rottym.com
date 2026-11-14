@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next';
 import { projects } from '@/lib/projects';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://rottym.com';
+  const baseUrl = 'https://www.rottym.com';
   const currentDate = new Date().toISOString();
 
   const coreRoutes: MetadataRoute.Sitemap = [
@@ -36,6 +36,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/resume`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.7,
     },
     {
       url: `${baseUrl}/contact`,

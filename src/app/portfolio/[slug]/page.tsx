@@ -29,7 +29,8 @@ import {
   Quote,
   FileCode2
 } from 'lucide-react';
-import { projects, getProjectBySlug } from '@/lib/projects';
+import { projects, getProjectsSorted, getProjectBySlug } from '@/lib/projects';
+import { createPageMetadata } from '@/lib/metadata';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -47,26 +48,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!project) {
     return {
-      title: 'Project Not Found | RottyM',
+      title: 'Project Not Found',
+      robots: { index: false, follow: false },
     };
   }
 
-  return {
+  return createPageMetadata({
     title: `${project.title} · Case Study & Platform Architecture`,
     description: project.summary,
-    openGraph: {
-      title: `${project.title} | Rottman M. Mendez Portfolio`,
-      description: project.summary,
-      images: [
-        {
-          url: project.img,
-          width: 1200,
-          height: 675,
-          alt: project.title,
-        },
-      ],
+    path: `/portfolio/${slug}`,
+    ogTitle: `${project.title} | Rottman M. Mendez Portfolio`,
+    image: {
+      url: project.img,
+      width: 1200,
+      height: 675,
+      alt: project.title,
     },
-  };
+  });
 }
 
 export default async function ProjectCaseStudy({ params }: PageProps) {
@@ -77,6 +75,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
     notFound();
   }
 
+  const projects = getProjectsSorted();
   const currentIndex = projects.findIndex((p) => p.slug === slug);
   const prevProject = currentIndex > 0 ? projects[currentIndex - 1] : null;
   const nextProject = currentIndex < projects.length - 1 ? projects[currentIndex + 1] : null;
@@ -103,17 +102,17 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             Back to Selected Work
           </Link>
 
-          <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-foreground/90 border border-white/20 dark:border-white/10 shadow-sm">
+          <span className="px-3 py-1 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-foreground/90 border border-white/20 dark:border-white/10 shadow-sm">
             {project.tag}
           </span>
         </div>
 
         {/* Hero Header (Centered to match /services, /packages, and site layout) */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
+          <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-md backdrop-blur-md border border-border max-w-full">
             <FileCode2 className="w-3.5 h-3.5 text-accent shrink-0" />
             <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">{project.category}</span>
-            <span className="text-border">|</span>
+            <span className="text-border" aria-hidden="true">|</span>
             <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">{project.role}</span>
           </div>
 
@@ -126,7 +125,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
           </p>
 
           <div className="pt-2">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/80 border border-border/80 rounded-xl text-xs sm:text-sm font-mono font-semibold text-foreground/90 shadow-sm">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/80 border border-border/80 rounded-lg text-xs sm:text-sm font-mono font-semibold text-foreground/90 shadow-sm">
               <Zap className="w-4 h-4 text-accent shrink-0" />
               <span>{project.highlightMetric}</span>
             </div>
@@ -135,7 +134,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
 
         {/* Hero Image Showcase (Using our snapshot of the NVWC website) */}
         <div className="max-w-5xl mx-auto space-y-4">
-          <div className="relative aspect-[16/10] w-full bg-card rounded-[2.5rem] md:rounded-[3rem] border border-border/80 shadow-2xl overflow-hidden">
+          <div className="relative aspect-[16/10] w-full bg-card rounded-lg border border-border/80 shadow-2xl overflow-hidden">
             <Image
               src={project.img}
               alt={project.title}
@@ -148,9 +147,9 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
 
           {/* Proof Overlay Bar attached to snapshot */}
           {cs?.proofBar && (
-            <div className="stitch-card p-5 md:p-6 rounded-2xl shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
+            <div className="stitch-card p-5 md:p-6 rounded-lg shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
               <div className="flex items-center gap-3 relative z-10">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shrink-0">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
@@ -190,7 +189,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
         {cs ? (
           <div className="max-w-5xl mx-auto space-y-16">
             {/* High-Visibility Metadata & Spec Grid */}
-            <div className="stitch-card p-6 md:p-10 rounded-[2.5rem] shadow-xl space-y-8 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
+            <div className="stitch-card p-6 md:p-10 rounded-lg shadow-xl space-y-8 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
               {/* 4-Column Top Data Metrics */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pb-8 border-b border-border/80 relative z-10">
                 {cs.metrics.map((m, idx) => (
@@ -246,7 +245,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* Left Column Narrative */}
               <div className="lg:col-span-5 space-y-5">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-lg text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
                   <span>{cs.crisis.eyebrow}</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-tight">
@@ -259,7 +258,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                 ))}
 
                 {/* The High-Stakes Threat Callout */}
-                <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-2">
+                <div className="p-5 rounded-lg bg-amber-500/10 border border-amber-500/25 space-y-2">
                   <div className="flex items-center gap-2 text-amber-500">
                     <AlertTriangle className="w-4 h-4 shrink-0" />
                     <span className="text-xs font-black uppercase tracking-wider">The High-Stakes Threat</span>
@@ -271,12 +270,12 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
               </div>
 
               {/* Right Column: Pre-Architecture Workflow */}
-              <div className="lg:col-span-7 bg-card rounded-[2.5rem] p-6 md:p-8 space-y-5 border border-border shadow-lg">
+              <div className="lg:col-span-7 bg-card rounded-lg p-6 md:p-8 space-y-5 border border-border shadow-lg">
                 <div className="flex items-center justify-between pb-2 border-b border-border/70">
                   <span className="text-base font-black text-foreground">
                     Pre-Architecture Workflow: Before RottyM
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-500 dark:text-red-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 rounded-lg bg-red-500/15 text-red-500 dark:text-red-400 text-[10px] font-mono font-bold uppercase tracking-wider">
                     Legacy Pain Points
                   </span>
                 </div>
@@ -285,7 +284,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                   {cs.crisis.painPoints.map((pain, idx) => (
                     <div
                       key={pain.title}
-                      className="flex items-start gap-3.5 p-4 rounded-xl bg-muted/40 border border-border/70"
+                      className="flex items-start gap-3.5 p-4 rounded-lg bg-muted/40 border border-border/70"
                     >
                       <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 shrink-0 mt-0.5">
                         {idx === 0 ? (
@@ -311,7 +310,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             {/* The Solution: 6 Core Engineering Pillars Bento Grid */}
             <section className="space-y-8">
               <div className="text-center max-w-2xl mx-auto space-y-3">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-full text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 glass rounded-lg text-accent shadow-sm text-xs font-bold tracking-wide uppercase">
                   <Sparkles className="w-3.5 h-3.5" /> ENGINEERED ARCHITECTURE
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
@@ -337,14 +336,14 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                   return (
                     <div
                       key={pillar.title}
-                      className="group bg-card rounded-[2rem] p-6 md:p-8 flex flex-col justify-between border border-border/80 hover:border-accent/40 hover:shadow-xl transition-all duration-300"
+                      className="group bg-card rounded-lg p-6 md:p-8 flex flex-col justify-between border border-border/80 hover:border-accent/40 hover:shadow-xl transition-all duration-300"
                     >
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <span className="font-mono text-[11px] font-bold text-accent bg-accent/10 px-2.5 py-1 rounded-md border border-accent/20">
                             {pillar.index}
                           </span>
-                          <div className="w-10 h-10 rounded-xl bg-muted/60 flex items-center justify-center border border-border">
+                          <div className="w-10 h-10 rounded-lg bg-muted/60 flex items-center justify-center border border-border">
                             {icons[idx % icons.length]}
                           </div>
                         </div>
@@ -378,7 +377,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
 
             {/* Interactive Data Flow Architecture (System Topology) */}
             {cs.topology && (
-              <section className="rounded-[2.5rem] bg-muted/30 border border-border p-6 md:p-10 space-y-8">
+              <section className="rounded-lg bg-muted/30 border border-border p-6 md:p-10 space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-[11px] font-mono uppercase tracking-widest text-accent font-bold">
@@ -391,7 +390,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                       {cs.topology.subtext}
                     </p>
                   </div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 font-mono text-xs text-accent font-semibold self-start md:self-auto">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 font-mono text-xs text-accent font-semibold self-start md:self-auto">
                     <Activity className="w-3.5 h-3.5 text-accent shrink-0" />
                     <span>{cs.topology.pulseBadge}</span>
                   </div>
@@ -402,7 +401,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                   {cs.topology.steps.map((step) => (
                     <div
                       key={step.step}
-                      className="bg-card p-5 rounded-2xl border border-border shadow-sm space-y-2.5 relative flex flex-col justify-between"
+                      className="bg-card p-5 rounded-lg border border-border shadow-sm space-y-2.5 relative flex flex-col justify-between"
                     >
                       <div className="space-y-2">
                         <span className="text-[10px] font-mono text-accent font-bold uppercase tracking-wider">
@@ -426,7 +425,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             {cs.comparison && (
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Before Matrix Card */}
-                <div className="bg-card rounded-[2.5rem] p-6 md:p-8 space-y-6 border border-border shadow-sm">
+                <div className="bg-card rounded-lg p-6 md:p-8 space-y-6 border border-border shadow-sm">
                   <div className="flex items-center justify-between pb-3 border-b border-border/80">
                     <div className="flex items-center gap-2 text-red-500">
                       <X className="w-5 h-5" />
@@ -450,7 +449,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                 </div>
 
                 {/* After Matrix Card */}
-                <div className="bg-card rounded-[2.5rem] p-6 md:p-8 space-y-6 border border-accent/30 shadow-xl relative overflow-hidden">
+                <div className="bg-card rounded-lg p-6 md:p-8 space-y-6 border border-accent/30 shadow-xl relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-2xl pointer-events-none" />
                   <div className="flex items-center justify-between pb-3 border-b border-border/80">
                     <div className="flex items-center gap-2 text-accent">
@@ -478,14 +477,14 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
 
             {/* Verified Testimonial Quote */}
             {cs.testimonial && (
-              <section className="relative rounded-[2.5rem] bg-card p-8 md:p-12 border border-border shadow-2xl overflow-hidden">
+              <section className="relative rounded-lg bg-card p-8 md:p-12 border border-border shadow-2xl overflow-hidden">
                 <div className="absolute top-4 right-6 text-foreground/5 select-none pointer-events-none">
                   <Quote className="w-32 h-32" />
                 </div>
                 <div className="relative max-w-3xl space-y-5">
-                  <div className="flex items-center gap-1.5 text-amber-400">
+                  <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      <Star key={i} className="w-4 h-4 fill-amber-700 text-amber-700 dark:fill-amber-400 dark:text-amber-400" />
                     ))}
                     <span className="text-[10px] font-mono font-bold tracking-wider text-muted-foreground ml-2">
                       VERIFIED CLIENT IMPACT
@@ -497,7 +496,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                   </blockquote>
 
                   <div className="flex items-center gap-3 pt-2">
-                    <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center font-bold text-accent text-sm">
+                    <div className="w-12 h-12 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center font-bold text-accent text-sm">
                       {cs.testimonial.avatarText}
                     </div>
                     <div>
@@ -515,7 +514,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
 
             {/* Technical Guarantees Strip */}
             {cs.guarantees && (
-              <div className="p-6 rounded-2xl bg-muted/40 border border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-foreground">
+              <div className="p-6 rounded-lg bg-muted/40 border border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-foreground">
                 {cs.guarantees.map((g, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
@@ -530,15 +529,15 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
           <div className="max-w-5xl mx-auto space-y-16">
             {/* Before / After Section */}
             {project.beforeAfter && (
-              <section className="p-8 md:p-12 rounded-[2.5rem] bg-card border border-border shadow-xl space-y-6">
+              <section className="p-8 md:p-12 rounded-lg bg-card border border-border shadow-xl space-y-6">
                 <div className="flex items-center gap-2.5 text-accent">
                   <Layers className="w-5 h-5" />
                   <h2 className="text-2xl font-black text-foreground">Before &amp; After Transformation</h2>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="p-6 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">
+                  <div className="p-6 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-400">
                       Legacy Baseline (Before)
                     </span>
                     <p className="text-sm text-foreground/80 leading-relaxed font-medium">
@@ -546,8 +545,8 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                     </p>
                   </div>
 
-                  <div className="p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                  <div className="p-6 rounded-lg bg-emerald-500/5 border border-emerald-500/20 space-y-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
                       Modern Architecture (After)
                     </span>
                     <p className="text-sm text-foreground/80 leading-relaxed font-medium">
@@ -556,7 +555,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-accent/5 border border-accent/20 flex items-start gap-3">
+                <div className="p-5 rounded-lg bg-accent/5 border border-accent/20 flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                   <div>
                     <span className="text-xs font-black uppercase tracking-wider text-accent block mb-1">
@@ -573,9 +572,9 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             {/* The Challenge & The Solution Grid */}
             <div className="grid md:grid-cols-2 gap-8 items-stretch">
               {project.challenge && (
-                <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-sm space-y-4 flex flex-col justify-between">
+                <div className="p-8 md:p-10 rounded-lg bg-card border border-border shadow-sm space-y-4 flex flex-col justify-between">
                   <div className="space-y-4">
-                    <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
+                    <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
                       <ShieldCheck className="w-6 h-6" />
                     </div>
                     <h3 className="text-2xl font-black text-foreground">The Challenge</h3>
@@ -587,9 +586,9 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
               )}
 
               {project.solution && (
-                <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-sm space-y-4 flex flex-col justify-between">
+                <div className="p-8 md:p-10 rounded-lg bg-card border border-border shadow-sm space-y-4 flex flex-col justify-between">
                   <div className="space-y-4">
-                    <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
+                    <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
                       <Cpu className="w-6 h-6" />
                     </div>
                     <h3 className="text-2xl font-black text-foreground">The Solution &amp; Architecture</h3>
@@ -602,7 +601,7 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             </div>
 
             {/* Tech Stack Arsenal */}
-            <div className="p-8 md:p-10 rounded-[2.5rem] bg-card border border-border shadow-sm space-y-4">
+            <div className="p-8 md:p-10 rounded-lg bg-card border border-border shadow-sm space-y-4">
               <h3 className="text-xs font-black uppercase tracking-widest text-foreground">
                 Technologies &amp; Architecture Applied
               </h3>
@@ -610,15 +609,17 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                 {project.tech.map((t) => (
                   <span
                     key={t}
-                    className="px-3.5 py-1.5 rounded-xl bg-muted border border-border text-xs font-bold text-foreground"
+                    className="px-3.5 py-1.5 rounded-lg bg-muted border border-border text-xs font-bold text-foreground"
                   >
                     {t}
                   </span>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed pt-2">
-                {project.details}
-              </p>
+              {project.details ? (
+                <p className="text-xs text-muted-foreground leading-relaxed pt-2">
+                  {project.details}
+                </p>
+              ) : null}
             </div>
           </div>
         )}
@@ -658,24 +659,24 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
         <div className="max-w-5xl mx-auto laser-divider my-8" />
 
         {/* Signature Call to Action (Matching site layout) */}
-        <div className="max-w-5xl mx-auto p-10 md:p-14 rounded-[3rem] glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
+        <div className="max-w-5xl mx-auto p-10 md:p-14 rounded-lg glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
           <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent/15 rounded-full blur-3xl" />
           <h2 className="text-3xl md:text-4xl font-black text-foreground relative z-10">
             Have a project or migration in mind? Let&apos;s talk scope.
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base md:text-lg relative z-10 leading-relaxed">
-            Fixed pricing after a 15-minute discovery call. We build high-performance platforms with zero runaway hourly surprises.
+            Fixed pricing after a free 30-minute call. I build high-performance platforms with zero runaway hourly surprises.
           </p>
           <div className="flex flex-wrap justify-center gap-4 relative z-10 pt-2">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-2xl font-black text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20"
+              className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 rounded-lg font-black text-base hover:scale-105 transition-transform shadow-lg shadow-accent/20"
             >
-              Book a Discovery Call <ArrowRight className="w-5 h-5" />
+              Book a free 30-minute call <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
               href="/packages"
-              className="inline-flex items-center gap-2 glass px-8 py-4 rounded-2xl font-bold text-base hover:bg-muted transition-all text-foreground"
+              className="inline-flex items-center gap-2 glass px-8 py-4 rounded-lg font-bold text-base hover:bg-muted transition-all text-foreground"
             >
               View Fixed Packages &amp; Pricing
             </Link>

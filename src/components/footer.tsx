@@ -1,6 +1,6 @@
 // src/components/footer.tsx
 import Link from 'next/link';
-import { Mail, MapPin, ArrowRight, ShieldCheck, Sparkles, Code2, CheckCircle2, CalendarCheck } from 'lucide-react';
+import { Mail, MapPin, ArrowRight, ShieldCheck, LockOpen, CheckCircle2, CalendarCheck } from 'lucide-react';
 import RottyMLogo from './RottyMLogo';
 
 export default function Footer() {
@@ -27,10 +27,10 @@ export default function Footer() {
             </p>
 
             <div className="space-y-2 text-xs">
-              <div className="inline-flex items-center gap-2 glass px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-sm border border-border max-w-full">
+              <div className="inline-flex items-center gap-2 glass px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-lg shadow-sm border border-border max-w-full">
                 <CalendarCheck className="w-3.5 h-3.5 text-accent shrink-0" />
-                <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">2026 SCHEDULE</span>
-                <span className="text-border">|</span>
+                <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">AVAILABILITY</span>
+                <span className="text-border" aria-hidden="true">|</span>
                 <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">ACCEPTING PROJECTS</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground pt-1">
@@ -43,27 +43,30 @@ export default function Footer() {
           {/* Quick Navigation Links */}
           <div className="space-y-4 md:pt-3">
             <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Navigation</h3>
-            <ul className="space-y-2.5 text-sm font-medium">
+            <ul className="space-y-1 text-sm font-medium">
               <li>
-                <Link href="/" className="text-muted-foreground hover:text-accent transition-colors">Home</Link>
+                <Link href="/" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">Home</Link>
               </li>
               <li>
-                <Link href="/services" className="text-muted-foreground hover:text-accent transition-colors">Services</Link>
+                <Link href="/services" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">Services</Link>
               </li>
               <li>
-                <Link href="/packages" className="text-muted-foreground hover:text-accent transition-colors flex items-center gap-1.5">
+                <Link href="/packages" className="inline-flex items-center gap-1.5 min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
                   Packages &amp; Pricing
                   <span className="text-[10px] font-black uppercase px-1.5 py-0.5 bg-accent/10 text-accent rounded">New</span>
                 </Link>
               </li>
               <li>
-                <Link href="/portfolio" className="text-muted-foreground hover:text-accent transition-colors">Selected Work</Link>
+                <Link href="/portfolio" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">Selected Work</Link>
               </li>
               <li>
-                <Link href="/about" className="text-muted-foreground hover:text-accent transition-colors">About Rottman</Link>
+                <Link href="/about" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">About Rottman</Link>
               </li>
               <li>
-                <Link href="/contact" className="text-muted-foreground hover:text-accent transition-colors">Book a Discovery Call</Link>
+                <Link href="/resume" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">Resume</Link>
+              </li>
+              <li>
+                <Link href="/contact" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">Book a free 30-minute call</Link>
               </li>
             </ul>
           </div>
@@ -71,34 +74,34 @@ export default function Footer() {
           {/* SEO Solutions & Packages Links */}
           <div className="space-y-4 md:pt-3">
             <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Solutions</h3>
-            <ul className="space-y-2.5 text-sm font-medium">
+            <ul className="space-y-1 text-sm font-medium">
               <li>
-                <Link href="/packages#local-launchpad" className="text-muted-foreground hover:text-accent transition-colors">
+                <Link href="/packages#local-launchpad" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
                   Local Launchpad ($2.5k–$3.5k)
                 </Link>
               </li>
               <li>
-                <Link href="/packages#booking-intake" className="text-muted-foreground hover:text-accent transition-colors">
+                <Link href="/packages#booking-intake" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
                   Booking &amp; Client Intake
                 </Link>
               </li>
               <li>
-                <Link href="/packages#performance-rebuild" className="text-muted-foreground hover:text-accent transition-colors">
+                <Link href="/packages#performance-rebuild" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
                   WordPress Escape Rebuild
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="text-muted-foreground hover:text-accent transition-colors">
+                <Link href="/services" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
                   Client Portals &amp; Member Hubs
                 </Link>
               </li>
               <li>
-                <Link href="/packages#ongoing-care" className="text-muted-foreground hover:text-accent transition-colors">
+                <Link href="/packages#ongoing-care" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
                   Ongoing Care &amp; Cloud Hosting
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="text-muted-foreground hover:text-accent transition-colors">
+                <Link href="/services" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
                   AI Integrations &amp; Automation
                 </Link>
               </li>
@@ -125,9 +128,9 @@ export default function Footer() {
 
               <Link 
                 href="/contact" 
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-accent text-accent-foreground rounded-xl text-xs font-bold hover:scale-105 transition-all shadow-md mt-2"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-accent text-accent-foreground rounded-lg text-xs font-bold hover:scale-105 transition-all shadow-md mt-2"
               >
-                Schedule Discovery Call <ArrowRight className="w-3.5 h-3.5" />
+                Book a free 30-minute call <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
@@ -148,13 +151,10 @@ export default function Footer() {
           <p>© {currentYear} Rottman M. Mendez. All rights reserved.</p>
           <div className="flex flex-wrap items-center justify-center gap-6 font-semibold">
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-accent" /> 100% Code Ownership
+              <ShieldCheck className="w-3.5 h-3.5 text-accent" /> You own 100% of it
             </span>
             <span className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-accent" /> Zero Vendor Lock-in
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Code2 className="w-3.5 h-3.5 text-accent" /> Enterprise Modern Stack
+              <LockOpen className="w-3.5 h-3.5 text-accent" /> No lock-in
             </span>
           </div>
         </div>

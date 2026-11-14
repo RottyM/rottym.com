@@ -91,7 +91,7 @@ export default function Contact() {
           animate={{ opacity: 1, scale: 1 }}
           className="text-center space-y-6 max-w-2xl"
         >
-          <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-lg flex items-center justify-center mx-auto mb-6">
             <Sparkles className="w-10 h-10" />
           </div>
           <h2 className="text-4xl font-black tracking-tight">Message Received!</h2>
@@ -118,10 +118,10 @@ export default function Contact() {
           className="space-y-12"
         >
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border max-w-full">
+            <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-md backdrop-blur-md border border-border max-w-full">
               <Radio className="w-3.5 h-3.5 text-accent shrink-0" />
               <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">DIRECT ENGAGEMENT</span>
-              <span className="text-border">|</span>
+              <span className="text-border" aria-hidden="true">|</span>
               <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">START A PROJECT</span>
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">Let&apos;s Build Something <span className="tech-gradient-text">Exceptional</span>.</h1>
@@ -130,9 +130,10 @@ export default function Contact() {
             </p>
           </div>
 
+          <h2 className="sr-only">Direct contact options and project inquiry form</h2>
           <div className="space-y-6">
             <div className="flex items-center gap-4 group">
-              <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center text-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-all">
+              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-all">
                 <Mail className="w-5 h-5" />
               </div>
               <div>
@@ -144,19 +145,19 @@ export default function Contact() {
             <div className="flex items-center gap-4 group">
               <a
                 href="tel:2028540954"
-                className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center text-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-all cursor-pointer"
+                className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-all cursor-pointer"
                 aria-label="Call (202) 854-0954"
               >
                 <Phone className="w-5 h-5" />
               </a>
               <div>
                 <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">Direct Line</p>
-                <a href="tel:2028540954" className="text-lg font-bold hover:text-accent transition-colors font-mono">(202) 854-0954</a>
+                <a href="tel:2028540954" className="inline-flex items-center min-h-[26px] py-0.5 text-lg font-bold hover:text-accent transition-colors font-mono">(202) 854-0954</a>
               </div>
             </div>
 
             <div className="flex items-center gap-4 group">
-              <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center text-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-all">
+              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-all">
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
@@ -178,19 +179,19 @@ export default function Contact() {
           <div className="mb-4 flex items-center justify-between px-2">
             <span className="text-xs text-muted-foreground font-medium">Not sure where to start?</span>
             <Link href="/packages" className="text-xs font-bold text-accent hover:underline flex items-center gap-1">
-              See local packages &amp; pricing →
+              See local packages &amp; pricing <span aria-hidden="true">→</span>
             </Link>
           </div>
 
-          <form onSubmit={handleSubmit} className="stitch-card p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[3rem] shadow-xl space-y-4 sm:space-y-6 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
+          <form onSubmit={handleSubmit} className="stitch-card p-5 sm:p-8 md:p-10 rounded-lg shadow-xl space-y-4 sm:space-y-6 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
             <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-1.5 sm:space-y-2">
                 <label htmlFor="name" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Full Name</label>
-                <input id="name" name="name" placeholder="John Wick" required className="w-full p-3.5 sm:p-4 bg-muted/50 border border-border rounded-xl sm:rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium text-sm" />
+                <input id="name" name="name" placeholder="John Wick" required className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm" />
               </div>
               <div className="space-y-1.5 sm:space-y-2">
                 <label htmlFor="email" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Email Address</label>
-                <input id="email" name="email" type="email" placeholder="john@continental.com" required className="w-full p-3.5 sm:p-4 bg-muted/50 border border-border rounded-xl sm:rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium text-sm" />
+                <input id="email" name="email" type="email" placeholder="john@continental.com" required className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm" />
               </div>
             </div>
 
@@ -201,7 +202,7 @@ export default function Contact() {
                 name="service" 
                 value={selectedService}
                 onChange={(e) => setSelectedService(e.target.value)}
-                className="w-full p-3.5 sm:p-4 bg-muted/50 border border-border rounded-xl sm:rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all font-medium text-sm"
+                className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all font-medium text-sm"
               >
                 <optgroup label="Fixed-Scope Local Packages">
                   <option value="Local Launchpad ($2,500 – $3,500)">Local Launchpad ($2,500 – $3,500)</option>
@@ -221,10 +222,10 @@ export default function Contact() {
 
             <div className="space-y-1.5 sm:space-y-2">
               <label htmlFor="message" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Project Details</label>
-              <textarea id="message" name="message" rows={4} placeholder="Tell me about your project, goals, and timeline..." required className="w-full p-3.5 sm:p-4 bg-muted/50 border border-border rounded-xl sm:rounded-2xl focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none transition-all placeholder:text-muted-foreground/50 font-medium text-sm resize-none" />
+              <textarea id="message" name="message" rows={4} placeholder="Tell me about your project, goals, and timeline..." required className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm resize-none" />
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent disabled:opacity-50 disabled:hover:scale-100">
+            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground py-3 sm:py-4 rounded-lg font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent disabled:opacity-50 disabled:hover:scale-100">
               <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span> <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </button>
 
@@ -232,16 +233,16 @@ export default function Contact() {
               <div
                 role="status"
                 aria-live="polite"
-                className={`p-4 rounded-2xl border text-center space-y-2 ${status.includes('Error') ? 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300'}`}
+                className={`p-4 rounded-lg border text-center space-y-2 ${status.includes('Error') ? 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300'}`}
               >
                 <p className="font-bold text-sm sm:text-base">{status}</p>
                 {status.includes('Error') && (
                   <div>
                     <a
                       href="mailto:rmendez@rottym.com?subject=Project%20Inquiry%20via%20RottyM.com"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity"
                     >
-                      Email rmendez@rottym.com Directly →
+                      Email rmendez@rottym.com Directly <span aria-hidden="true">→</span>
                     </a>
                   </div>
                 )}

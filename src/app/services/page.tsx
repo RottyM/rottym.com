@@ -29,11 +29,11 @@ const services = [
     sla: "SLA: 60 FPS • 100 Core Web Vitals",
     desc: "High-performance sites and modern web applications engineered for speed, reliability, and long-term maintainability. Built with architecture chosen specifically to match your operational needs, not rigid templates.",
     icon: <Rocket className="w-6 h-6" />,
-    accent: "text-orange-500",
+    accent: "text-orange-700 dark:text-orange-400",
     bg: "bg-orange-500/10",
     features: ["Bespoke Architecture", "High Concurrency", "Long-Term Ownership"],
     telemetry: "Global Edge & Distributed Cache",
-    packageNote: "Most Reston & NoVA projects start here — view packages",
+    packageNote: "Start with Local Launchpad — view package",
     packageHref: "/packages#local-launchpad"
   },
   {
@@ -41,7 +41,7 @@ const services = [
     sla: "Security: SOC-2 Hardened • Role RBAC",
     desc: "Custom portals for client intake, member management, document sharing, and workflow automation. Designed for teams that have outgrown basic forms or off-the-shelf tools.",
     icon: <Users className="w-6 h-6" />,
-    accent: "text-pink-500",
+    accent: "text-pink-700 dark:text-pink-400",
     bg: "bg-pink-500/10",
     features: ["Role-Based Access", "Automated Workflows", "Client Portals"],
     telemetry: "Row-Level Security Vaults",
@@ -53,11 +53,11 @@ const services = [
     sla: "Architecture: Zero-Downtime Event Mesh",
     desc: "Next.js, React, and cloud-backed applications (Vercel, Firebase, AWS, GCP) with attention to performance, security, and maintainability. Includes work on subscription systems, e-commerce, and AI-assisted features where they create real value.",
     icon: <Cpu className="w-6 h-6" />,
-    accent: "text-blue-500",
+    accent: "text-blue-700 dark:text-blue-400",
     bg: "bg-blue-500/10",
     features: ["Cloud Native", "Tailored Stacks", "Modern API Architecture"],
     telemetry: "Distributed Data & Vector Stores",
-    packageNote: "Most Reston & NoVA projects start here — view packages",
+    packageNote: "Compare all Reston & NoVA website packages",
     packageHref: "/packages"
   },
   {
@@ -65,7 +65,7 @@ const services = [
     sla: "Uptime: 99.99% • Multi-Region Edge",
     desc: "Multi-cloud deployment, secure automated CI/CD pipelines, and proactive observability so your platforms remain fast, secure, and resilient at every stage.",
     icon: <Globe className="w-6 h-6" />,
-    accent: "text-emerald-500",
+    accent: "text-emerald-700 dark:text-emerald-400",
     bg: "bg-emerald-500/10",
     features: ["Multi-Cloud Infrastructure", "Zero-Downtime CI/CD", "Automated Security"],
     telemetry: "Automated SSL & DDoS Shield",
@@ -95,10 +95,10 @@ export default function Services() {
             className="text-center space-y-4 max-w-3xl mx-auto mb-12"
           >
             {/* Eyebrow Badge */}
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm backdrop-blur-md border border-border max-w-full">
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-sm backdrop-blur-md border border-border max-w-full">
               <Activity className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
               <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">HIGH-PERFORMANCE ENGINEERING</span>
-              <span className="text-border">|</span>
+              <span className="text-border" aria-hidden="true">|</span>
               <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, NOVA &amp; GLOBAL</span>
               <span className="font-mono text-[9px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON, VA</span>
             </div>
@@ -113,35 +113,35 @@ export default function Services() {
           </motion.div>
 
           {/* High-Density Telemetry Ticker Strip */}
-          <div className="w-full max-w-5xl mx-auto stitch-card rounded-2xl p-2.5 shadow-xl">
+          <div className="w-full max-w-5xl mx-auto stitch-card rounded-lg p-2.5 shadow-xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
               {/* Telemetry Slot 1 */}
-              <div className="bg-muted/50 p-4 rounded-xl flex items-center justify-between gap-3 text-left border border-border/50">
+              <div className="bg-muted/50 p-4 rounded-lg flex items-center justify-between gap-3 text-left border border-border/50">
                 <div className="flex items-center gap-3">
-                  <CalendarCheck className="w-5 h-5 text-emerald-500 shrink-0" />
+                  <CalendarCheck className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0" />
                   <div>
                     <div className="font-mono text-[10px] text-muted-foreground uppercase font-bold">AVAILABILITY RUNTIME</div>
-                    <div className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">NOW ACCEPTING NEW PROJECTS</div>
+                    <div className="font-mono text-xs font-bold text-emerald-700 dark:text-emerald-400">NOW ACCEPTING NEW PROJECTS</div>
                   </div>
                 </div>
                 <span className="font-mono text-[10px] text-muted-foreground px-2 py-0.5 bg-muted rounded border border-border/80">Q2–Q4 &apos;26</span>
               </div>
 
               {/* Telemetry Slot 2 */}
-              <div className="bg-muted/50 p-4 rounded-xl flex items-center gap-3 text-left border border-border/50">
+              <div className="bg-muted/50 p-4 rounded-lg flex items-center gap-3 text-left border border-border/50">
                 <Layers className="w-5 h-5 text-accent shrink-0" />
                 <div className="min-w-0">
                   <div className="font-mono text-[10px] text-muted-foreground uppercase font-bold">ARCHITECTURE PRINCIPLE</div>
-                  <div className="font-mono text-xs font-bold text-accent truncate">POLYGLOT &amp; STACK-AGNOSTIC</div>
+                  <div className="font-mono text-xs font-bold text-accent leading-snug">POLYGLOT &amp; STACK-AGNOSTIC</div>
                 </div>
               </div>
 
               {/* Telemetry Slot 3 */}
-              <div className="bg-muted/50 p-4 rounded-xl flex items-center gap-3 text-left border border-border/50">
-                <Zap className="w-5 h-5 text-emerald-500 shrink-0" />
+              <div className="bg-muted/50 p-4 rounded-lg flex items-center gap-3 text-left border border-border/50">
+                <Zap className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0" />
                 <div className="min-w-0">
                   <div className="font-mono text-[10px] text-muted-foreground uppercase font-bold">PERFORMANCE GUARANTEE</div>
-                  <div className="font-mono text-xs font-bold text-foreground truncate">SUB-100MS TTFB &amp; 100/100 CORE</div>
+                  <div className="font-mono text-xs font-bold text-foreground leading-snug">SUB-100MS TTFB &amp; 100/100 CORE</div>
                 </div>
               </div>
             </div>
@@ -152,8 +152,8 @@ export default function Services() {
         <div>
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
-              <div className="font-mono text-xs text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-2 font-bold">
-                <Boxes className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              <div className="font-mono text-xs text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-2 font-bold">
+                <Boxes className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
                 CORE CAPABILITIES MATRIX
               </div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight">
@@ -174,18 +174,18 @@ export default function Services() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="stitch-card p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2.5rem] flex flex-col justify-between group shadow-md hover:shadow-xl relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent"
+                className="stitch-card p-5 sm:p-8 md:p-10 rounded-lg flex flex-col justify-between group shadow-md hover:shadow-xl relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent"
               >
                 {/* Chromatic Corner Aura */}
                 <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
 
                 <div className="flex flex-col relative z-10">
                   {/* Card Header & Badge */}
-                  <div className="flex items-start justify-between gap-3 mb-5 sm:mb-6">
-                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${s.bg} ${s.accent} flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-sm shrink-0`}>
+                  <div className="flex flex-wrap items-start justify-between gap-3 mb-5 sm:mb-6">
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-lg ${s.bg} ${s.accent} flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-sm shrink-0`}>
                       {s.icon}
                     </div>
-                    <span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold px-2.5 sm:px-3 py-1 rounded-full bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-accent border border-white/20 dark:border-white/10 shadow-sm truncate max-w-[65%] sm:max-w-none">
+                    <span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wider font-semibold px-2.5 sm:px-3 py-1 rounded-lg bg-background/55 dark:bg-slate-950/50 backdrop-blur-md text-accent border border-white/20 dark:border-white/10 shadow-sm leading-snug">
                       {s.sla}
                     </span>
                   </div>
@@ -202,7 +202,7 @@ export default function Services() {
                   <div className="flex flex-wrap gap-2 mb-6 sm:mb-8">
                     {s.features.map(f => (
                       <span key={f} className="inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-xs font-semibold text-foreground/90 bg-muted/70 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-border/60">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
                         <span>{f}</span>
                       </span>
                     ))}
@@ -210,7 +210,7 @@ export default function Services() {
                 </div>
 
                 {/* Technical Telemetry & Footer Anchor Link */}
-                <div className="pt-5 sm:pt-6 -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 md:-mx-10 md:-mb-10 p-5 sm:p-8 border-t border-border/60 bg-muted/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-b-2xl sm:rounded-b-[2.5rem] relative z-10">
+                <div className="pt-5 sm:pt-6 -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 md:-mx-10 md:-mb-10 p-5 sm:p-8 border-t border-border/60 bg-muted/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-b-lg relative z-10">
                   <div className="flex items-center gap-2 text-muted-foreground font-mono text-xs">
                     <span className="w-2 h-2 rounded-full bg-accent"></span>
                     <span>{s.telemetry}</span>
@@ -232,7 +232,7 @@ export default function Services() {
         <div className="laser-divider my-10 sm:my-12" />
 
         {/* SECTION 3: ENGINEERING PRINCIPLES & ARCHITECTURE PHILOSOPHY */}
-        <div className="stitch-card rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 lg:p-12 shadow-xl relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
+        <div className="stitch-card rounded-lg p-5 sm:p-8 lg:p-12 shadow-xl relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
           {/* Subtle Ambient Glow */}
           <div className="pointer-events-none absolute -top-24 right-1/4 w-96 h-48 bg-accent/10 rounded-full blur-3xl" />
 
@@ -247,14 +247,14 @@ export default function Services() {
               </h2>
             </div>
             <p className="text-sm md:text-base text-muted-foreground max-w-lg font-medium leading-relaxed">
-              We reject rigid dogmas and template lock-in. We build software around your team&apos;s real operational constraints, latency targets, and scalability demands.
+              I reject rigid dogmas and template lock-in. I build software around your team&apos;s real operational constraints, latency targets, and scalability demands.
             </p>
           </div>
 
           {/* 3 Column Principles Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-10">
             {/* Pillar 1 */}
-            <div className="bg-muted/40 p-8 rounded-2xl flex flex-col justify-between border border-border/80 hover:border-accent/40 transition-colors shadow-sm">
+            <div className="bg-muted/40 p-8 rounded-lg flex flex-col justify-between border border-border/80 hover:border-accent/40 transition-colors shadow-sm">
               <div className="flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <span className="font-mono text-xs text-accent font-bold bg-accent/10 px-2.5 py-1 rounded-md">
@@ -266,7 +266,7 @@ export default function Services() {
                   Stack Agnostic &amp; Outcome-Driven
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-6 font-medium">
-                  Every business problem has unique constraints. We evaluate performance, team skillset, and operational cost to deploy the optimal language, runtime, and database.
+                  Every business problem has unique constraints. I evaluate performance, team skillset, and operational cost to deploy the optimal language, runtime, and database.
                 </p>
               </div>
               <div className="pt-4 border-t border-border/60 flex items-center gap-2 text-muted-foreground font-mono text-xs">
@@ -276,19 +276,19 @@ export default function Services() {
             </div>
 
             {/* Pillar 2 */}
-            <div className="bg-muted/60 p-8 rounded-2xl flex flex-col justify-between border border-border/80 hover:border-emerald-500/40 transition-colors shadow-sm">
+            <div className="bg-muted/60 p-8 rounded-lg flex flex-col justify-between border border-border/80 hover:border-emerald-500/40 transition-colors shadow-sm">
               <div className="flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <span className="font-mono text-xs text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-md">
                     02 // LEAN SURFACE
                   </span>
-                  <ShieldCheck className="w-6 h-6 text-emerald-500" />
+                  <ShieldCheck className="w-6 h-6 text-emerald-700 dark:text-emerald-400" />
                 </div>
                 <h3 className="text-xl font-black text-foreground mb-3">
                   Zero Bloat &amp; Minimal Surface
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-6 font-medium">
-                  We engineer lean, maintainable codebases without brittle dependency webs, proprietary handcuffs, or unnecessary abstraction layers.
+                  I engineer lean, maintainable codebases without brittle dependency webs, proprietary handcuffs, or unnecessary abstraction layers.
                 </p>
               </div>
               <div className="pt-4 border-t border-border/60 flex items-center gap-2 text-muted-foreground font-mono text-xs">
@@ -298,7 +298,7 @@ export default function Services() {
             </div>
 
             {/* Pillar 3 */}
-            <div className="bg-muted/40 p-8 rounded-2xl flex flex-col justify-between border border-border/80 hover:border-accent/40 transition-colors shadow-sm">
+            <div className="bg-muted/40 p-8 rounded-lg flex flex-col justify-between border border-border/80 hover:border-accent/40 transition-colors shadow-sm">
               <div className="flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <span className="font-mono text-xs text-accent font-bold bg-muted px-2.5 py-1 rounded-md border border-border/80">
@@ -321,14 +321,14 @@ export default function Services() {
           </div>
 
           {/* Engineering Ledger Summary Banner */}
-          <div className="bg-muted/70 p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs border border-border/80 relative z-10">
+          <div className="bg-muted/70 p-6 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs border border-border/80 relative z-10">
             <div className="flex items-center gap-3 text-foreground font-sans">
-              <Layers className="w-5 h-5 text-emerald-500 shrink-0" />
+              <Layers className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0" />
               <span className="font-bold">Architectural Readiness:</span>
               <span className="text-muted-foreground font-mono">Serverless, Edge, Distributed Containers, or Bare-Metal Microservices</span>
             </div>
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-sans font-bold shrink-0">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-sans font-bold shrink-0">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
               <span>Enterprise-Grade Portability</span>
             </div>
           </div>
@@ -341,7 +341,7 @@ export default function Services() {
         <motion.div
           initial={false}
           whileInView={{ opacity: 1 }}
-          className="relative stitch-card rounded-[3rem] p-8 md:p-14 text-center overflow-hidden shadow-2xl before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent"
+          className="relative stitch-card rounded-lg p-8 md:p-14 text-center overflow-hidden shadow-2xl before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent"
         >
           {/* Accent Top Radial Light */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-accent/15 blur-3xl pointer-events-none rounded-full" />
@@ -363,14 +363,14 @@ export default function Services() {
             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-8 w-full sm:w-auto">
               <Link
                 href="/contact"
-                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-all shadow-xl shadow-black/10 dark:shadow-accent/20 flex items-center justify-center gap-2 border border-[#090D16] dark:border-transparent hover:scale-105"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground font-bold text-sm sm:text-base rounded-lg transition-all shadow-xl shadow-black/10 dark:shadow-accent/20 flex items-center justify-center gap-2 border border-[#090D16] dark:border-transparent hover:scale-105"
               >
                 <span>Start the Conversation</span>
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#00D8F6] dark:text-current" />
               </Link>
               <a
                 href="mailto:rmendez@rottym.com"
-                className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-4 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 font-semibold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-colors flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-4 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 font-semibold text-sm sm:text-base rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                 <span>rmendez@rottym.com</span>
@@ -388,17 +388,17 @@ export default function Services() {
             </div>
 
             {/* Micro Trust Badges Strip */}
-            <div className="bg-muted/80 border border-border/80 px-6 py-3 rounded-full flex flex-wrap items-center justify-center gap-6 text-foreground/80 font-mono text-xs uppercase font-semibold">
-              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <div className="bg-muted/80 border border-border/80 px-6 py-3 rounded-lg flex flex-wrap items-center justify-center gap-6 text-foreground/80 font-mono text-xs uppercase font-semibold">
+              <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>100% Code Ownership</span>
               </div>
-              <span className="text-border hidden sm:inline">•</span>
+              <span className="text-border hidden sm:inline" aria-hidden="true">•</span>
               <div className="flex items-center gap-1.5 text-accent">
                 <LockOpen className="w-4 h-4" />
                 <span>Zero Vendor Lock-in</span>
               </div>
-              <span className="text-border hidden sm:inline">•</span>
+              <span className="text-border hidden sm:inline" aria-hidden="true">•</span>
               <div className="flex items-center gap-1.5 text-foreground">
                 <Terminal className="w-4 h-4" />
                 <span>Enterprise Modern Stack</span>

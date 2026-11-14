@@ -17,7 +17,8 @@ import {
   Boxes,
   FileText,
   Star,
-  Quote
+  Quote,
+  LockOpen
 } from 'lucide-react';
 
 const packages = [
@@ -26,7 +27,7 @@ const packages = [
     name: "Local Launchpad",
     subtitle: "Entry & Most Common",
     price: "$2,500 – $3,500",
-    priceNote: "Starting range · Fixed after 15-min call",
+    priceNote: "Starting range · Fixed after 30-min call",
     desc: "A clean, fast site built for local service businesses that need to show up and get inquiries.",
     icon: <Rocket className="w-7 h-7" />,
     accent: "text-orange-500",
@@ -52,7 +53,7 @@ const packages = [
     name: "Booking & Intake",
     subtitle: "Booking & Client Workflows",
     price: "$4,200 – $5,800",
-    priceNote: "Fixed after 15-min call",
+    priceNote: "Fixed after 30-min call",
     desc: "Everything in Local Launchpad, plus online booking and intake that cut the phone tag and capture more of the work you're already getting.",
     icon: <CalendarCheck className="w-7 h-7" />,
     accent: "text-accent",
@@ -62,7 +63,7 @@ const packages = [
     badge: "Most Popular",
     pickThisIf: "your front desk spends its day on appointment calls, reschedules, and chasing forms — and you want that handled online instead.",
     bestFor: "Dental offices, salons, home service companies, and professional practices with appointment or form volume.",
-    whyTheRange: "A single service with one booking calendar lands near $4,200. Multiple services, staff calendars, or a client portal push it toward $5,800. Your exact number is fixed after the 15-min call — no surprise invoices.",
+    whyTheRange: "A single service with one booking calendar lands near $4,200. Multiple services, staff calendars, or a client portal push it toward $5,800. Your exact number is fixed after the 30-min call — no surprise invoices.",
     included: [
       "Full Local Launchpad build included",
       "Online booking or structured intake forms",
@@ -79,7 +80,7 @@ const packages = [
     name: "Performance Rebuild",
     subtitle: "WordPress Escape",
     price: "$3,800 – $6,500",
-    priceNote: "Scales with size · Fixed after 15-min call",
+    priceNote: "Scales with size · Fixed after 30-min call",
     desc: "Move off a slow or bloated WordPress site to a modern stack that loads faster, breaks less, and is easier to maintain.",
     icon: <RefreshCw className="w-7 h-7" />,
     accent: "text-blue-500",
@@ -129,10 +130,10 @@ export default function PackagesPage() {
 
         {/* Hero Section */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm backdrop-blur-md border border-border max-w-full">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-sm backdrop-blur-md border border-border max-w-full">
             <Boxes className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
             <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FIXED-SCOPE PACKAGES</span>
-            <span className="text-border">|</span>
+            <span className="text-border" aria-hidden="true">|</span>
             <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON &amp; NORTHERN VIRGINIA</span>
             <span className="font-mono text-[9px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON &amp; NOVA</span>
           </div>
@@ -149,7 +150,7 @@ export default function PackagesPage() {
             High-performance sites and custom tools that actually get used.
           </p>
 
-          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-muted/40 border border-border inline-block">
+          <div className="p-3.5 sm:p-4 rounded-lg bg-muted/40 border border-border inline-block">
             <p className="text-xs sm:text-base text-foreground font-semibold">
               Most local projects land between <span className="text-accent font-black">$2,500–$6,500</span>. Price is fixed after a short call.
             </p>
@@ -158,15 +159,15 @@ export default function PackagesPage() {
           <div className="pt-1">
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 w-full sm:w-auto border border-[#090D16] dark:border-transparent"
+              className="inline-flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-lg font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 w-full sm:w-auto border border-[#090D16] dark:border-transparent"
             >
-              <span>Book a 15-Minute Call</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
+              <span>Book a free 30-minute call</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
             </Link>
           </div>
         </div>
 
         {/* Intro Manifesto */}
-        <div className="max-w-4xl mx-auto glass p-5 sm:p-8 md:p-12 rounded-2xl sm:rounded-[2.5rem] border border-border space-y-4 text-center md:text-left">
+        <div className="max-w-4xl mx-auto glass p-5 sm:p-8 md:p-12 rounded-lg border border-border space-y-4 text-center md:text-left">
           <h2 className="text-2xl md:text-3xl font-black text-foreground">
             You don’t need another bloated WordPress site that breaks every time you update a plugin.
           </h2>
@@ -175,13 +176,13 @@ export default function PackagesPage() {
           </p>
           <div className="pt-2 flex flex-wrap items-center gap-4 text-sm font-bold text-foreground">
             <span className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> 100% Code Ownership
+              <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-400" /> 100% Code Ownership
             </span>
             <span className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Zero Lock-in
+              <LockOpen className="w-4 h-4 text-emerald-700 dark:text-emerald-400" /> Zero Lock-in
             </span>
             <span className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> No Surprise Invoices
+              <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-400" /> No Surprise Invoices
             </span>
           </div>
         </div>
@@ -192,14 +193,14 @@ export default function PackagesPage() {
             <div
               key={pkg.id}
               id={pkg.id}
-              className={`relative !overflow-visible rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 md:p-10 flex flex-col justify-between transition-all duration-300 shadow-md hover:shadow-2xl ${
+              className={`relative !overflow-visible rounded-lg p-5 sm:p-8 md:p-10 flex flex-col justify-between transition-all duration-300 shadow-md hover:shadow-2xl ${
                 pkg.featured
                   ? 'bg-[#151b2a] text-white border border-[#00D8F6]/40 shadow-2xl shadow-sky-950/25 ring-1 ring-[#00D8F6]/30 scale-[1.01] lg:-translate-y-2'
                   : `stitch-card border-border ${pkg.borderHover}`
               }`}
             >
               {/* Inner Aura with overflow-hidden and border matching rounded corners */}
-              <div className="absolute inset-0 rounded-2xl sm:rounded-[2.5rem] overflow-hidden pointer-events-none">
+              <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none">
                 <div
                   className={`pointer-events-none absolute -right-14 -top-14 w-44 h-44 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 ${
                     pkg.featured
@@ -218,7 +219,7 @@ export default function PackagesPage() {
 
               {pkg.badge && (
                 <div
-                  className={`absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1 rounded-full font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-widest shadow-md z-20 whitespace-nowrap ${
+                  className={`absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1 rounded-lg font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-widest shadow-md z-20 whitespace-nowrap ${
                     pkg.featured
                       ? 'bg-[#001f26] text-[#4cd7f6] border border-[#00D8F6]/50 shadow-[#00D8F6]/20'
                       : 'bg-accent text-accent-foreground shadow-accent/25 border border-white/20'
@@ -232,7 +233,7 @@ export default function PackagesPage() {
               <div className="space-y-5 sm:space-y-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-sm ${
+                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center shadow-sm ${
                       pkg.featured
                         ? 'bg-white/10 text-[#00D8F6]'
                         : `${pkg.accentBg} ${pkg.accent}`
@@ -259,7 +260,7 @@ export default function PackagesPage() {
                   </h3>
 
                   {pkg.featured ? (
-                    <div className="mt-3 p-3 sm:p-3.5 rounded-xl bg-white/10 border border-white/10">
+                    <div className="mt-3 p-3 sm:p-3.5 rounded-lg bg-white/10 border border-white/10">
                       <span className="text-xl sm:text-2xl lg:text-[1.65rem] xl:text-3xl font-extrabold text-white tracking-tight whitespace-nowrap block">
                         {pkg.price}
                       </span>
@@ -289,7 +290,7 @@ export default function PackagesPage() {
 
                 {pkg.pickThisIf && (
                   <div
-                    className={`p-3 sm:p-3.5 rounded-xl text-xs leading-relaxed ${
+                    className={`p-3 sm:p-3.5 rounded-lg text-xs leading-relaxed ${
                       pkg.featured
                         ? 'bg-[#00D8F6]/10 border border-[#00D8F6]/25 text-slate-200'
                         : 'bg-accent/5 border border-accent/20 text-foreground'
@@ -303,7 +304,7 @@ export default function PackagesPage() {
                 )}
 
                 <div
-                  className={`p-3 sm:p-3.5 rounded-xl text-xs ${
+                  className={`p-3 sm:p-3.5 rounded-lg text-xs ${
                     pkg.featured
                       ? 'bg-white/5 border border-white/10 text-slate-300'
                       : 'bg-muted/40 border border-border/50 text-muted-foreground'
@@ -354,7 +355,7 @@ export default function PackagesPage() {
 
                 {pkg.whyTheRange && (
                   <div
-                    className={`p-3 sm:p-3.5 rounded-xl text-xs leading-relaxed ${
+                    className={`p-3 sm:p-3.5 rounded-lg text-xs leading-relaxed ${
                       pkg.featured
                         ? 'bg-white/5 border border-white/10 text-slate-300'
                         : 'bg-muted/30 border border-border/50 text-muted-foreground'
@@ -375,7 +376,7 @@ export default function PackagesPage() {
               <div className="pt-6 sm:pt-8 relative z-10">
                 <Link
                   href={pkg.href}
-                  className={`w-full py-3 sm:py-3.5 px-4 sm:px-6 rounded-xl font-bold font-mono text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
+                  className={`w-full py-3 sm:py-3.5 px-4 sm:px-6 rounded-lg font-bold font-mono text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
                     pkg.featured
                       ? 'bg-[#00D8F6] hover:bg-[#38bdf8] text-[#090D16] font-black hover:scale-[1.02] shadow-lg shadow-[#00D8F6]/25 border border-[#00D8F6] active:scale-[0.99]'
                       : 'bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40'
@@ -399,7 +400,7 @@ export default function PackagesPage() {
             {testimonials.map((t) => (
               <div
                 key={t.id}
-                className="relative rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-10 md:p-12 overflow-hidden border border-border/80 shadow-lg transition-all duration-300 bg-gradient-to-br from-white via-slate-50/80 to-sky-50/30 dark:from-[#111928] dark:via-[#0e1624] dark:to-[#0a121f] dark:border-slate-800/80 dark:shadow-2xl before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r before:from-transparent before:via-[#00F2FE]/70 before:to-[#00F5A0]/70"
+                className="relative rounded-lg p-6 sm:p-10 md:p-12 overflow-hidden border border-border/80 shadow-lg transition-all duration-300 bg-gradient-to-br from-white via-slate-50/80 to-sky-50/30 dark:from-[#111928] dark:via-[#0e1624] dark:to-[#0a121f] dark:border-slate-800/80 dark:shadow-2xl before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r before:from-transparent before:via-[#00F2FE]/70 before:to-[#00F5A0]/70"
               >
                 {/* Ambient Corner Auras */}
                 <div className="pointer-events-none absolute -right-20 -bottom-20 w-72 h-72 rounded-full bg-accent/5 dark:bg-[#00F2FE]/10 blur-3xl" />
@@ -412,12 +413,12 @@ export default function PackagesPage() {
 
                 <div className="relative z-10 space-y-5 sm:space-y-6">
                   {/* Rating Row */}
-                  <div className="flex items-center gap-1.5 text-amber-500 dark:text-amber-400">
+                  <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
                     {[...Array(t.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400 text-amber-400" />
+                      <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-700 text-amber-700 dark:fill-amber-400 dark:text-amber-400" />
                     ))}
                     <span className="ml-2 font-mono text-[10px] sm:text-xs font-black tracking-wider text-slate-700 dark:text-slate-300 uppercase">
-                      5.0 · Verified Client Review
+                      5.0 · Client review
                     </span>
                   </div>
 
@@ -429,7 +430,7 @@ export default function PackagesPage() {
                   {/* Author Attribution & Category Pill Row */}
                   <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-border/70 dark:border-slate-800/80">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#00F2FE]/20 to-[#00F5A0]/20 border border-[#00F2FE]/30 dark:border-[#00F2FE]/40 flex items-center justify-center font-bold text-accent dark:text-[#00F2FE] text-base tracking-tight shadow-sm shrink-0">
+                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#00F2FE]/20 to-[#00F5A0]/20 border border-[#00F2FE]/30 dark:border-[#00F2FE]/40 flex items-center justify-center font-bold text-accent dark:text-[#00F2FE] text-base tracking-tight shadow-sm shrink-0">
                         {t.initials}
                       </div>
                       <div>
@@ -442,7 +443,7 @@ export default function PackagesPage() {
                       </div>
                     </div>
 
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-mono font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       {t.category}
                     </span>
@@ -460,16 +461,16 @@ export default function PackagesPage() {
         <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
           
           {/* Ongoing Care */}
-          <div id="ongoing-care" className="stitch-card p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2.5rem] shadow-md flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
+          <div id="ongoing-care" className="stitch-card p-5 sm:p-8 md:p-10 rounded-lg shadow-md flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
             {/* Chromatic Corner Aura */}
             <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
             
             <div className="space-y-5 sm:space-y-6 relative z-10">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
                   <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <span className="px-2.5 sm:px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest font-mono">
+                <span className="px-2.5 sm:px-3 py-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest font-mono">
                   Optional Add-on
                 </span>
               </div>
@@ -506,7 +507,7 @@ export default function PackagesPage() {
             <div className="pt-6 sm:pt-8 relative z-10">
               <Link
                 href="/contact?service=ongoing-care"
-                className="w-full py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 flex items-center justify-center gap-2 transition-all"
+                className="w-full py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg font-bold font-mono text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 flex items-center justify-center gap-2 transition-all"
               >
                 <span>Add Ongoing Care</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
               </Link>
@@ -514,16 +515,16 @@ export default function PackagesPage() {
           </div>
 
           {/* Optional Add-Ons */}
-          <div className="stitch-card p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2.5rem] shadow-md flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
+          <div className="stitch-card p-5 sm:p-8 md:p-10 rounded-lg shadow-md flex flex-col justify-between h-full group hover:border-accent/40 transition-all duration-300 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
             {/* Chromatic Corner Aura */}
             <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
             
             <div className="space-y-5 sm:space-y-6 relative z-10">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
                   <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <span className="px-2.5 sm:px-3 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest font-mono">
+                <span className="px-2.5 sm:px-3 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest font-mono">
                   Custom Modules
                 </span>
               </div>
@@ -534,8 +535,8 @@ export default function PackagesPage() {
               </div>
 
               <div className="space-y-3 sm:space-y-4 border-t border-border/60 pt-5 sm:pt-6">
-                <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-muted/40 border border-border/60 flex items-start gap-3 sm:gap-4">
-                  <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-accent/10 text-accent shrink-0">
+                <div className="p-3 sm:p-4 rounded-lg bg-muted/40 border border-border/60 flex items-start gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-2.5 rounded-lg bg-accent/10 text-accent shrink-0">
                     <Languages className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
@@ -549,14 +550,14 @@ export default function PackagesPage() {
                   </div>
                 </div>
 
-                <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-muted/40 border border-border/60 flex items-start gap-3 sm:gap-4">
-                  <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-purple-500/10 text-purple-500 shrink-0">
+                <div className="p-3 sm:p-4 rounded-lg bg-muted/40 border border-border/60 flex items-start gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-2.5 rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-400 shrink-0">
                     <Bot className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-foreground text-xs sm:text-sm">Custom AI Workflow or Automation</h4>
-                      <span className="text-[11px] sm:text-xs font-black text-purple-500 ml-2">Scoped After Call</span>
+                      <span className="text-[11px] sm:text-xs font-black text-purple-700 dark:text-purple-400 ml-2">Scoped After Call</span>
                     </div>
                     <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
                       Automated lead routing, LLM customer triage, or internal workflow automation connected to your inbox or CRM.
@@ -564,14 +565,14 @@ export default function PackagesPage() {
                   </div>
                 </div>
 
-                <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-muted/30 border border-border/50 flex items-start gap-3 sm:gap-4">
-                  <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-pink-500/10 text-pink-500 shrink-0">
+                <div className="p-3 sm:p-4 rounded-lg bg-muted/30 border border-border/50 flex items-start gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-2.5 rounded-lg bg-pink-500/10 text-pink-700 dark:text-pink-400 shrink-0">
                     <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-foreground text-xs sm:text-sm">Membership or Community Features</h4>
-                      <span className="text-[11px] sm:text-xs font-black text-pink-500 ml-2">Scoped Separately</span>
+                      <span className="text-[11px] sm:text-xs font-black text-pink-700 dark:text-pink-400 ml-2">Scoped Separately</span>
                     </div>
                     <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
                       Gated member portals, subscription access, or community tools derived from established club platforms.
@@ -584,7 +585,7 @@ export default function PackagesPage() {
             <div className="pt-6 sm:pt-8 relative z-10">
               <Link
                 href="/contact"
-                className="w-full py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 flex items-center justify-center gap-2 transition-all"
+                className="w-full py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg font-bold font-mono text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 flex items-center justify-center gap-2 transition-all"
               >
                 <span>Discuss Custom Modules</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
               </Link>
@@ -597,10 +598,10 @@ export default function PackagesPage() {
         <div className="laser-divider my-10 sm:my-16" />
 
         {/* Bottom Note & Final Call to Action */}
-        <div className="p-6 sm:p-10 md:p-14 rounded-2xl sm:rounded-[3rem] bg-[#090D16] text-white dark:bg-accent dark:text-accent-foreground relative overflow-hidden shadow-2xl border border-slate-800 dark:border-transparent">
+        <div className="p-6 sm:p-10 md:p-14 rounded-lg bg-[#090D16] text-white dark:bg-accent dark:text-accent-foreground relative overflow-hidden shadow-2xl border border-slate-800 dark:border-transparent">
           <div className="absolute inset-0 bg-dot-grid opacity-15 pointer-events-none" />
           <div className="max-w-3xl mx-auto text-center space-y-5 sm:space-y-6 relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 dark:bg-black/20 border border-white/20 dark:border-black/20 text-xs font-mono font-bold uppercase tracking-wider text-[#00D8F6] dark:text-accent-foreground">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/10 dark:bg-black/20 border border-white/20 dark:border-black/20 text-xs font-mono font-bold uppercase tracking-wider text-[#00D8F6] dark:text-accent-foreground">
               <FileText className="w-3.5 h-3.5 text-[#00D8F6] dark:text-accent-foreground shrink-0" />
               <span>DIRECT SCOPING &amp; PROPOSAL</span>
             </div>
@@ -611,19 +612,19 @@ export default function PackagesPage() {
               Most Reston and Northern Virginia projects land between $2,500 and $6,500.
             </p>
             <p className="text-sm sm:text-base md:text-lg opacity-90 max-w-2xl mx-auto leading-relaxed text-slate-300 dark:text-inherit">
-              The number you get after a short discovery call is the exact number you’re billed. No ranges that turn into surprise invoices.
+              The number you get after a free 30-minute call is the exact number you’re billed. No ranges that turn into surprise invoices.
             </p>
 
             <div className="pt-2 flex flex-col sm:flex-row justify-center gap-2.5 sm:gap-3.5 w-full sm:w-auto">
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2 bg-[#00D8F6] hover:bg-[#00F2FE] text-[#090D16] dark:bg-accent-foreground dark:text-accent dark:hover:bg-[#151D2F] dark:hover:text-accent px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-105 transition-transform shadow-xl"
+                className="inline-flex items-center justify-center gap-2 bg-[#00D8F6] hover:bg-[#00F2FE] text-[#090D16] dark:bg-accent-foreground dark:text-accent dark:hover:bg-[#151D2F] dark:hover:text-accent px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-lg font-bold font-mono text-xs sm:text-sm hover:scale-105 transition-transform shadow-xl"
               >
-                <span>Book a 15-Minute Call</span> <ArrowRight className="w-4 h-4" />
+                <span>Book a free 30-minute call</span> <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/contact?intent=secure-spot"
-                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 dark:bg-accent/20 dark:hover:bg-accent/30 dark:text-accent-foreground dark:border-accent-foreground/30 px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all"
+                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 dark:bg-accent/20 dark:hover:bg-accent/30 dark:text-accent-foreground dark:border-accent-foreground/30 px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-lg font-bold font-mono text-xs sm:text-sm transition-all"
               >
                 Secure Your Spot
               </Link>

@@ -10,35 +10,33 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://rottym.com'),
+  metadataBase: new URL('https://www.rottym.com'),
   title: {
-    default: 'Rottman M. Mendez | Full-Stack & AI Software Engineer · Reston, VA',
-    template: '%s | RottyM · Full-Stack & AI Software Engineer',
+    default: 'Fast, Modern Websites for Northern Virginia Businesses | RottyM',
+    template: '%s | RottyM',
   },
   description:
-    'High-performance Next.js web applications, AI-augmented cloud platforms, and custom portals for businesses and technical teams in Reston and Northern Virginia. Enterprise full-stack engineering with fixed pricing.',
+    'Modern websites with real workflows for Northern Virginia — built by an engineer with Disney Streaming, FEMA & FAA experience. From $2,500; you own 100%.',
   keywords: [
-    'Full-Stack & AI Software Engineer',
-    'AI software engineer Virginia',
-    'Reston software engineer',
-    'NoVA full stack developer',
-    'Next.js developer Virginia',
-    'LLM & RAG integration',
-    'UI/UX Architecture',
+    'Northern Virginia small business websites',
+    'Reston VA web design',
+    'modern websites with workflows',
+    'online booking and quote form websites',
     'WordPress migration specialist',
     'client portal development',
+    'Next.js developer Virginia',
     'custom web applications Reston',
-    'React developer DC metro',
+    'NoVA business websites',
     'RottyM',
   ],
-  authors: [{ name: 'Rottman M. Mendez', url: 'https://rottym.com' }],
+  authors: [{ name: 'Rottman M. Mendez', url: 'https://www.rottym.com' }],
   creator: 'Rottman M. Mendez',
   publisher: 'Rottman M. Mendez',
   openGraph: {
     title: 'RottyM | Fast, Modern Websites for Northern Virginia',
     description:
       'AI can generate a website. It can’t run your business. Fast Next.js sites, booking systems, and client portals for NoVA businesses.',
-    url: 'https://www.rottym.com/',
+    url: 'https://www.rottym.com',
     siteName: 'RottyM · Fast, Modern Websites for Northern Virginia',
     locale: 'en_US',
     type: 'website',
@@ -70,17 +68,17 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://rottym.com',
+    canonical: 'https://www.rottym.com',
   },
 };
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ProfessionalService',
-  name: 'RottyM - Full-Stack & AI Software Engineer',
+  name: 'RottyM — Modern Websites & Real Workflows',
   image: 'https://www.rottym.com/og-image.png',
-  '@id': 'https://rottym.com',
-  url: 'https://rottym.com',
+  '@id': 'https://www.rottym.com',
+  url: 'https://www.rottym.com',
   email: 'rmendez@rottym.com',
   priceRange: '$2,500 - $8,000',
   address: {
@@ -108,7 +106,7 @@ const jsonLd = {
     '@type': 'Person',
     name: 'Rottman M. Mendez',
     jobTitle: 'Full-Stack & AI Software Engineer',
-    url: 'https://rottym.com',
+    url: 'https://www.rottym.com',
   },
   knowsAbout: [
     'AI Systems & LLM Orchestration',
@@ -122,7 +120,7 @@ const jsonLd = {
     'Full-Stack Web Development',
   ],
   description:
-    'High-performance web development, custom client portals, and AI-augmented cloud platforms for businesses in Reston and Northern Virginia.',
+    'Fast, modern websites with real workflows, online booking, quote forms, and client portals for businesses in Reston and Northern Virginia. Fixed pricing from $2,500.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -178,7 +176,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             Skip to main content
           </a>
           <Header />
-          <main id="main-content" className="min-h-screen transition-colors duration-300">
+          <main id="main-content" tabIndex={-1} className="min-h-screen transition-colors duration-300 focus:outline-none">
             {children}
           </main>
           <Footer />

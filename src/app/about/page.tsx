@@ -1,78 +1,70 @@
 // src/app/about/page.tsx
-'use client';
-
-import { Briefcase, Code2, Award, ArrowRight, Download, Sparkles, Fingerprint, Compass } from 'lucide-react';
+import {
+  ArrowRight,
+  Compass,
+  FileCheck2,
+  LockOpen,
+  MapPin,
+  MessageSquare,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+  UserCheck,
+  Workflow,
+} from 'lucide-react';
 import Link from 'next/link';
+import { createPageMetadata } from '@/lib/metadata';
 
-interface Placement {
-  client: string;
-  period: string;
-  desc: string;
-}
+export const metadata = createPageMetadata({
+  title: 'About Rotty — Web Engineer in Reston, VA',
+  description:
+    "Meet Rottman 'Rotty' Mendez, a Reston, VA software engineer (ex-Disney Streaming, FEMA & FAA) building fast, fixed-price business websites you own 100%.",
+  path: '/about',
+});
 
-interface Experience {
-  role: string;
-  company: string;
-  period: string;
-  desc?: string;
-  placements?: Placement[];
-}
-
-const experiences: Experience[] = [
+const workPrinciples = [
   {
-    role: "Full-Stack & AI Software Engineer (Independent Consultant)",
-    company: "RottyM Designs",
-    period: "11/2023 – Present",
-    desc: "Architecting AI-augmented cloud platforms, RAG pipelines, MCP integrations, and high-performance headless Next.js applications (Vercel, GCP, Firebase). Partnering with healthcare providers, regional non-profits, and commercial clients to modernize legacy systems, automate intake/membership pipelines, and accelerate release cycles by 45%+ using agentic engineering workflows."
+    icon: <MessageSquare className="w-5 h-5 text-accent" />,
+    title: 'Direct with the person building it',
+    desc: 'No account managers or handoffs to junior contractors. When you call or email, you talk straight to me.',
   },
   {
-    role: "Full-Stack Software Engineer (Contract)",
-    company: "Insight Global",
-    period: "09/2021 – 11/2023",
-    placements: [
-      {
-        client: "Disney Streaming",
-        period: "05/2022 – 11/2023",
-        desc: "Scaled distributed microservices supporting 100M+ global streaming subscribers using Java, Scala, Spring Boot, TypeScript, and AWS (S3, Athena, Lambda) within Docker/Kubernetes environments. Led front-end JWT auth migration (reducing session token errors by 30%) and integrated real-time Adobe Analytics compliance telemetry."
-      },
-      {
-        client: "BAE Systems",
-        period: "09/2021 – 04/2022",
-        desc: "Engineered mission-critical production expense-tracking systems for the Defense Intelligence Agency (DIA) within a secure, high-compliance distributed engineering team using React/Redux on the front end, backed by Java and SQL, maintaining 99.9% system availability."
-      }
-    ]
+    icon: <FileCheck2 className="w-5 h-5 text-accent" />,
+    title: 'Fixed price before any work starts',
+    desc: 'Every project starts with a free 30-minute call and turns into a written scope, fixed quote, and clear timeline.',
   },
   {
-    role: "Senior Software Engineer",
-    company: "One Globe LLC – FEMA",
-    period: "07/2020 – 08/2021",
-    desc: "Engineered full-stack microservices and UI workflows for the FEMA GO Grants Management Modernization (GMM) platform, consolidating 40+ disparate federal grant programs processing $3B+ in annual funding using Java, React/Redux, OpenShift, AWS (DynamoDB, S3, Athena), PostgreSQL, and Camunda BPMN."
+    icon: <LockOpen className="w-5 h-5 text-accent" />,
+    title: 'You own 100% of everything',
+    desc: 'Your domain, hosting accounts, content, and code live in your name from day one. No retainers required just to stay online.',
   },
-  {
-    role: "Front End Developer (Contract)",
-    company: "Leidos – Federal Aviation Administration (FAA)",
-    period: "12/2017 – 03/2020",
-    desc: "Modernized internal federal web application suites serving 10,000+ agency personnel in an enterprise .NET environment. Optimized JS/jQuery/CSS execution pipelines—improving UI rendering speeds by 30%—while enforcing 100% federal Section 508 Accessibility compliance across all interfaces."
-  }
 ];
 
-const skillsets = [
+const processSteps = [
   {
-    category: "AI Systems & Engineering",
-    skills: ["Multi-Model LLM Orchestration", "Google Gemini & Claude", "OpenAI / Codex", "RAG Pipelines", "Model Context Protocol (MCP)", "Structured Outputs & Tool Calling", "Local Inference (Ollama)", "Agentic SDLC Workflows"]
+    step: '01',
+    label: '30 min · Free',
+    title: 'Quick Conversation',
+    desc: 'We talk through what your business needs, what is slowing down your current site, and what would save you time.',
   },
   {
-    category: "Frontend & Modern Web",
-    skills: ["React", "Next.js (App Router)", "TypeScript", "Tailwind CSS", "Redux", "Sanity Headless CMS", "HTML5 / CSS3", "WCAG 2.1 AA / Section 508"]
+    step: '02',
+    label: 'Fixed Scope',
+    title: 'Written Plan & Price',
+    desc: 'You get a clear price, timeline, and feature list in plain English before making any commitment.',
   },
   {
-    category: "Backend & Microservices",
-    skills: ["Java", "Spring Boot", "Scala", "Node.js", "Microservices Architecture", "RESTful APIs", "GraphQL", "Vert.x", "Camunda BPMN"]
+    step: '03',
+    label: 'Weekly Check-Ins',
+    title: 'Built Around Your Workflow',
+    desc: 'I design and build your site with live preview links along the way so bookings, forms, and messaging feel right.',
   },
   {
-    category: "Cloud, DevOps & Data",
-    skills: ["Google Cloud (GCP)", "Firebase", "Vercel", "AWS (Lambda, S3, DynamoDB, Athena)", "Docker", "Kubernetes", "PostgreSQL", "Firestore", "Datadog / Grafana"]
-  }
+    step: '04',
+    label: 'Full Handoff',
+    title: 'Launch & Ownership',
+    desc: 'We launch cleanly, test every form and mobile view, and hand over full control of your site and accounts.',
+  },
 ];
 
 export default function About() {
@@ -86,186 +78,189 @@ export default function About() {
       <div className="pointer-events-none absolute top-1/2 -right-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
 
       <div className="max-w-5xl mx-auto px-6 space-y-16 relative z-10">
-        {/* Intro Header */}
+        {/* Owner-Friendly Intro Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm backdrop-blur-md border border-border max-w-full">
-            <Fingerprint className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
-            <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">FULL-STACK &amp; AI SOFTWARE ENGINEER</span>
-            <span className="text-border hidden sm:inline">|</span>
-            <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">RESTON, VA</span>
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-sm backdrop-blur-md border border-border max-w-full">
+            <UserCheck className="w-3.5 h-3.5 text-accent shrink-0" />
+            <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">
+              ABOUT ROTTY
+            </span>
+            <span className="text-border" aria-hidden="true">|</span>
+            <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">
+              RESTON, VA
+            </span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
-            Rottman M. <span className="tech-gradient-text">Mendez</span>
+            Modern websites built with{' '}
+            <span className="tech-gradient-text">engineering discipline.</span>
           </h1>
+        </div>
 
-          <p className="text-base sm:text-xl text-muted-foreground leading-relaxed font-medium max-w-3xl mx-auto">
-            Full-Stack &amp; AI Software Engineer based in Reston, Virginia. With extensive experience engineering scalable enterprise microservices (Disney Streaming, FEMA, BAE Systems, FAA via Leidos) and delivering AI-augmented cloud platforms, I specialize in modern serverless web stacks (Next.js, React, TypeScript, Tailwind CSS, Sanity, Vercel) and enterprise backend systems (Java, Spring Boot, Scala, GCP, Firebase, AWS). I help organizations and technical teams replace fragile legacy systems with reliable, high-performance digital platforms.
-          </p>
+        {/* Bio & Identity Card */}
+        <div className="stitch-card p-6 sm:p-10 rounded-lg relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
+          <div className="grid md:grid-cols-[240px_1fr] gap-8 items-center">
+            {/* Clean Portrait Placeholder / Identity Tile */}
+            <div className="rounded-lg border border-slate-200/90 dark:border-border/80 bg-slate-50/90 dark:bg-muted/40 p-6 flex flex-col items-center text-center space-y-3">
+              <div className="w-24 h-24 rounded-lg bg-[#090D16] dark:bg-accent/15 border border-slate-800 dark:border-accent/30 flex items-center justify-center shadow-md">
+                <span className="font-mono text-3xl font-black tracking-tight text-[#00D8F6] dark:text-accent">
+                  RM
+                </span>
+              </div>
+              <div className="space-y-1">
+                <p className="text-base font-black text-foreground">
+                  Rottman &ldquo;Rotty&rdquo; Mendez
+                </p>
+                <p className="text-xs font-mono uppercase tracking-wider text-accent font-bold">
+                  Founder &amp; Builder
+                </p>
+                <p className="inline-flex items-center justify-center gap-1 text-xs text-muted-foreground pt-1">
+                  <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />
+                  <span>Reston, Virginia</span>
+                </p>
+              </div>
+            </div>
 
-          {/* Action Buttons directly under the bio */}
-          <div className="pt-2 flex flex-col items-center gap-3.5 w-full">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5 w-full sm:w-auto">
+            {/* Plain-English Bio */}
+            <div className="space-y-4">
+              <p className="text-base sm:text-lg text-foreground font-semibold leading-relaxed">
+                Hi, I&apos;m Rotty, a software engineer in Reston, VA. I spent years building systems for Disney Streaming, FEMA, and the FAA — the kind of software that can&apos;t go down.
+              </p>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-medium">
+                Now I build modern websites with real workflows for Northern Virginia businesses: bookings that land on your calendar, quote forms that reach you, client intake that saves you the back-and-forth. Fixed price, and you own all of it.
+              </p>
+
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground px-5 py-2.5 rounded-lg font-bold font-mono text-xs sm:text-sm transition-all shadow-md"
+                >
+                  <span>Book a free 30-minute call</span>
+                  <ArrowRight className="w-4 h-4 text-[#00D8F6] dark:text-current" />
+                </Link>
+                <a
+                  href="tel:+12028540954"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-border bg-white hover:bg-slate-50 dark:bg-card dark:hover:bg-muted text-slate-900 dark:text-foreground font-mono font-bold text-xs sm:text-sm transition-colors"
+                >
+                  <Phone className="w-3.5 h-3.5 text-accent" />
+                  <span>(202) 854-0954</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Core Working Principles */}
+        <div className="space-y-8">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+              What working together feels like
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground font-medium">
+              Straight answers, predictable scope, and zero agency overhead.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {workPrinciples.map((item) => (
+              <div
+                key={item.title}
+                className="stitch-card p-6 rounded-lg space-y-3"
+              >
+                <div className="w-10 h-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center">
+                  {item.icon}
+                </div>
+                <h3 className="text-lg font-black text-foreground">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed font-medium">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Laser Divider */}
+        <div className="laser-divider" />
+
+        {/* How I Work Steps */}
+        <div className="space-y-8">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2 glass px-3 py-1 rounded-lg border border-border">
+              <Workflow className="w-3.5 h-3.5 text-accent shrink-0" />
+              <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider uppercase font-bold">
+                HOW I WORK
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
+              From first call to live site
+            </h2>
+          </div>
+
+          <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {processSteps.map((p) => (
+              <li
+                key={p.step}
+                className="p-6 rounded-lg border border-slate-200/90 dark:border-border/80 bg-white dark:bg-card/90 shadow-sm space-y-3"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xl font-black font-mono text-accent">
+                    <span className="sr-only">Step </span>
+                    {p.step}
+                    <span className="sr-only">, </span>
+                  </p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-muted-foreground bg-slate-100 dark:bg-muted/60 px-2.5 py-1 rounded-lg">
+                    {p.label}
+                  </p>
+                </div>
+                <h3 className="text-lg font-black text-foreground">{p.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{p.desc}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="py-10 sm:py-14 px-6 sm:px-10 bg-[#090D16] text-white dark:bg-accent dark:text-accent-foreground rounded-lg overflow-hidden relative shadow-2xl border border-slate-800 dark:border-transparent text-center space-y-5">
+          <div className="absolute inset-0 bg-dot-grid opacity-15 pointer-events-none" />
+          <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/10 dark:bg-black/20 border border-white/20 dark:border-black/20 text-xs font-mono font-bold uppercase tracking-wider text-[#00D8F6] dark:text-accent-foreground">
+              <Compass className="w-3.5 h-3.5 shrink-0" />
+              <span>RESTON &amp; NORTHERN VIRGINIA</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight">
+              Let&apos;s see what a better site could do for your business.
+            </h2>
+            <p className="text-sm sm:text-base text-slate-300 dark:text-inherit opacity-90 font-medium">
+              Book a free 30-minute call — no hard pitch, just straight answers on scope, timeline, and fixed pricing.
+            </p>
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 bg-[#00D8F6] hover:bg-[#00F2FE] text-[#090D16] dark:bg-accent-foreground dark:text-accent dark:hover:bg-[#151D2F] dark:hover:text-accent px-6 py-3 rounded-lg font-bold font-mono text-xs sm:text-sm transition-transform hover:scale-[1.02] shadow-lg w-full sm:w-auto"
               >
-                <span>Hire Me / Get in Touch</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
+                <span>Book a free 30-minute call</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
-              <a
-                href="/resume.pdf"
-                download="Rottman_Mendez_Resume.pdf"
-                className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold font-mono text-xs sm:text-sm transition-all w-full sm:w-auto"
+              <Link
+                href="/packages"
+                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 dark:bg-accent/20 dark:hover:bg-accent/30 dark:text-accent-foreground dark:border-accent-foreground/30 px-6 py-3 rounded-lg font-bold font-mono text-xs sm:text-sm transition-colors w-full sm:w-auto"
               >
-                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" /> Download Resume (PDF)
-              </a>
+                <Sparkles className="w-4 h-4" />
+                <span>See Packages &amp; Pricing</span>
+              </Link>
             </div>
-
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-muted/80 border border-border/80 rounded-xl text-[11px] sm:text-xs font-semibold text-foreground/90 shadow-sm font-mono max-w-full">
-              <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
-              <span className="truncate">Looking for Full-Stack &amp; AI Software Engineer roles &amp; partners</span>
-            </div>
-          </div>
-        </div>
-
-      <div className="grid md:grid-cols-2 gap-12 items-start">
-        {/* Core Experience Column */}
-        <div className="space-y-8">
-          <div className="flex items-center gap-3 text-accent transition-colors">
-            <Briefcase className="w-6 h-6" />
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Core Experience</h2>
-          </div>
-          <div className="space-y-6">
-            {experiences.map((exp, idx) => (
-              <div key={idx} className="relative pl-6 border-l-2 border-border hover:border-accent transition-colors py-2 group">
-                <div className="absolute -left-1.5 top-5 w-3 h-3 rounded-full bg-border group-hover:bg-accent transition-colors" />
-                <h3 className="font-bold text-lg text-foreground leading-snug">{exp.role}</h3>
-                <p className="text-sm text-accent font-semibold mt-0.5">{exp.company} · {exp.period}</p>
-                {exp.desc && (
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{exp.desc}</p>
-                )}
-                {exp.placements && (
-                  <div className="mt-3.5 space-y-4">
-                    {exp.placements.map((p, pIdx) => (
-                      <div key={pIdx} className="space-y-1.5">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
-                            <span className="font-bold text-sm text-foreground">
-                              Client: <span className="text-accent">{p.client}</span>
-                            </span>
-                          </div>
-                          <span className="font-mono text-xs text-muted-foreground font-semibold shrink-0">
-                            {p.period}
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed pl-3.5">
-                          {p.desc}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Technical Arsenal Column */}
-        <div className="space-y-8">
-          <div className="flex items-center gap-3 text-accent transition-colors">
-            <Code2 className="w-6 h-6" />
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Technical Arsenal</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {skillsets.map((skillset, idx) => (
-              <div key={idx} className="stitch-card p-4 rounded-2xl relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
-                <h4 className="font-bold text-xs mb-3 text-foreground/80 uppercase tracking-widest font-mono">{skillset.category}</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {skillset.skills.map(skill => (
-                    <span key={skill} className="px-2 py-0.5 text-[10px] font-bold bg-accent/5 text-accent rounded-md border border-accent/10">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Quantified Impact / Highlights */}
-          <div className="pt-4">
-            <div className="flex items-center gap-3 text-accent mb-6 transition-colors">
-              <Award className="w-6 h-6" />
-              <h2 className="text-2xl font-bold tracking-tight text-foreground">Enterprise &amp; Mission Impact</h2>
-            </div>
-            <div className="stitch-card p-6 rounded-2xl space-y-4 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
-                  <p className="text-2xl font-black font-mono text-accent">100M+</p>
-                  <p className="text-xs text-muted-foreground font-semibold mt-1">
-                    Engineer on Disney Streaming platform serving 100M+ global subscribers
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
-                  <p className="text-2xl font-black font-mono text-accent">$3B+</p>
-                  <p className="text-xs text-muted-foreground font-semibold mt-1">
-                    Full-stack engineer on FEMA GO platform processing $3B+ in annual federal grant funding
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
-                  <p className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">95–100</p>
-                  <p className="text-xs text-muted-foreground font-semibold mt-1">
-                    Google Lighthouse performance &amp; production quality benchmarks
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
-                  <p className="text-2xl font-black font-mono text-accent">45%+</p>
-                  <p className="text-xs text-muted-foreground font-semibold mt-1">
-                    Faster prototyping &amp; delivery via agentic workflows vs. traditional manual scaffolding
-                  </p>
-                </div>
-              </div>
+            <div className="pt-4 border-t border-white/10 dark:border-black/15 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-slate-300 dark:text-accent-foreground/80">
+              <span className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#00D8F6] dark:text-accent-foreground" />
+                Most builds $2,500–$6,500 fixed
+              </span>
+              <Link href="/resume" className="underline underline-offset-4 hover:text-[#00D8F6] dark:hover:text-accent-foreground transition-colors">
+                Technical team or recruiter? View full engineering resume <span aria-hidden="true">→</span>
+              </Link>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Laser Divider */}
-      <div className="laser-divider my-8" />
-
-      {/* Recruiter & Strategic Partnership CTA Banner */}
-      <div className="p-10 rounded-[2.5rem] glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
-        <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent/15 rounded-full blur-3xl" />
-        <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-md backdrop-blur-md border border-border relative z-10 max-w-full">
-          <Compass className="w-3.5 h-3.5 text-accent shrink-0" />
-          <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">CAREER OPPORTUNITIES</span>
-          <span className="text-border">|</span>
-          <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">TECHNICAL ROLES &amp; PARTNERSHIPS</span>
-          <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">ROLES &amp; COLLABS</span>
-        </div>
-        <h2 className="text-3xl md:text-4xl font-black text-foreground">
-          Looking for a Full-Stack &amp; AI Software Engineer or Technical Partner?
-        </h2>
-        <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base">
-          I&apos;m looking for Full-Stack &amp; AI Software Engineer roles and technical partners. If you&apos;re a recruiter, hiring manager, or organization seeking a technical collaborator, let&apos;s connect.
-        </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 w-full sm:w-auto">
-          <Link
-            href="/contact"
-            className="inline-flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base hover:scale-105 transition-transform shadow-lg shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent"
-          >
-            <span>Hire Me / Get in Touch</span> <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#00D8F6] dark:text-current" />
-          </Link>
-          <a
-            href="/resume.pdf"
-            download="Rottman_Mendez_Resume.pdf"
-            className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base transition-all"
-          >
-            <Download className="w-4 h-4 text-accent" /> Download Resume (PDF)
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
   );
 }

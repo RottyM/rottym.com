@@ -79,6 +79,8 @@ export interface Project {
   category: string;
   tag: string;
   section: 'modern' | 'enterprise';
+  /** Lower = earlier on /portfolio. Modern stack listed first. */
+  order?: number;
   featured?: boolean;
   tech: string[];
   img: string;
@@ -95,6 +97,9 @@ export interface Project {
   caseStudy?: CaseStudyData;
 }
 
+const byOrder = (a: Project, b: Project) =>
+  (a.order ?? 999) - (b.order ?? 999) || a.title.localeCompare(b.title);
+
 export const projects: Project[] = [
   // --- Section 1: Modern Web Platforms & Client Systems ---
   {
@@ -104,9 +109,10 @@ export const projects: Project[] = [
     category: "Platform Architecture",
     tag: "Next.js Stack",
     section: "modern",
+    order: 6,
     featured: true,
     tech: ["Next.js (App Router)", "TypeScript", "Tailwind CSS", "Real-Time APIs", "Vercel"],
-    img: "/images/apps/throttlelife.png",
+    img: "/images/portfolio/throttlelife-homepage.png",
     highlightMetric: "Sub-200ms API responses · Mobile-first responsive OS",
     summary: "A high-performance digital ecosystem and operating system concept for motorcycle riders, featuring real-time data handling, member accounts, and cloud-backed synchronization.",
     challenge: "Creating an instantaneous, tactile mobile interface for active riders that requires high contrast, offline resilience, and fast telemetry handling without UI lag.",
@@ -120,9 +126,10 @@ export const projects: Project[] = [
     category: "Full-Stack System",
     tag: "Cloud Platform",
     section: "modern",
+    order: 7,
     featured: true,
     tech: ["Next.js", "React", "Firebase", "Role-Based Auth", "Tailwind CSS"],
-    img: "/images/apps/familyos.png",
+    img: "/images/portfolio/family-os-homepage.png",
     highlightMetric: "Multi-user role security · Automated household workflows",
     summary: "A centralized digital command center for household coordination, scheduling, chore automation, and secure family document vaults.",
     challenge: "Managing asynchronous multi-user permissions, real-time sync across family devices, and strict data privacy without complex server management.",
@@ -136,6 +143,7 @@ export const projects: Project[] = [
     category: "Headless CMS & Migration",
     tag: "WordPress Escape",
     section: "modern",
+    order: 2,
     featured: true,
     tech: ["Next.js", "Sanity Headless CMS", "TypeScript", "Vercel", "Tailwind CSS"],
     img: "/images/portfolio/found-archives-homepage.png",
@@ -157,6 +165,7 @@ export const projects: Project[] = [
     category: "Author & Publishing",
     tag: "Next.js Stack",
     section: "modern",
+    order: 5,
     featured: true,
     tech: ["Next.js", "Sanity CMS", "Vercel", "Tailwind CSS", "Semantic SEO"],
     img: "/images/portfolio/lori-eaton-writer-homepage.png",
@@ -167,12 +176,35 @@ export const projects: Project[] = [
     details: "Combines typography-first responsive design with accessible markup and rapid editorial publishing."
   },
   {
+    slug: "rebeccas-cleaning",
+    title: "Rebecca's Cleaning",
+    role: "Web Developer & Designer",
+    category: "Local Service Business",
+    tag: "Static Landing",
+    section: "modern",
+    order: 3,
+    featured: true,
+    tech: ["HTML5", "CSS3", "Vanilla JS", "Responsive Design", "Accessibility"],
+    img: "/images/portfolio/rebeccas-cleaning-home.png",
+    highlightMetric: "Flat-rate quote flow · Mobile-first booking · Zero framework overhead",
+    summary: "Conversion-focused landing site for a DMV house-cleaning business — brand-first hero, owner story, service packages, and a guided quote request visitors can copy and send.",
+    challenge: "A solo local cleaner needed a polished, trustworthy web presence that looked premium without a heavy CMS or booking SaaS — something fast to load, easy to update, and clear about services, service area, and how to get a quote.",
+    solution: "Designed and built a self-contained static site with expressive typography, a full-bleed hero, trust strip, three clear service packages, neighbor testimonials, and a quote form that generates a ready-to-send request message.",
+    beforeAfter: {
+      before: "No dedicated brand site — referrals and informal messages carried the business, with no clear services breakdown or professional first impression for new DMV clients.",
+      after: "A single-page marketing site with sticky navigation, owner-led About section, flat-rate positioning, DMV service area, and a quote builder that outputs a formatted request.",
+      result: "A sample production-ready landing page clients can evaluate live, with accessible form UX, mobile nav, and conversion paths to Schedule / View Services."
+    },
+    details: ""
+  },
+  {
     slug: "northern-virginia-writers",
     title: "Northern Virginia Writers Club",
     role: "Lead Full Stack Engineer & System Architect",
     category: "Community & Membership Architecture",
     tag: "Member Platform",
     section: "modern",
+    order: 1,
     featured: true,
     tech: ["WordPress", "PMPro", "BuddyBoss", "MailChimp API", "PayPal IPN", "MySQL"],
     img: "/images/portfolio/northernvirginiawriters-home.png",
@@ -376,22 +408,29 @@ export const projects: Project[] = [
     }
   },
   {
-    slug: "local-business-dev",
-    title: "Local Business Development (Brevic)",
-    role: "Strategic Tech Partner",
-    category: "Commercial Platforms",
-    tag: "Rapid Launchpad",
+    slug: "men-talking",
+    title: "Men Talking LLC",
+    role: "Web Developer & Designer",
+    category: "Coaching & Wellness",
+    tag: "Brand Site",
     section: "modern",
-    tech: ["Next.js", "Tailwind CSS", "Vercel", "Lead Capture Workflows"],
-    img: "/images/portfolio/brevic.jpg",
-    highlightMetric: "98 Lighthouse score · Streamlined customer inquiry flow",
-    summary: "High-performance web storefront engineered for modern local service business conversion and direct quote requests.",
-    challenge: "Transforming a slow brochure site into an ultra-fast inquiry generator for commercial services.",
-    solution: "Deployed a lightweight Next.js application with instant click-to-call/quote triggers, clear service framing, and local SEO metadata.",
-    details: "Demonstrates how performance optimization and clean layout architecture directly increase inbound customer inquiries."
+    order: 4,
+    featured: true,
+    tech: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel", "Ongoing Care"],
+    img: "/images/portfolio/men-talking-home.png",
+    highlightMetric: "Launch-ready brand site · Ahead-of-deadline delivery · Ongoing maintenance",
+    summary: "Calm, typography-led coaching site for Men Talking LLC — leadership, emotional wellness, community, and education with a clear path to start a conversation.",
+    challenge: "A new coaching practice needed a polished brand presence before launch: distinctive voice, trustworthy design, and a simple conversion path — delivered on a hard deadline without looking like a template.",
+    solution: "Designed and built a cream-and-navy brand site with serif display typography, program and community sections, client login affordance, and a primary CTA to start a conversation — then stayed on for ongoing care after launch.",
+    beforeAfter: {
+      before: "New practice preparing to launch without a finished brand site — no clear digital first impression for men exploring leadership and emotional wellness coaching.",
+      after: "A production coaching site with expressive headline treatment, approachable hero photography, structured navigation (Approach, Programs, Community, About, FAQ), and a friction-light conversation CTA.",
+      result: "Delivered ahead of deadline for launch, with clear communication on timelines and ongoing maintenance so the founder can stay focused on clients."
+    },
+    details: "Pairs brand-first visual design with practical post-launch care — the same engagement model local coaching and wellness clients need when the website has to work on day one."
   },
 
-  // --- Section 2: Enterprise & Earlier Career Work ---
+  // --- Section 2: Enterprise scale proof (secondary — name-brand trust) ---
   {
     slug: "usa-today-the-point",
     title: "USA Today – The Point",
@@ -399,6 +438,7 @@ export const projects: Project[] = [
     category: "Enterprise High Scale",
     tag: "Enterprise Publishing",
     section: "enterprise",
+    order: 101,
     featured: true,
     tech: ["React", "Redux", "AWS (S3/CloudFront)", "RESTful APIs", "High-Traffic Optimization"],
     img: "/images/portfolio/usa-today-thepoint.jpg",
@@ -415,6 +455,7 @@ export const projects: Project[] = [
     category: "Gov & Enterprise Infrastructure",
     tag: "Gov Infrastructure",
     section: "enterprise",
+    order: 102,
     tech: ["Java", "React", "Cloud-Native Architecture", "Section 508 / WCAG 2.1 AA"],
     img: "/images/portfolio/gov-sites.jpg",
     highlightMetric: "Section 508 accessibility compliance · Zero security vulnerabilities",
@@ -424,42 +465,13 @@ export const projects: Project[] = [
     details: "Built to federal standards for accessibility, resilience, and scalable data processing."
   },
   {
-    slug: "enterprise-subscriptions",
-    title: "Enterprise Subscriptions",
-    role: "Cloud Architect",
-    category: "Fintech & Subscriptions",
-    tag: "Revenue & Billing",
-    section: "enterprise",
-    tech: ["Firebase", "Stripe Subscriptions", "Cloud Functions", "Node.js"],
-    img: "/images/portfolio/club-sites.jpg",
-    highlightMetric: "Automated recurring billing · Zero checkout friction",
-    summary: "Scalable recurring billing and gated member entitlement platform for subscription clubs.",
-    challenge: "Automating member access tiers and recurring billing cycles without manual administrative intervention.",
-    solution: "Integrated Stripe webhooks with Firebase Cloud Functions and Firestore for instantaneous subscription state updates.",
-    details: "Eliminates billing leaks and administrative overhead with bulletproof automated recurring revenue workflows."
-  },
-  {
-    slug: "reverb-networks",
-    title: "Reverb Networks",
-    role: "UX Designer & Prototyper",
-    category: "Enterprise Telecommunications",
-    tag: "B2B Telecom UX",
-    section: "enterprise",
-    tech: ["Wireframing", "Figma", "Design Systems", "Usability Testing"],
-    img: "/images/portfolio/reverb-performa.jpg",
-    highlightMetric: "Enterprise antenna optimization interface · Complex telemetry data",
-    summary: "Specialized UX interface for antenna automation and telecommunication performance telemetry.",
-    challenge: "Making highly technical RF antenna analytics intuitive for telecommunications field engineers.",
-    solution: "Designed high-density dashboards with visual antenna beam mapping and clear operational telemetry controls.",
-    details: "User experience engineering for complex data visualization and mission-critical engineering tooling."
-  },
-  {
     slug: "wwf-gift-center",
     title: "WWF Gift Center",
     role: "UX Developer",
     category: "E-Commerce UX",
     tag: "E-Commerce Platform",
     section: "enterprise",
+    order: 103,
     tech: ["E-Commerce UX", "HTML5", "CSS3", "Conversion Optimization"],
     img: "/images/portfolio/wwf-giftcenter.jpg",
     highlightMetric: "High-volume international donation and symbolic adoption checkout",
@@ -467,23 +479,12 @@ export const projects: Project[] = [
     challenge: "Simplifying a multi-step gift catalog checkout flow for international donors across varied giving tiers.",
     solution: "Streamlined basket steps and added clear visual donation badges to maximize end-of-year giving conversion.",
     details: "Conversion-focused user experience engineering for high-volume non-profit donation processing."
-  },
-  {
-    slug: "brand-identity-systems",
-    title: "Brand Identity Systems",
-    role: "Creative Lead",
-    category: "Identity & Branding",
-    tag: "Visual Systems",
-    section: "enterprise",
-    tech: ["Vector Design", "Design Systems", "Typography", "Style Guides"],
-    img: "/images/portfolio/logos.jpg",
-    highlightMetric: "Cohesive multi-platform brand design systems",
-    summary: "Logomarks, design systems, and identity assets providing visual consistency across web platforms.",
-    challenge: "Establishing visual consistency across digital products, print collateral, and web user interfaces.",
-    solution: "Crafted enduring vector identity systems and comprehensive component style guides for emerging brands.",
-    details: "Bridges the gap between technical engineering and clean visual design."
   }
 ];
+
+export function getProjectsSorted(): Project[] {
+  return [...projects].sort(byOrder);
+}
 
 export function getProjectBySlug(slug: string): Project | undefined {
   return projects.find((p) => p.slug === slug);

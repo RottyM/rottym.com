@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/'],
     },
-    sitemap: 'https://rottym.com/sitemap.xml',
+    sitemap: 'https://www.rottym.com/sitemap.xml',
   };
 }
 

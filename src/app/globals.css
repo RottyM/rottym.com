@@ -5,7 +5,7 @@
 :root {
   --background: #f8fafc;
   --foreground: #090d16;
-  --accent: #0277b6;
+  --accent: #025e93;
   --accent-foreground: #ffffff;
   --muted: #f1f5f9;
   --muted-foreground: #475569;
@@ -20,7 +20,7 @@
   --accent: #00f2fe;
   --accent-foreground: #080c14;
   --muted: #0e1420;
-  --muted-foreground: #94a3b8;
+  --muted-foreground: #9fb0c4;
   --card: #0e1420;
   --card-foreground: #f8fafc;
   --border: #1a2536;
@@ -144,7 +144,7 @@ body {
 }
 
 .tech-gradient-text {
-  background-image: linear-gradient(135deg, #0284c7 0%, #00b8d9 50%, #00d8f6 100%);
+  background-image: linear-gradient(135deg, #025e93 0%, #0277b6 50%, #0e7490 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
