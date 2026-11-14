@@ -31,6 +31,7 @@ export async function POST(req: Request) {
 
         const smtpUser = process.env.SMTP_USER;
         const smtpPass = process.env.SMTP_PASS;
+        const contactTo = process.env.CONTACT_TO || 'rmendez@rottym.com';
 
         if (!smtpUser || !smtpPass) {
             console.error('Missing SMTP_USER or SMTP_PASS environment variables.');
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
 
         const mailOptions = {
             from: `"RottyM Website" <${smtpUser}>`,
-            to: 'rmendez@rottym.com',
+            to: contactTo,
             replyTo: email,
             subject: `[PROJECT INQUIRY] ${service} from ${name}`,
             text: `

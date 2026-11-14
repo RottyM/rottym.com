@@ -49,8 +49,9 @@ npm run lint     # ESLint
 The application reads these variables from the environment:
 
 - `NEXT_PUBLIC_GA_ID` — Google Analytics measurement ID
-- `SMTP_USER` — SMTP username used by the contact API route
+- `SMTP_USER` — SMTP username used by the contact API route (sending account)
 - `SMTP_PASS` — SMTP password used by the contact API route
+- `CONTACT_TO` — Inbox that receives contact form inquiries (defaults to `rmendez@rottym.com`)
 
 ## Deploy
 
