@@ -8,7 +8,6 @@ import { trackEvent } from '@/lib/analytics';
 
 
 export default function Contact() {
-  // TODO: Create a Google App Password for 'no-reply@rottym.com' and set it as SMTP_PASS in your deployment vars.
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedService, setSelectedService] = useState('Local Launchpad ($2,500 – $3,500)');

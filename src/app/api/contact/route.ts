@@ -29,8 +29,16 @@ export async function POST(req: Request) {
             timestamp: new Date().toISOString()
         }, null, 2));
 
-        const smtpUser = process.env.SMTP_USER || 'rottym@gmail.com';
-        const smtpPass = process.env.SMTP_PASS || 'xoprxgxybmsawnwq';
+        const smtpUser = process.env.SMTP_USER;
+        const smtpPass = process.env.SMTP_PASS;
+
+        if (!smtpUser || !smtpPass) {
+            console.error('Missing SMTP_USER or SMTP_PASS environment variables.');
+            return NextResponse.json(
+                { success: false, message: 'Mail is not configured.' },
+                { status: 500 }
+            );
+        }
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
