@@ -84,6 +84,8 @@ export interface Project {
   featured?: boolean;
   tech: string[];
   img: string;
+  liveUrl?: string;
+  liveUrlLabel?: string;
   highlightMetric: string;
   summary: string;
   challenge?: string;
@@ -418,6 +420,8 @@ export const projects: Project[] = [
     featured: true,
     tech: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel", "Ongoing Care"],
     img: "/images/portfolio/men-talking-home.png",
+    liveUrl: "https://realmentalking.com/",
+    liveUrlLabel: "Live Site",
     highlightMetric: "Launch-ready brand site · Ahead-of-deadline delivery · Ongoing maintenance",
     summary: "Calm, typography-led coaching site for Men Talking LLC — leadership, emotional wellness, community, and education with a clear path to start a conversation.",
     challenge: "A new coaching practice needed a polished brand presence before launch: distinctive voice, trustworthy design, and a simple conversion path — delivered on a hard deadline without looking like a template.",

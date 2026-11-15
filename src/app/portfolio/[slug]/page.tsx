@@ -124,11 +124,22 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
             {cs ? cs.heroHeadline : project.summary}
           </p>
 
-          <div className="pt-2">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/80 border border-border/80 rounded-lg text-xs sm:text-sm font-mono font-semibold text-foreground/90 shadow-sm">
               <Zap className="w-4 h-4 text-accent shrink-0" />
               <span>{project.highlightMetric}</span>
             </div>
+            {!cs?.proofBar && project.liveUrl && (
+              <a
+                href={project.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-xs sm:text-sm font-black hover:scale-105 transition-transform shadow-md shadow-accent/20"
+              >
+                <span>{project.liveUrlLabel || 'Live Site'}</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
           </div>
         </div>
 
