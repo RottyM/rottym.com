@@ -129,14 +129,14 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
               <Zap className="w-4 h-4 text-accent shrink-0" />
               <span>{project.highlightMetric}</span>
             </div>
-            {!cs?.proofBar && project.liveUrl && (
+            {(project.liveUrl || cs?.liveUrl) && (
               <a
-                href={project.liveUrl}
+                href={project.liveUrl || cs?.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-xs sm:text-sm font-black hover:scale-105 transition-transform shadow-md shadow-accent/20"
               >
-                <span>{project.liveUrlLabel || 'Live Site'}</span>
+                <span>{project.liveUrlLabel || cs?.liveUrlLabel || 'Live Site'}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             )}
@@ -180,17 +180,6 @@ export default async function ProjectCaseStudy({ params }: PageProps) {
                     {chip}
                   </span>
                 ))}
-                {cs.liveUrl && (
-                  <a
-                    href={cs.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-md bg-accent text-accent-foreground text-xs font-black hover:scale-105 transition-transform shadow-md shadow-accent/20"
-                  >
-                    <span>{cs.liveUrlLabel || 'Live Site'}</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                )}
               </div>
             </div>
           )}

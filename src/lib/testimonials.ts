@@ -53,4 +53,18 @@ export const clientTestimonials: ClientTestimonial[] = [
     caseStudyHref: "/portfolio/northern-virginia-writers",
     caseStudyLabel: "Read NVWC case study",
   },
+  {
+    id: "lori-eaton",
+    author: "Lori Eaton",
+    role: "Archivist & Writer, Found Archives LLC",
+    initials: "LE",
+    category: "Linked platforms & care",
+    rating: 5,
+    heroQuote:
+      "Rotty helped me integrate two websites that neatly link my passions for archiving and for writing, building clean, crisp designs that play well together.",
+    quote:
+      "Rotty helped me integrate two websites that neatly link my passions for archiving and for writing, building clean, crisp designs that play well together. And when there is a technical update, Rotty handles it before I even think to ask.",
+    caseStudyHref: "/portfolio/found-archives",
+    caseStudyLabel: "View Found Archives project",
+  },
 ];
