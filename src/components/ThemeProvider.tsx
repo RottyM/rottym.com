@@ -19,7 +19,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     if (savedTheme) {
-      setThemeState(savedTheme);
+      queueMicrotask(() => setThemeState(savedTheme));
     }
   }, []);
 

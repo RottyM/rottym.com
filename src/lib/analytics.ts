@@ -2,10 +2,18 @@
 
 export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-C0XCJ5TP2M';
 
+type GtagFn = (...args: unknown[]) => void;
+
+const getGtag = (): GtagFn | undefined => {
+  if (typeof window === 'undefined') return undefined;
+  return (window as Window & { gtag?: GtagFn }).gtag;
+};
+
 // Track pageviews
 export const pageview = (url: string) => {
-  if (typeof window !== 'undefined' && (window as any).gtag && GA_TRACKING_ID) {
-    (window as any).gtag('config', GA_TRACKING_ID, {
+  const gtag = getGtag();
+  if (gtag && GA_TRACKING_ID) {
+    gtag('config', GA_TRACKING_ID, {
       page_path: url,
     });
   }
@@ -23,8 +31,9 @@ export const trackEvent = ({
   label?: string;
   value?: number;
 }) => {
-  if (typeof window !== 'undefined' && (window as any).gtag) {
-    (window as any).gtag('event', action, {
+  const gtag = getGtag();
+  if (gtag) {
+    gtag('event', action, {
       event_category: category,
       event_label: label,
       value: value,

@@ -1,6 +1,8 @@
 // src/app/packages/page.tsx
 'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { 
   Rocket, 
   CalendarCheck, 
@@ -18,8 +20,11 @@ import {
   FileText,
   Star,
   Quote,
-  LockOpen
+  LockOpen,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
+import { clientTestimonials } from '@/lib/testimonials';
 
 const packages = [
   {
@@ -103,20 +108,29 @@ const packages = [
   }
 ];
 
-const testimonials = [
-  {
-    id: "isabelle-deeme",
-    quote:
-      "I highly recommend Rotty Mendez. Working with him was awesome! He took the time to understand what I wanted, and was very patient with my technology impaired brain. His advice was invaluable and he built the most amazing website for me. Rotty was very professional and responsive to my many requests. It was worth every penny!",
-    author: "Isabelle Deeme",
-    role: "Author, The Enchanted Series",
-    category: "Website client",
-    initials: "ID",
-    rating: 5,
-  },
-];
-
 export default function PackagesPage() {
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [isTestimonialPaused, setIsTestimonialPaused] = useState(false);
+  const [userControlledTestimonial, setUserControlledTestimonial] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+
+  const totalTestimonials = clientTestimonials.length;
+  const currentTestimonial = clientTestimonials[activeTestimonial];
+
+  useEffect(() => {
+    if (isTestimonialPaused || userControlledTestimonial || prefersReducedMotion || totalTestimonials <= 1) {
+      return;
+    }
+    const timer = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % totalTestimonials);
+    }, 6500);
+    return () => clearInterval(timer);
+  }, [isTestimonialPaused, userControlledTestimonial, prefersReducedMotion, totalTestimonials]);
+
+  const handleSelectTestimonial = (nextIndex: number) => {
+    setUserControlledTestimonial(true);
+    setActiveTestimonial((nextIndex + totalTestimonials) % totalTestimonials);
+  };
   return (
     <div className="relative min-h-screen pt-10 pb-24 overflow-hidden">
       {/* Background Dot-Grid Texture */}
@@ -397,60 +411,123 @@ export default function PackagesPage() {
         {/* Client Testimonials Spotlight */}
         <section aria-label="Client Feedback" className="pt-2 sm:pt-4">
           <div className="max-w-5xl mx-auto">
-            {testimonials.map((t) => (
-              <div
-                key={t.id}
-                className="relative rounded-lg p-6 sm:p-10 md:p-12 overflow-hidden border border-border/80 shadow-lg transition-all duration-300 bg-gradient-to-br from-white via-slate-50/80 to-sky-50/30 dark:from-[#111928] dark:via-[#0e1624] dark:to-[#0a121f] dark:border-slate-800/80 dark:shadow-2xl before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r before:from-transparent before:via-[#00F2FE]/70 before:to-[#00F5A0]/70"
-              >
-                {/* Ambient Corner Auras */}
-                <div className="pointer-events-none absolute -right-20 -bottom-20 w-72 h-72 rounded-full bg-accent/5 dark:bg-[#00F2FE]/10 blur-3xl" />
-                <div className="pointer-events-none absolute -left-20 -top-20 w-64 h-64 rounded-full bg-emerald-500/5 dark:bg-[#00F5A0]/10 blur-3xl" />
+            <div
+              onMouseEnter={() => setIsTestimonialPaused(true)}
+              onMouseLeave={() => setIsTestimonialPaused(false)}
+              onFocusCapture={() => setIsTestimonialPaused(true)}
+              onBlurCapture={() => setIsTestimonialPaused(false)}
+              className="relative rounded-lg p-6 sm:p-10 md:p-12 overflow-hidden border border-border/80 shadow-lg transition-all duration-300 bg-gradient-to-br from-white via-slate-50/80 to-sky-50/30 dark:from-[#111928] dark:via-[#0e1624] dark:to-[#0a121f] dark:border-slate-800/80 dark:shadow-2xl before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r before:from-transparent before:via-[#00F2FE]/70 before:to-[#00F5A0]/70"
+            >
+              {/* Ambient Corner Auras */}
+              <div className="pointer-events-none absolute -right-20 -bottom-20 w-72 h-72 rounded-full bg-accent/5 dark:bg-[#00F2FE]/10 blur-3xl" />
+              <div className="pointer-events-none absolute -left-20 -top-20 w-64 h-64 rounded-full bg-emerald-500/5 dark:bg-[#00F5A0]/10 blur-3xl" />
 
-                {/* Decorative Watermark Quote Icon */}
-                <div className="absolute top-6 right-8 text-slate-200/60 dark:text-white/[0.04] select-none pointer-events-none">
-                  <Quote className="w-24 h-24 sm:w-32 sm:h-32" />
-                </div>
+              {/* Decorative Watermark Quote Icon */}
+              <div className="absolute top-6 right-8 text-slate-200/60 dark:text-white/[0.04] select-none pointer-events-none">
+                <Quote className="w-24 h-24 sm:w-32 sm:h-32" aria-hidden="true" />
+              </div>
 
-                <div className="relative z-10 space-y-5 sm:space-y-6">
-                  {/* Rating Row */}
+              <div className="relative z-10 space-y-5 sm:space-y-6" aria-live="polite">
+                {/* Rating & Controls Row */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
-                    {[...Array(t.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-700 text-amber-700 dark:fill-amber-400 dark:text-amber-400" />
+                    {[...Array(currentTestimonial.rating)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-700 text-amber-700 dark:fill-amber-400 dark:text-amber-400"
+                        aria-hidden="true"
+                      />
                     ))}
                     <span className="ml-2 font-mono text-[10px] sm:text-xs font-black tracking-wider text-slate-700 dark:text-slate-300 uppercase">
                       5.0 · Client review
                     </span>
                   </div>
 
-                  {/* The Quote */}
-                  <blockquote className="text-base sm:text-lg md:text-xl lg:text-[1.3rem] font-medium leading-relaxed text-slate-800 dark:text-slate-100">
-                    &ldquo;{t.quote}&rdquo;
-                  </blockquote>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] sm:text-xs font-bold tracking-wider uppercase text-slate-600 dark:text-slate-300 mr-1">
+                      {String(activeTestimonial + 1).padStart(2, '0')} / {String(totalTestimonials).padStart(2, '0')}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTestimonial(activeTestimonial - 1)}
+                      aria-label="Previous client review"
+                      className="w-8 h-8 rounded-lg border border-slate-300 dark:border-slate-600 bg-white/90 dark:bg-slate-900/90 hover:border-accent/60 hover:text-accent text-slate-700 dark:text-slate-300 flex items-center justify-center transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTestimonial(activeTestimonial + 1)}
+                      aria-label="Next client review"
+                      className="w-8 h-8 rounded-lg border border-slate-300 dark:border-slate-600 bg-white/90 dark:bg-slate-900/90 hover:border-accent/60 hover:text-accent text-slate-700 dark:text-slate-300 flex items-center justify-center transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
 
-                  {/* Author Attribution & Category Pill Row */}
-                  <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-border/70 dark:border-slate-800/80">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#00F2FE]/20 to-[#00F5A0]/20 border border-[#00F2FE]/30 dark:border-[#00F2FE]/40 flex items-center justify-center font-bold text-accent dark:text-[#00F2FE] text-base tracking-tight shadow-sm shrink-0">
-                        {t.initials}
+                {/* Auto-sized quote track locks height to the longest review */}
+                <div className="grid">
+                  {clientTestimonials.map((item) => (
+                    <p
+                      key={`packages-sizer-${item.id}`}
+                      aria-hidden="true"
+                      className="col-start-1 row-start-1 invisible pointer-events-none select-none text-base sm:text-lg md:text-xl lg:text-[1.3rem] font-medium leading-relaxed"
+                    >
+                      &ldquo;{item.quote}&rdquo;
+                    </p>
+                  ))}
+
+                  <div className="col-start-1 row-start-1 flex items-center">
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.blockquote
+                        key={currentTestimonial.id}
+                        initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: -6 }}
+                        transition={{ duration: 0.22 }}
+                        className="text-base sm:text-lg md:text-xl lg:text-[1.3rem] font-medium leading-relaxed text-slate-800 dark:text-slate-100"
+                      >
+                        &ldquo;{currentTestimonial.quote}&rdquo;
+                      </motion.blockquote>
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {/* Author Attribution & Category Pill Row */}
+                <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-border/70 dark:border-slate-800/80">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#00F2FE]/20 to-[#00F5A0]/20 border border-[#00F2FE]/30 dark:border-[#00F2FE]/40 flex items-center justify-center font-bold text-accent dark:text-[#00F2FE] text-base tracking-tight shadow-sm shrink-0">
+                      {currentTestimonial.initials}
+                    </div>
+                    <div>
+                      <div className="text-base sm:text-lg font-black text-foreground">
+                        {currentTestimonial.author}
                       </div>
-                      <div>
-                        <div className="text-base sm:text-lg font-black text-foreground">
-                          {t.author}
-                        </div>
-                        <div className="text-xs sm:text-sm font-medium text-muted-foreground">
-                          {t.role}
-                        </div>
+                      <div className="text-xs sm:text-sm font-medium text-muted-foreground">
+                        {currentTestimonial.role}
                       </div>
                     </div>
+                  </div>
 
+                  <div className="flex flex-wrap items-center gap-2.5">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-mono font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      {t.category}
+                      <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+                      {currentTestimonial.category}
                     </span>
+                    {currentTestimonial.caseStudyHref && (
+                      <Link
+                        href={currentTestimonial.caseStudyHref}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-mono font-bold tracking-wide uppercase bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20 transition-colors"
+                      >
+                        <span>{currentTestimonial.caseStudyLabel ?? 'View case study'}</span>
+                        <ArrowRight className="w-3 h-3" aria-hidden="true" />
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </section>
 

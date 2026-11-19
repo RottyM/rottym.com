@@ -24,20 +24,22 @@ export default function Contact() {
       if (params.get('utm_campaign')) sessionStorage.setItem('utm_campaign', params.get('utm_campaign')!);
       if (params.get('ref')) sessionStorage.setItem('ref', params.get('ref')!);
 
-      if (utmSource || utmCampaign || ref) {
-        setAttribution({ source: utmSource, campaign: utmCampaign, ref });
-      }
+      queueMicrotask(() => {
+        if (utmSource || utmCampaign || ref) {
+          setAttribution({ source: utmSource, campaign: utmCampaign, ref });
+        }
 
-      const serviceParam = params.get('service');
-      if (serviceParam === 'local-launchpad') {
-        setSelectedService('Local Launchpad ($2,500 – $3,500)');
-      } else if (serviceParam === 'booking-intake') {
-        setSelectedService('Booking & Intake ($4,200 – $5,800)');
-      } else if (serviceParam === 'performance-rebuild') {
-        setSelectedService('Performance Rebuild ($3,800 – $6,500)');
-      } else if (serviceParam === 'ongoing-care') {
-        setSelectedService('Ongoing Care ($99 – $250/mo)');
-      }
+        const serviceParam = params.get('service');
+        if (serviceParam === 'local-launchpad') {
+          setSelectedService('Local Launchpad ($2,500 – $3,500)');
+        } else if (serviceParam === 'booking-intake') {
+          setSelectedService('Booking & Intake ($4,200 – $5,800)');
+        } else if (serviceParam === 'performance-rebuild') {
+          setSelectedService('Performance Rebuild ($3,800 – $6,500)');
+        } else if (serviceParam === 'ongoing-care') {
+          setSelectedService('Ongoing Care ($99 – $250/mo)');
+        }
+      });
     }
   }, []);
 
@@ -94,8 +96,8 @@ export default function Contact() {
             <Sparkles className="w-10 h-10" />
           </div>
           <h2 className="text-4xl font-black tracking-tight">Message Received!</h2>
-          <p className="text-xl text-muted-foreground">Thanks for reaching out. I'll review your project requirements and get back to you within 24 hours.</p>
-          <a href="/" className="inline-block mt-8 text-accent font-bold hover:underline">Return to Home</a>
+          <p className="text-xl text-muted-foreground">Thanks for reaching out. I&apos;ll review your project requirements and get back to you within 24 hours.</p>
+          <Link href="/" className="inline-block mt-8 text-accent font-bold hover:underline">Return to Home</Link>
         </motion.div>
       </section>
     );

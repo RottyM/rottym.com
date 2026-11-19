@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useId, useEffect, useState } from 'react';
+import React, { useId, useState, useSyncExternalStore } from 'react';
 import { useTheme } from './ThemeProvider';
+
+const emptySubscribe = () => () => {};
 
 export type LogoTheme = 'dark' | 'light' | 'auto';
 export type LogoVariant = 'full' | 'monogram' | 'compact';
@@ -41,12 +43,8 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
   className = '',
 }) => {
   const uniqueId = useId().replace(/:/g, '');
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [isBursting, setIsBursting] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Safely resolve active theme
   let contextTheme: 'light' | 'dark' = 'dark';

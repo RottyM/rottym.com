@@ -1,19 +1,19 @@
 // src/components/Header.tsx
 'use client';
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTheme } from './ThemeProvider';
 import { Sun, Moon, Sparkles } from 'lucide-react';
 import RottyMLogo from './RottyMLogo';
 
+const emptySubscribe = () => () => {};
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
