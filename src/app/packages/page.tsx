@@ -22,7 +22,9 @@ import {
   Quote,
   LockOpen,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Megaphone,
+  XCircle
 } from 'lucide-react';
 import { clientTestimonials } from '@/lib/testimonials';
 
@@ -669,6 +671,184 @@ export default function PackagesPage() {
             </div>
           </div>
 
+        </div>
+
+        {/* Content Engine Add-On */}
+        <div id="content-engine" className="mt-6 sm:mt-8 stitch-card p-5 sm:p-8 md:p-10 rounded-lg shadow-md flex flex-col justify-between group hover:border-accent/40 transition-all duration-300 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent">
+          {/* Chromatic Corner Aura */}
+          <div className="pointer-events-none absolute -right-14 -top-14 w-40 h-40 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+
+          <div className="space-y-6 sm:space-y-8 relative z-10">
+            {/* Header */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                  <Megaphone className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <span className="px-2.5 sm:px-3 py-1 bg-accent/10 text-accent rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest font-mono">
+                  Monthly Add-On for RottyM Clients
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground">Content Engine</h3>
+                <p className="text-foreground font-semibold text-sm sm:text-base mt-1.5">
+                  I put your business in front of people every day and send them to your site.
+                </p>
+                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mt-2">
+                  This is the same engine I run for RottyM — daily LinkedIn, X, and Facebook — now as a monthly add-on for your business.
+                </p>
+              </div>
+            </div>
+
+            {/* Tiers */}
+            <div className="grid md:grid-cols-2 gap-4 sm:gap-6 border-t border-border/60 pt-5 sm:pt-6">
+              {/* Content Engine */}
+              <div className="p-4 sm:p-5 rounded-lg bg-muted/40 border border-border/60 space-y-4">
+                <div>
+                  <h4 className="text-lg sm:text-xl font-black text-foreground">Content Engine</h4>
+                  <div className="mt-1">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-foreground">$595</span>
+                    <span className="text-muted-foreground font-medium text-xs sm:text-sm"> / month</span>
+                  </div>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider font-mono text-muted-foreground">
+                  What you get:
+                </p>
+                <ul className="space-y-2 sm:space-y-2.5">
+                  {[
+                    "4 posts a week (16 a month) across LinkedIn and Facebook — the two channels where local customers actually see you",
+                    "Written for your business: your services, your story, your town — not generic filler",
+                    "Every post links back to your website, so the attention turns into visits",
+                    "You approve every post before it goes live — exact text and image, no surprises",
+                    "A content calendar planned a month ahead, so you always know what's coming",
+                    "A monthly report with the real numbers: impressions, clicks to your site, profile visits"
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2 sm:gap-2.5 text-xs md:text-sm text-foreground/90 font-medium">
+                      <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Content Engine Plus */}
+              <div className="p-4 sm:p-5 rounded-lg bg-muted/40 border border-accent/40 space-y-4">
+                <div>
+                  <h4 className="text-lg sm:text-xl font-black text-foreground">Content Engine Plus</h4>
+                  <div className="mt-1">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-foreground">$895</span>
+                    <span className="text-muted-foreground font-medium text-xs sm:text-sm"> / month</span>
+                  </div>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider font-mono text-accent">
+                  Everything in Content Engine, plus:
+                </p>
+                <ul className="space-y-2 sm:space-y-2.5">
+                  {[
+                    "Daily weekday posts (20 a month)",
+                    "1 short article a month published on your own site",
+                    "Instagram included",
+                    "A 30-minute call each month to plan what's next"
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2 sm:gap-2.5 text-xs md:text-sm text-foreground/90 font-medium">
+                      <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Promises & Non-Promises */}
+            <div className="grid md:grid-cols-2 gap-4 sm:gap-6 border-t border-border/60 pt-5 sm:pt-6">
+              <div className="space-y-3">
+                <h4 className="text-sm sm:text-base font-black text-foreground">What I promise</h4>
+                <ul className="space-y-2">
+                  {[
+                    { label: "Consistency.", text: "Posts go out on schedule, every week. That's the whole game." },
+                    { label: "Approval.", text: "Nothing posts without your sign-off. Ever." },
+                    { label: "Real.", text: "No bought followers, no fake engagement, no invented claims about your business." },
+                    { label: "Transparent.", text: "A monthly report with the actual numbers — good or bad." },
+                    { label: "Your voice.", text: "Posts sound like you, not like a robot." }
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-xs md:text-sm text-foreground/90">
+                      <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <span>
+                        <strong className="text-foreground">{item.label}</strong> {item.text}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-sm sm:text-base font-black text-foreground">What I don&apos;t promise</h4>
+                <ul className="space-y-2">
+                  {[
+                    "A specific number of leads, sales, or followers. Nobody honest can promise that.",
+                    "Google rankings. That's SEO — a different service, and it takes months.",
+                    "Viral posts. Virality isn't a strategy."
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-xs md:text-sm text-muted-foreground">
+                      <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* How It Works, Proof & Terms */}
+            <div className="grid md:grid-cols-2 gap-4 sm:gap-6 border-t border-border/60 pt-5 sm:pt-6">
+              <div className="space-y-3">
+                <h4 className="text-sm sm:text-base font-black text-foreground">How it works</h4>
+                <ol className="space-y-2">
+                  {[
+                    "We talk once about your business, your customers, and what you want people to know.",
+                    "I write the month's posts. You approve each one before it goes out.",
+                    "Posts go live on your schedule. The report lands at the end of the month.",
+                    "We adjust based on what actually worked."
+                  ].map((step, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-foreground/90">
+                      <span className="font-mono font-bold text-accent shrink-0">{idx + 1}.</span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h4 className="text-sm sm:text-base font-black text-foreground">Proof it works</h4>
+                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                    This is what I run for my own business. In one week, my LinkedIn post impressions went from 1,903 to 6,253, and profile viewers went from 19 to 109. One post — a WordPress-to-Next.js rebuild story — hit 2,718 impressions and 14 comments, mostly from people who&apos;d never seen my page before.
+                  </p>
+                  <p className="text-xs md:text-sm font-semibold text-foreground">
+                    Same engine. Your business.
+                  </p>
+                </div>
+
+                <div className="space-y-2 border-t border-border/60 pt-3">
+                  <h4 className="text-sm sm:text-base font-black text-foreground">Terms</h4>
+                  <ul className="space-y-1.5 text-xs md:text-sm text-muted-foreground">
+                    <li>Add-on to a RottyM website. Pairs with Ongoing Care ($99–$250/mo), which keeps the site itself running.</li>
+                    <li>3-month start — content compounds over weeks, not days — then month-to-month, cancel anytime.</li>
+                    <li>You own everything: every post, every image, every word.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-6 sm:pt-8 relative z-10">
+            <Link
+              href="/contact"
+              className="w-full py-2.5 sm:py-3.5 px-4 sm:px-6 rounded-lg font-bold font-mono text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 flex items-center justify-center gap-2 transition-all"
+            >
+              <span>Add Content Engine</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
+            </Link>
+          </div>
         </div>
 
         {/* Laser Divider */}
