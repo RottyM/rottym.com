@@ -153,7 +153,7 @@ export default function Home() {
 
           <div className="relative w-full max-w-lg mx-auto lg:max-w-none">
             {/* Ambient Corner Glow */}
-            <div className="absolute -top-10 -right-10 w-48 h-48 bg-accent/20 dark:bg-accent/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-10 right-0 lg:-right-10 w-48 h-48 bg-accent/20 dark:bg-accent/15 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
             {/* Browser Frame */}
@@ -376,7 +376,7 @@ export default function Home() {
                 className="group relative p-6 sm:p-8 rounded-lg border border-slate-200/90 dark:border-border/80 hover:border-accent/50 bg-white dark:bg-card/90 backdrop-blur-sm transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1 overflow-hidden"
               >
                 {/* Ambient Chromatic Corner Light */}
-                <div className="absolute -right-12 -top-12 w-36 h-36 bg-accent/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
+                <div className="absolute right-0 lg:-right-12 -top-12 w-36 h-36 bg-accent/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
                 <div className={`w-12 h-12 rounded-lg ${service.bg} flex items-center justify-center ${service.accent} mb-6 group-hover:scale-110 transition-transform relative z-10`}>
                   {service.icon}
                 </div>
@@ -553,7 +553,7 @@ export default function Home() {
               >
                 {/* Ambient Chromatic Corner Light */}
                 <div
-                  className={`absolute -right-12 -top-12 w-36 h-36 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none ${pkg.featured ? 'bg-[#00D8F6]/20' : 'bg-accent/10'
+                  className={`absolute right-0 lg:-right-12 -top-12 w-36 h-36 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none ${pkg.featured ? 'bg-[#00D8F6]/20' : 'bg-accent/10'
                     }`}
                 />
                 <div className="space-y-4 relative z-10">

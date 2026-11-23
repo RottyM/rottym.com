@@ -1,19 +1,24 @@
 // src/components/Header.tsx
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTheme } from './ThemeProvider';
 import { Sun, Moon, Sparkles } from 'lucide-react';
 import RottyMLogo from './RottyMLogo';
 
 const emptySubscribe = () => () => {};
+const CAMPAIGN_ROUTES = ['/audit', '/wordpress-rebuild', '/start'];
 
 export default function Header() {
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
+
+  const isCampaignRoute = CAMPAIGN_ROUTES.some((route) => pathname === route || pathname?.startsWith(`${route}/`));
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
@@ -60,6 +65,10 @@ export default function Header() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [mobileMenuOpen]);
 
+  if (isCampaignRoute) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border shadow-sm transition-all">
       <div className="max-w-7xl mx-auto py-2.5 sm:py-3.5 px-4 sm:px-6 flex justify-between items-center">
@@ -79,7 +88,7 @@ export default function Header() {
             />
           </div>
         </Link>
-        <nav aria-label="Primary navigation" className="hidden md:flex gap-4 lg:gap-6 xl:gap-7 text-sm font-medium items-center">
+        <nav aria-label="Primary navigation" className="hidden lg:flex gap-4 lg:gap-6 xl:gap-7 text-sm font-medium items-center">
           <Link href="/" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">Home</Link>
           <Link href="/services" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">Services</Link>
           <Link href="/packages" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">Packages</Link>
@@ -99,7 +108,7 @@ export default function Header() {
           </button>
         </nav>
 
-        <div className="flex md:hidden items-center">
+        <div className="flex lg:hidden items-center">
           <button
             ref={menuButtonRef}
             className="p-2 -mr-1.5 text-foreground rounded-lg hover:bg-muted transition-colors"
@@ -119,7 +128,7 @@ export default function Header() {
         <div
           id="mobile-menu-navigation"
           ref={drawerRef}
-          className="md:hidden glass border-b border-border shadow-2xl animate-in slide-in-from-top duration-300 max-h-[calc(100dvh-4.5rem)] overflow-y-auto"
+          className="lg:hidden glass border-b border-border shadow-2xl animate-in slide-in-from-top duration-300 max-h-[calc(100dvh-4.5rem)] overflow-y-auto"
         >
           <nav aria-label="Mobile navigation" className="flex flex-col py-5 px-6 space-y-3.5 text-base font-semibold text-center">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Home</Link>

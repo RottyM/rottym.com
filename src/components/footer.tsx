@@ -1,10 +1,33 @@
 // src/components/footer.tsx
+'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Mail, MapPin, ArrowRight, ShieldCheck, LockOpen, CheckCircle2, CalendarCheck } from 'lucide-react';
 import RottyMLogo from './RottyMLogo';
 
+const CAMPAIGN_ROUTES = ['/audit', '/wordpress-rebuild', '/start'];
+
 export default function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+
+  if (CAMPAIGN_ROUTES.some((route) => pathname === route || pathname?.startsWith(`${route}/`))) {
+    return (
+      <footer className="border-t border-border/60 bg-muted/20 py-6 mt-12">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <p>© {currentYear} Rottman M. Mendez · Reston, VA</p>
+          <div className="flex flex-wrap items-center justify-center gap-5 font-semibold">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-accent" /> You own 100% of it
+            </span>
+            <span className="flex items-center gap-1.5">
+              <LockOpen className="w-3.5 h-3.5 text-accent" /> No lock-in
+            </span>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="bg-white dark:bg-card text-foreground border-t border-slate-200 dark:border-border mt-24 transition-colors">

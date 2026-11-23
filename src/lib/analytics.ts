@@ -25,11 +25,13 @@ export const trackEvent = ({
   category,
   label,
   value,
+  params,
 }: {
   action: string;
   category?: string;
   label?: string;
   value?: number;
+  params?: Record<string, string | number | undefined>;
 }) => {
   const gtag = getGtag();
   if (gtag) {
@@ -37,6 +39,7 @@ export const trackEvent = ({
       event_category: category,
       event_label: label,
       value: value,
+      ...params,
     });
   }
 };
