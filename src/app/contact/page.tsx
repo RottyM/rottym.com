@@ -11,6 +11,7 @@ export default function Contact() {
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedService, setSelectedService] = useState('Local Launchpad ($2,500 – $3,500)');
+  const [prefilledMessage, setPrefilledMessage] = useState('');
   const [attribution, setAttribution] = useState<{ source?: string; campaign?: string; ref?: string }>({});
 
   useEffect(() => {
@@ -36,8 +37,17 @@ export default function Contact() {
           setSelectedService('Booking & Intake ($4,200 – $5,800)');
         } else if (serviceParam === 'performance-rebuild') {
           setSelectedService('Performance Rebuild ($3,800 – $6,500)');
+        } else if (serviceParam === 'fullstack-ai') {
+          setSelectedService('Full-Stack & AI Platform ($6,500 – $9,500+)');
         } else if (serviceParam === 'ongoing-care') {
           setSelectedService('Ongoing Care ($99 – $250/mo)');
+        }
+
+        if (params.get('from') === 'estimator') {
+          const savedScope = sessionStorage.getItem('rottym_estimator_scope');
+          if (savedScope) {
+            setPrefilledMessage(savedScope);
+          }
         }
       });
     }
@@ -209,6 +219,7 @@ export default function Contact() {
                   <option value="Local Launchpad ($2,500 – $3,500)">Local Launchpad ($2,500 – $3,500)</option>
                   <option value="Booking & Intake ($4,200 – $5,800)">Booking &amp; Intake ($4,200 – $5,800)</option>
                   <option value="Performance Rebuild ($3,800 – $6,500)">Performance Rebuild ($3,800 – $6,500)</option>
+                  <option value="Full-Stack & AI Platform ($6,500 – $9,500+)">Full-Stack &amp; AI Platform ($6,500 – $9,500+)</option>
                   <option value="Ongoing Care ($99 – $250/mo)">Ongoing Care ($99 – $250/mo)</option>
                 </optgroup>
                 <optgroup label="Custom & Full-Stack Capabilities">
@@ -223,7 +234,7 @@ export default function Contact() {
 
             <div className="space-y-1.5 sm:space-y-2">
               <label htmlFor="message" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Project Details</label>
-              <textarea id="message" name="message" rows={4} placeholder="Tell me about your project, goals, and timeline..." required className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm resize-none" />
+              <textarea id="message" name="message" rows={prefilledMessage ? 7 : 4} defaultValue={prefilledMessage} key={prefilledMessage ? 'prefilled' : 'empty'} placeholder="Tell me about your project, goals, and timeline..." required className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm resize-none" />
             </div>
 
             <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground py-3 sm:py-4 rounded-lg font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent disabled:opacity-50 disabled:hover:scale-100">

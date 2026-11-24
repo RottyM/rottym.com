@@ -92,6 +92,10 @@ export default function Header() {
           <Link href="/" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">Home</Link>
           <Link href="/services" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">Services</Link>
           <Link href="/packages" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">Packages</Link>
+          <Link href="/estimate" className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">
+            <Sparkles className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
+            <span>Estimator</span>
+          </Link>
           <Link href="/portfolio" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">Portfolio</Link>
           <Link href="/about" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">About</Link>
           <Link href="/resume" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">Resume</Link>
@@ -134,6 +138,10 @@ export default function Header() {
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Home</Link>
             <Link href="/services" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Services</Link>
             <Link href="/packages" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Packages</Link>
+            <Link href="/estimate" onClick={() => setMobileMenuOpen(false)} className="inline-flex items-center justify-center gap-1.5 text-foreground/80 hover:text-accent py-1 transition-colors">
+              <Sparkles className="w-4 h-4 text-accent" aria-hidden="true" />
+              <span>Scope Estimator &amp; AI</span>
+            </Link>
             <Link href="/portfolio" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Portfolio</Link>
             <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">About</Link>
             <Link href="/resume" onClick={() => setMobileMenuOpen(false)} className="text-foreground/80 hover:text-accent py-1 transition-colors">Resume</Link>

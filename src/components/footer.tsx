@@ -99,6 +99,12 @@ export default function Footer() {
             <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Solutions</h3>
             <ul className="space-y-1 text-sm font-medium">
               <li>
+                <Link href="/estimate" className="inline-flex items-center gap-1.5 min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
+                  Scope Estimator &amp; AI
+                  <span className="text-[10px] font-black uppercase px-1.5 py-0.5 bg-accent/10 text-accent rounded">AI</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/packages#local-launchpad" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
                   Local Launchpad ($2.5k–$3.5k)
                 </Link>

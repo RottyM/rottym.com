@@ -172,12 +172,19 @@ export default function PackagesPage() {
             </p>
           </div>
 
-          <div className="pt-1">
+          <div className="pt-1 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/contact"
               className="inline-flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-lg font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 w-full sm:w-auto border border-[#090D16] dark:border-transparent"
             >
               <span>Book a free 30-minute call</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
+            </Link>
+            <Link
+              href="/estimate"
+              className="inline-flex items-center justify-center gap-2 bg-accent/15 hover:bg-accent/25 text-foreground border border-accent dark:border-accent/70 px-5 sm:px-6 py-2.5 sm:py-3.5 rounded-lg font-mono text-xs sm:text-sm font-bold transition-all shadow-sm w-full sm:w-auto"
+            >
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
+              <span>Interactive Scope Estimator</span>
             </Link>
           </div>
         </div>
