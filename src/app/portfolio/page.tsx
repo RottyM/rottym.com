@@ -4,12 +4,17 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Sparkles, ArrowRight, Zap, CheckCircle2, Monitor, Layers, Server } from 'lucide-react';
+import { ArrowRight, Zap, CheckCircle2, Monitor, Layers, Server } from 'lucide-react';
 import { getProjectsSorted, Project } from '@/lib/projects';
+import { getLocalizedProject } from '@/lib/projects-es';
+import { useLang } from '@/components/ThemeProvider';
 
 export default function Portfolio() {
+  const { lang } = useLang();
+  const isEs = lang === 'es';
   const [activeFilter, setActiveFilter] = useState<string>('all');
-  const projects = getProjectsSorted();
+  const rawProjects = getProjectsSorted();
+  const projects = rawProjects.map((p) => getLocalizedProject(p, lang));
 
   const modernProjects = projects.filter((p) => p.section === 'modern');
   const enterpriseProjects = projects.filter((p) => p.section === 'enterprise');
@@ -22,15 +27,24 @@ export default function Portfolio() {
     return true;
   });
 
-  const formatRolePill = (role: string) => {
-    if (role.includes('Lead Full Stack Engineer')) return 'Lead Architect';
-    if (role.includes('Lead Front-End Engineer')) return 'Lead Front-End';
-    if (role.includes('Full-Stack Web Developer')) return 'Full-Stack';
-    if (role.includes('Full-Stack Engineer')) return 'Full-Stack';
-    if (role.includes('Web Developer & Designer')) return 'Designer & Dev';
-    if (role.includes('UX Designer & Prototyper')) return 'UX Designer';
-    if (role.includes('Concept & Architecture')) return 'Architecture';
-    return role;
+  const formatRolePill = (rawRole: string) => {
+    if (isEs) {
+      if (rawRole.includes('Líder') || rawRole.includes('Arquitecto')) return 'Arquitecto Líder';
+      if (rawRole.includes('Front-End')) return 'Front-End Líder';
+      if (rawRole.includes('Full Stack') || rawRole.includes('Full-Stack')) return 'Full-Stack';
+      if (rawRole.includes('Diseñador')) return 'Diseño y Dev';
+      if (rawRole.includes('UX')) return 'UX / UI';
+      if (rawRole.includes('Concepto')) return 'Arquitectura';
+      return rawRole;
+    }
+    if (rawRole.includes('Lead Full Stack Engineer')) return 'Lead Architect';
+    if (rawRole.includes('Lead Front-End Engineer')) return 'Lead Front-End';
+    if (rawRole.includes('Full-Stack Web Developer')) return 'Full-Stack';
+    if (rawRole.includes('Full-Stack Engineer')) return 'Full-Stack';
+    if (rawRole.includes('Web Developer & Designer')) return 'Designer & Dev';
+    if (rawRole.includes('UX Designer & Prototyper')) return 'UX Designer';
+    if (rawRole.includes('Concept & Architecture')) return 'Architecture';
+    return rawRole;
   };
 
   const renderCard = (project: Project) => (
@@ -38,14 +52,12 @@ export default function Portfolio() {
       key={project.slug}
       className="stitch-card group flex flex-col rounded-lg shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden relative border border-border before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/30 before:to-transparent"
     >
-      {/* Chromatic Corner Aura */}
       <div className="pointer-events-none absolute -right-12 -top-12 w-36 h-36 bg-accent/10 dark:bg-accent/15 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
 
-      {/* Thumbnail Image Container */}
       <Link
         href={`/portfolio/${project.slug}`}
         className="relative aspect-[16/10] bg-muted/50 overflow-hidden block select-none border-b border-border/60 group/img rounded-t-lg"
-        title={`View ${project.title} Case Study`}
+        title={isEs ? `Ver caso de estudio: ${project.title}` : `View ${project.title} Case Study`}
       >
         <Image
           src={project.img}
@@ -57,7 +69,6 @@ export default function Portfolio() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-black/30 opacity-30 group-hover/img:opacity-10 transition-opacity" />
 
-        {/* Top Atmospheric Glass Badges Overlay */}
         <div className="absolute top-3.5 left-3.5 right-3.5 sm:top-4 sm:left-4 sm:right-4 flex flex-wrap items-center justify-between gap-2 pointer-events-none z-10">
           <span className="min-h-6 sm:min-h-7 inline-flex items-center px-2.5 sm:px-3 py-0.5 rounded-lg text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider bg-background/80 dark:bg-slate-950/70 backdrop-blur-md text-foreground/90 border border-white/30 dark:border-white/15 shadow-md leading-snug">
             {project.tag}
@@ -69,7 +80,6 @@ export default function Portfolio() {
         </div>
       </Link>
 
-      {/* Card Body */}
       <div className="p-5 sm:p-8 flex-1 flex flex-col justify-between space-y-4 sm:space-y-5 relative z-10">
         <div className="space-y-2.5 sm:space-y-3">
           <div className="flex items-center justify-between gap-2">
@@ -79,29 +89,21 @@ export default function Portfolio() {
           </div>
 
           <h3 className="text-xl sm:text-2xl font-black text-foreground group-hover:text-accent transition-colors leading-tight">
-            <Link href={`/portfolio/${project.slug}`}>
-              {project.title}
-            </Link>
+            <Link href={`/portfolio/${project.slug}`}>{project.title}</Link>
           </h3>
 
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-medium">
-            {project.summary}
-          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-medium">{project.summary}</p>
 
-          {/* Before / After Callout for Migrations */}
           {project.beforeAfter && (
             <div className="p-3 sm:p-3.5 rounded-lg bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1">
               <div className="flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                <span>Outcome Highlight:</span>
+                <span>{isEs ? 'Resultado Clave:' : 'Outcome Highlight:'}</span>
               </div>
-              <p className="text-foreground/90 font-medium">
-                {project.beforeAfter.result}
-              </p>
+              <p className="text-foreground/90 font-medium">{project.beforeAfter.result}</p>
             </div>
           )}
 
-          {/* Highlight Metric Pill */}
           {!project.beforeAfter && project.highlightMetric && (
             <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-muted/80 rounded-lg text-[11px] sm:text-xs font-mono font-semibold text-foreground/90 border border-border/80">
               <Zap className="w-3 h-3 text-accent shrink-0" />
@@ -110,7 +112,6 @@ export default function Portfolio() {
           )}
         </div>
 
-        {/* Footer: Tech Stack & Link */}
         <div className="space-y-3 sm:space-y-4 pt-3.5 sm:pt-4 border-t border-border/60">
           <div className="flex flex-wrap gap-1.5">
             {project.tech.slice(0, 3).map((t) => (
@@ -130,10 +131,11 @@ export default function Portfolio() {
 
           <Link
             href={`/portfolio/${project.slug}`}
-            aria-label={`View Architecture & Details — ${project.title}`}
+            aria-label={`${isEs ? 'Ver arquitectura y detalles' : 'View Architecture & Details'} — ${project.title}`}
             className="inline-flex items-center gap-2 min-h-[28px] py-1 text-xs sm:text-sm font-bold text-foreground group-hover:text-accent group-hover:gap-3 transition-all"
           >
-            <span>View Architecture &amp; Details</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
+            <span>{isEs ? 'Ver Arquitectura y Detalles' : 'View Architecture & Details'}</span>{' '}
+            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current" />
           </Link>
         </div>
       </div>
@@ -142,10 +144,7 @@ export default function Portfolio() {
 
   return (
     <section className="relative pt-10 pb-24 min-h-screen overflow-hidden">
-      {/* Background Dot-Grid Texture */}
       <div className="absolute inset-0 bg-dot-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)] pointer-events-none -z-10" />
-
-      {/* Atmospheric Radial Ambient Lighting */}
       <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-accent/10 via-sky-500/5 to-transparent dark:from-accent/15 dark:via-emerald-500/10 dark:to-transparent blur-[130px] rounded-full -z-10" />
       <div className="pointer-events-none absolute top-1/3 -left-32 w-[420px] h-[420px] bg-accent/5 rounded-full blur-[110px] -z-10" />
 
@@ -154,45 +153,60 @@ export default function Portfolio() {
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-sm backdrop-blur-md border border-border max-w-full">
             <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent shrink-0" />
-            <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">PRODUCTION SYSTEMS</span>
+            <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">
+              {isEs ? 'SISTEMAS EN PRODUCCIÓN' : 'PRODUCTION SYSTEMS'}
+            </span>
             <span className="text-border" aria-hidden="true">|</span>
-            <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">CASE STUDIES</span>
+            <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">
+              {isEs ? 'CASOS DE ÉXITO' : 'CASE STUDIES'}
+            </span>
           </div>
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
-            Selected Work &amp; <span className="tech-gradient-text">Case Studies</span>
+            {isEs ? 'Proyectos y ' : 'Selected Work & '}
+            <span className="tech-gradient-text">{isEs ? 'Casos de Éxito' : 'Case Studies'}</span>
           </h1>
           <p className="text-base sm:text-xl text-muted-foreground font-medium leading-relaxed max-w-2xl mx-auto">
-            A crawlable archive of custom web platforms, WordPress-to-Next.js headless migrations, and enterprise systems built for speed, reliability, and scale.
+            {isEs
+              ? 'Archivo de plataformas web a la medida, migraciones headless de WordPress a Next.js y sistemas empresariales diseñados para máxima velocidad y estabilidad.'
+              : 'A crawlable archive of custom web platforms, WordPress-to-Next.js headless migrations, and enterprise systems built for speed, reliability, and scale.'}
           </p>
         </div>
 
-        {/* Quick-Skim Proof Bar for Recruiters & Clients */}
+        {/* Proof Bar */}
         <div className="stitch-card grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 p-4 sm:p-6 rounded-lg shadow-sm text-center relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
           <div className="p-2 md:border-r md:border-border/60">
             <p className="text-xl sm:text-2xl md:text-3xl font-black font-mono text-accent">100M+</p>
-            <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold mt-1">Subscribers Supported (Disney Streaming)</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold mt-1">
+              {isEs ? 'Suscriptores soportados (Disney Streaming)' : 'Subscribers Supported (Disney Streaming)'}
+            </p>
           </div>
           <div className="p-2 md:border-r md:border-border/60">
             <p className="text-xl sm:text-2xl md:text-3xl font-black font-mono text-accent">$3B+</p>
-            <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold mt-1">Grants Processed (FEMA Modernization)</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold mt-1">
+              {isEs ? 'Fondos procesados (Modernización FEMA)' : 'Grants Processed (FEMA Modernization)'}
+            </p>
           </div>
           <div className="p-2 md:border-r md:border-border/60">
             <p className="text-xl sm:text-2xl md:text-3xl font-black font-mono text-emerald-700 dark:text-emerald-400">99/100</p>
-            <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold mt-1">Lighthouse Score on Headless Rebuilds</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold mt-1">
+              {isEs ? 'Lighthouse en migraciones modernas' : 'Lighthouse Score on Headless Rebuilds'}
+            </p>
           </div>
           <div className="p-2">
             <p className="text-xl sm:text-2xl md:text-3xl font-black font-mono text-accent">&lt;350ms</p>
-            <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold mt-1">Average TTFB on Vercel Deployments</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold mt-1">
+              {isEs ? 'Tiempo de respuesta promedio en Vercel' : 'Average TTFB on Vercel Deployments'}
+            </p>
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div role="tablist" aria-label="Project category filters" className="flex flex-wrap items-center justify-center gap-2 pt-2">
+        <div role="tablist" aria-label={isEs ? 'Filtros de categoría de proyectos' : 'Project category filters'} className="flex flex-wrap items-center justify-center gap-2 pt-2">
           {[
-            { id: 'all', label: `All Projects (${projects.length})` },
-            { id: 'nextjs', label: 'Next.js & Cloud Platforms' },
-            { id: 'wordpress', label: 'WordPress Internals & Migrations' },
-            { id: 'enterprise', label: 'Enterprise & Scale' },
+            { id: 'all', label: isEs ? `Todos (${projects.length})` : `All Projects (${projects.length})` },
+            { id: 'nextjs', label: isEs ? 'Next.js y Nube' : 'Next.js & Cloud Platforms' },
+            { id: 'wordpress', label: isEs ? 'WordPress y Migraciones' : 'WordPress Internals & Migrations' },
+            { id: 'enterprise', label: isEs ? 'Escala Empresarial' : 'Enterprise & Scale' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -213,19 +227,20 @@ export default function Portfolio() {
         {/* Content Section(s) */}
         {activeFilter === 'all' ? (
           <div className="space-y-16">
-            {/* Top Section: Modern Web Platforms & Client Systems */}
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/80 pb-4">
                 <div>
                   <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
-                    Modern Web Platforms &amp; Client Systems
+                    {isEs ? 'Plataformas Web Modernas y Sistemas de Clientes' : 'Modern Web Platforms & Client Systems'}
                   </h2>
                   <p className="text-sm text-muted-foreground font-medium mt-1">
-                    Recent headless Next.js platforms, client portals, and WordPress migration architectures.
+                    {isEs
+                      ? 'Plataformas recientes en Next.js, portales para clientes y migraciones desde WordPress.'
+                      : 'Recent headless Next.js platforms, client portals, and WordPress migration architectures.'}
                   </p>
                 </div>
                 <span className="text-xs font-bold text-accent uppercase tracking-wider shrink-0">
-                  {modernProjects.length} Projects
+                  {modernProjects.length} {isEs ? 'Proyectos' : 'Projects'}
                 </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -233,20 +248,25 @@ export default function Portfolio() {
               </div>
             </div>
 
-            {/* Section Divider: Enterprise & Earlier Career Work */}
             <div className="pt-10 space-y-6">
               <div className="p-8 md:p-10 rounded-lg bg-muted/40 border border-border space-y-3">
                 <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-md backdrop-blur-md border border-border max-w-full">
                   <Server className="w-3.5 h-3.5 text-accent shrink-0" />
-                  <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">ENTERPRISE SYSTEMS</span>
+                  <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">
+                    {isEs ? 'SISTEMAS EMPRESARIALES' : 'ENTERPRISE SYSTEMS'}
+                  </span>
                   <span className="text-border" aria-hidden="true">|</span>
-                  <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">LARGE-SCALE</span>
+                  <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">
+                    {isEs ? 'GRAN ESCALA' : 'LARGE-SCALE'}
+                  </span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
-                  Enterprise &amp; Large-Scale Systems
+                  {isEs ? 'Sistemas Empresariales y de Gran Escala' : 'Enterprise & Large-Scale Systems'}
                 </h2>
                 <p className="text-muted-foreground text-sm md:text-base font-medium leading-relaxed max-w-3xl">
-                  Name-brand scale proof from high-traffic publishing, government platforms, and nonprofit e-commerce — the standards behind the local client work above.
+                  {isEs
+                    ? 'Trayectoria en medios de alto tráfico, plataformas de gobierno y comercio electrónico sin fines de lucro — los estándares detrás de cada sitio local que construimos.'
+                    : 'Name-brand scale proof from high-traffic publishing, government platforms, and nonprofit e-commerce — the standards behind the local client work above.'}
                 </p>
               </div>
 
@@ -256,17 +276,18 @@ export default function Portfolio() {
             </div>
           </div>
         ) : (
-          /* Filtered View: Single Unified Grid */
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-border/80 pb-4">
               <h2 className="text-xl md:text-2xl font-black text-foreground capitalize">
-                Showing {filteredProjects.length} Result{filteredProjects.length !== 1 ? 's' : ''}
+                {isEs
+                  ? `Mostrando ${filteredProjects.length} resultado${filteredProjects.length !== 1 ? 's' : ''}`
+                  : `Showing ${filteredProjects.length} Result${filteredProjects.length !== 1 ? 's' : ''}`}
               </h2>
               <button
                 onClick={() => setActiveFilter('all')}
                 className="text-xs font-bold text-accent hover:underline cursor-pointer"
               >
-                Clear Filter
+                {isEs ? 'Limpiar filtro' : 'Clear Filter'}
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -275,30 +296,32 @@ export default function Portfolio() {
           </div>
         )}
 
-        {/* Laser Divider */}
         <div className="laser-divider my-10" />
 
         {/* Bottom CTA */}
         <div className="p-10 md:p-14 rounded-lg glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
           <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent/15 rounded-full blur-3xl" />
           <h2 className="text-3xl md:text-4xl font-black text-foreground relative z-10">
-            Have a project or migration in mind? Let&apos;s talk scope.
+            {isEs ? '¿Tienes un proyecto o migración en mente? Hablemos de alcance.' : "Have a project or migration in mind? Let's talk scope."}
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto font-medium text-base md:text-lg relative z-10 leading-relaxed">
-            Fixed pricing after a free 30-minute call. I build high-performance platforms with zero runaway hourly surprises.
+            {isEs
+              ? 'Precio fijo después de una llamada gratis de 30 minutos. Plataformas veloces sin sorpresas por horas extras.'
+              : 'Fixed pricing after a free 30-minute call. I build high-performance platforms with zero runaway hourly surprises.'}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 relative z-10 pt-2 w-full sm:w-auto">
             <Link
               href="/contact"
               className="inline-flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-black text-sm sm:text-base hover:scale-105 transition-transform shadow-lg shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent"
             >
-              <span>Book a free 30-minute call</span> <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#00D8F6] dark:text-current" />
+              <span>{isEs ? 'Agenda 30 min gratis' : 'Book a free 30-minute call'}</span>{' '}
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#00D8F6] dark:text-current" />
             </Link>
             <Link
               href="/packages"
               className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300/80 shadow-sm dark:bg-card dark:text-foreground dark:border-border dark:hover:bg-muted/80 dark:hover:border-accent/40 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base transition-all"
             >
-              View Fixed Packages &amp; Pricing
+              {isEs ? 'Ver Paquetes y Precios Fijos' : 'View Fixed Packages & Pricing'}
             </Link>
           </div>
         </div>

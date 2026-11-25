@@ -17,36 +17,49 @@ import CampaignHeader from '@/components/CampaignHeader';
 import LeadFormStatus from '@/components/LeadFormStatus';
 import { useLeadForm } from '@/hooks/useLeadForm';
 import { trackEvent } from '@/lib/analytics';
+import { useLang } from '@/components/ThemeProvider';
 
 const ACTION_CARDS = [
   {
-    badge: 'Free Video Breakdown',
-    title: 'Free 3-Minute Website Audit',
-    subtitle: 'Send your URL and get a plain-English recording of speed bottlenecks and mobile leaks.',
+    badge: { en: 'Free Video Breakdown', es: 'Video Gratis de 3 Minutos' },
+    title: { en: 'Free 3-Minute Website Audit', es: 'Auditoría Gratuita de Tu Sitio Web' },
+    subtitle: {
+      en: 'Send your URL and get a plain-English recording of speed bottlenecks and mobile leaks.',
+      es: 'Envía tu enlace y recibe un video claro explicando qué frena tu página y dónde pierdes clientes.',
+    },
     href: '/audit',
     icon: Gauge,
     highlight: true,
   },
   {
-    badge: 'Transparent Rates',
-    title: 'Packages & Upfront Pricing',
-    subtitle: 'Fixed-scope builds from $2,500 — Local Launchpad, Booking & Intake, and Performance Rebuild.',
+    badge: { en: 'Transparent Rates', es: 'Precios Claros' },
+    title: { en: 'Packages & Upfront Pricing', es: 'Paquetes y Precios Fijos' },
+    subtitle: {
+      en: 'Fixed-scope builds from $2,500 — Local Launchpad, Booking & Intake, and Performance Rebuild.',
+      es: 'Proyectos con alcance fijo desde $2,500 — Lanzamiento Local, Citas y Registro, y Migración.',
+    },
     href: '/packages',
     icon: Boxes,
     highlight: false,
   },
   {
-    badge: 'Direct Calendar',
-    title: 'Book a Free 30-Minute Call',
-    subtitle: 'Zero sales pressure. Talk scope, timelines, and fixed pricing directly with Rottman.',
+    badge: { en: 'Direct Calendar', es: 'Cita Directa' },
+    title: { en: 'Book a Free 30-Minute Call', es: 'Agenda una Llamada Gratis de 30 Min' },
+    subtitle: {
+      en: 'Zero sales pressure. Talk scope, timelines, and fixed pricing directly with Rottman.',
+      es: 'Sin presión de ventas. Habla directo con Rottman sobre alcance, tiempos y presupuesto fijo.',
+    },
     href: '/contact',
     icon: CalendarCheck,
     highlight: false,
   },
   {
-    badge: 'Proven Outcomes',
-    title: 'Case Studies & Client Portals',
-    subtitle: "See live work for Men Talking LLC, Rebecca's Cleaning, and Northern Virginia Writers Club.",
+    badge: { en: 'Proven Outcomes', es: 'Resultados Reales' },
+    title: { en: 'Case Studies & Client Portals', es: 'Casos de Éxito y Portales' },
+    subtitle: {
+      en: "See live work for Men Talking LLC, Rebecca's Cleaning, and Northern Virginia Writers Club.",
+      es: "Conoce proyectos reales para Men Talking LLC, Rebecca's Cleaning y Northern Virginia Writers Club.",
+    },
     href: '/portfolio',
     icon: Briefcase,
     highlight: false,
@@ -54,6 +67,8 @@ const ACTION_CARDS = [
 ];
 
 export default function StartPage() {
+  const { lang } = useLang();
+  const isEs = lang === 'es';
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [email, setEmail] = useState('');
 
@@ -85,11 +100,11 @@ export default function StartPage() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-accent">
               <MapPin className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              Reston, VA · Northern Virginia
+              {isEs ? 'Reston, VA · Norte de Virginia' : 'Reston, VA · Northern Virginia'}
             </span>
             <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
-              Accepting Projects
+              {isEs ? 'Aceptando Proyectos' : 'Accepting Projects'}
             </span>
           </div>
 
@@ -98,25 +113,29 @@ export default function StartPage() {
               Rottman M. Mendez
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-medium">
-              I build fast, modern websites for Northern Virginia businesses — restaurants, contractors, authors, shops, nonprofits, you name it — with online booking, quote forms, and custom workflows built in.{' '}
-              <strong className="text-foreground font-semibold">From $2,500, and you own 100% of it.</strong>
+              {isEs
+                ? 'Construyo sitios web rápidos y modernos para negocios del Norte de Virginia — restaurantes, contratistas, autores, tiendas y organizaciones — con reservas en línea, formularios de cotización y flujos a la medida. '
+                : 'I build fast, modern websites for Northern Virginia businesses — restaurants, contractors, authors, shops, nonprofits, you name it — with online booking, quote forms, and custom workflows built in. '}
+              <strong className="text-foreground font-semibold">
+                {isEs ? 'Desde $2,500, y eres dueño al 100%.' : 'From $2,500, and you own 100% of it.'}
+              </strong>
             </p>
           </div>
         </section>
 
         {/* Stacked High-Contrast Action Cards */}
-        <nav aria-label="Primary actions" className="space-y-3">
+        <nav aria-label={isEs ? 'Acciones principales' : 'Primary actions'} className="space-y-3">
           {ACTION_CARDS.map((card) => {
             const Icon = card.icon;
             return (
               <Link
-                key={card.title}
+                key={card.href}
                 href={card.href}
                 onClick={() =>
                   trackEvent({
                     action: 'select_content',
                     category: 'start_bridge_page',
-                    label: card.title,
+                    label: card.title.en,
                     params: { destination: card.href, page_path: '/start' },
                   })
                 }
@@ -144,7 +163,7 @@ export default function StartPage() {
                           : 'text-accent'
                       }`}
                     >
-                      {card.badge}
+                      {card.badge[lang]}
                     </span>
                     <h2
                       className={`text-base sm:text-lg font-black tracking-tight ${
@@ -153,7 +172,7 @@ export default function StartPage() {
                           : 'text-foreground group-hover:text-accent transition-colors'
                       }`}
                     >
-                      {card.title}
+                      {card.title[lang]}
                     </h2>
                     <p
                       className={`text-xs sm:text-sm leading-snug ${
@@ -162,7 +181,7 @@ export default function StartPage() {
                           : 'text-muted-foreground'
                       }`}
                     >
-                      {card.subtitle}
+                      {card.subtitle[lang]}
                     </p>
                   </div>
                 </div>
@@ -187,13 +206,15 @@ export default function StartPage() {
           >
             <div className="space-y-1">
               <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">
-                Quick-Audit Intake
+                {isEs ? 'Auditoría Rápida' : 'Quick-Audit Intake'}
               </span>
               <h2 className="text-lg sm:text-xl font-black text-foreground">
-                Request Your Free 3-Minute Audit
+                {isEs ? 'Solicita Tu Auditoría Gratis de 3 Minutos' : 'Request Your Free 3-Minute Audit'}
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Drop your URL and email — I&apos;ll send a personalized video breakdown within 1 business day.
+                {isEs
+                  ? 'Deja tu URL y correo — te enviaré un análisis personalizado en video en 1 día hábil.'
+                  : "Drop your URL and email — I'll send a personalized video breakdown within 1 business day."}
               </p>
             </div>
 
@@ -203,7 +224,7 @@ export default function StartPage() {
                   htmlFor="start-url"
                   className="block text-[11px] font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono"
                 >
-                  Website URL
+                  {isEs ? 'Tu Sitio Web (URL)' : 'Website URL'}
                 </label>
                 <div className="relative">
                   <Globe className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
@@ -214,7 +235,7 @@ export default function StartPage() {
                     required
                     value={websiteUrl}
                     onChange={(e) => setWebsiteUrl(e.target.value)}
-                    placeholder="https://yoursite.com"
+                    placeholder={isEs ? 'https://tunegocio.com' : 'https://yoursite.com'}
                     className="w-full pl-9 pr-3 py-3 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm"
                   />
                 </div>
@@ -225,7 +246,7 @@ export default function StartPage() {
                   htmlFor="start-email"
                   className="block text-[11px] font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono"
                 >
-                  Email
+                  {isEs ? 'Correo electrónico' : 'Email'}
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
@@ -236,7 +257,7 @@ export default function StartPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@company.com"
+                    placeholder={isEs ? 'tu@negocio.com' : 'you@company.com'}
                     className="w-full pl-9 pr-3 py-3 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm"
                   />
                 </div>
@@ -248,13 +269,25 @@ export default function StartPage() {
               disabled={isSubmitting}
               className="group w-full flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] py-3 px-5 rounded-lg font-bold font-mono text-xs sm:text-sm hover:scale-[1.01] transition-all shadow-md disabled:opacity-50"
             >
-              <span>{isSubmitting ? 'Sending...' : 'Send My Free Audit'}</span>
+              <span>
+                {isSubmitting
+                  ? isEs
+                    ? 'Enviando...'
+                    : 'Sending...'
+                  : isEs
+                  ? 'Enviar Mi Auditoría Gratis'
+                  : 'Send My Free Audit'}
+              </span>
               <ArrowRight className="w-4 h-4 text-[#00D8F6] dark:text-current group-hover:translate-x-1 transition-transform" aria-hidden="true" />
             </button>
 
             <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground font-medium text-center">
               <ShieldCheck className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
-              <span>Delivered within 1 business day. No spam, no pitch deck.</span>
+              <span>
+                {isEs
+                  ? 'Entrega en 1 día hábil. Sin spam ni presentaciones de venta.'
+                  : 'Delivered within 1 business day. No spam, no pitch deck.'}
+              </span>
             </p>
 
             <LeadFormStatus status={status} isSuccess={isSuccess} />

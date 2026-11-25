@@ -1,9 +1,16 @@
+'use client';
+
+import { useLang } from './ThemeProvider';
+
 interface LeadFormStatusProps {
   status: string;
   isSuccess: boolean;
 }
 
 export default function LeadFormStatus({ status, isSuccess }: LeadFormStatusProps) {
+  const { lang } = useLang();
+  const isEs = lang === 'es';
+
   if (!status) return null;
 
   const isError = status.includes('Error');
@@ -27,7 +34,8 @@ export default function LeadFormStatus({ status, isSuccess }: LeadFormStatusProp
             href="mailto:rmendez@rottym.com?subject=Website%20Audit%20Request"
             className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity"
           >
-            Email rmendez@rottym.com Directly <span aria-hidden="true">→</span>
+            {isEs ? 'Escribir directo a rmendez@rottym.com' : 'Email rmendez@rottym.com Directly'}{' '}
+            <span aria-hidden="true">→</span>
           </a>
         </div>
       )}
