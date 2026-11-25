@@ -19,12 +19,12 @@ export default function CampaignHeader({ maxWidth = 'max-w-7xl' }: { maxWidth?: 
 
   return (
     <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border shadow-sm transition-all">
-      <div className={`${maxWidth} mx-auto py-2.5 sm:py-3.5 px-4 sm:px-6 flex justify-between items-center gap-2 sm:gap-3`}>
+      <div className={`${maxWidth} mx-auto py-2.5 sm:py-3.5 px-3.5 sm:px-6 flex justify-between items-center gap-2 sm:gap-3`}>
         <Link href="/" className="inline-flex items-center group shrink-0" aria-label={isEs ? 'Inicio Rottman M. Mendez' : 'Rottman M. Mendez Home'}>
-          <div className="sm:hidden" aria-hidden="true">
+          <div className="md:hidden" aria-hidden="true">
             <RottyMLogo variant="compact" size={38} animated={true} />
           </div>
-          <div className="hidden sm:inline-flex" aria-hidden="true">
+          <div className="hidden md:inline-flex" aria-hidden="true">
             <RottyMLogo variant="full" size={54} animated={true} />
           </div>
         </Link>

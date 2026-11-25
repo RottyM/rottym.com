@@ -75,15 +75,15 @@ export default function Home() {
         <div className="absolute top-0 right-0 -z-10 w-2/3 h-full bg-gradient-to-l from-accent/15 via-blue-500/10 to-transparent blur-3xl opacity-60 transition-colors" />
         <div className="absolute -top-24 -left-24 -z-10 w-[28rem] h-[28rem] bg-gradient-to-br from-sky-500/10 dark:from-emerald-500/10 via-accent/5 to-transparent rounded-full blur-3xl animate-pulse-soft transition-colors" />
 
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 lg:gap-14 items-start w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-8 lg:gap-14 items-start w-full">
           <motion.div
             initial={false}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="space-y-4 sm:space-y-5"
+            className="min-w-0 space-y-4 sm:space-y-5"
           >
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-sm backdrop-blur-md border border-border max-w-full">
-              <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">
+            <div className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 sm:gap-2 glass px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-sm backdrop-blur-md border border-border max-w-full">
+              <span className="font-mono text-[9px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold">
                 {isEs ? 'Al servicio del Norte de Virginia y más allá' : 'Serving Northern Virginia and Beyond'}
               </span>
               <span className="text-border hidden sm:inline" aria-hidden="true">·</span>
@@ -154,7 +154,7 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <div className="relative w-full max-w-lg mx-auto lg:max-w-none">
+          <div className="min-w-0 relative w-full max-w-lg mx-auto lg:max-w-none">
             <div className="absolute -top-10 right-0 lg:-right-10 w-48 h-48 bg-accent/20 dark:bg-accent/15 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 

@@ -72,13 +72,13 @@ export default function ProjectCaseStudyClient({
 
         {/* Hero Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-md backdrop-blur-md border border-border max-w-full">
+          <div className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-md backdrop-blur-md border border-border max-w-full">
             <FileCode2 className="w-3.5 h-3.5 text-accent shrink-0" />
-            <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">
+            <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold">
               {project.category}
             </span>
-            <span className="text-border" aria-hidden="true">|</span>
-            <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">
+            <span className="text-border hidden sm:inline" aria-hidden="true">|</span>
+            <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase">
               {project.role}
             </span>
           </div>

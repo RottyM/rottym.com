@@ -77,17 +77,23 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border shadow-sm transition-all">
-      <div className="max-w-7xl mx-auto py-2.5 sm:py-3.5 px-4 sm:px-6 flex justify-between items-center gap-2">
-        <Link href="/" className="inline-flex items-center group" aria-label={isEs ? 'Inicio Rottman M. Mendez' : 'Rottman M. Mendez Home'}>
+      <div className="max-w-7xl mx-auto py-2.5 sm:py-3.5 px-3.5 sm:px-6 flex justify-between items-center gap-2">
+        <Link href="/" className="inline-flex items-center group min-w-0" aria-label={isEs ? 'Inicio Rottman M. Mendez' : 'Rottman M. Mendez Home'}>
           <div className="sm:hidden" aria-hidden="true">
-            <RottyMLogo variant="full" size={40} animated={true} />
+            <RottyMLogo variant="compact" size={38} animated={true} />
           </div>
-          <div className="hidden sm:inline-flex" aria-hidden="true">
+          <div className="hidden sm:inline-flex lg:hidden" aria-hidden="true">
+            <RottyMLogo variant="full" size={50} animated={true} />
+          </div>
+          <div className="hidden lg:inline-flex xl:hidden" aria-hidden="true">
+            <RottyMLogo variant="compact" size={44} animated={true} />
+          </div>
+          <div className="hidden xl:inline-flex" aria-hidden="true">
             <RottyMLogo variant="full" size={54} animated={true} />
           </div>
         </Link>
 
-        <nav aria-label={isEs ? 'Navegación principal' : 'Primary navigation'} className="hidden lg:flex gap-4 lg:gap-5 xl:gap-6 text-sm font-medium items-center">
+        <nav aria-label={isEs ? 'Navegación principal' : 'Primary navigation'} className="hidden lg:flex gap-3 xl:gap-6 text-[13px] xl:text-sm font-medium items-center shrink-0">
           <Link href="/" className="text-slate-600 hover:text-slate-950 dark:text-foreground/80 dark:hover:text-accent transition-colors whitespace-nowrap">
             {isEs ? 'Inicio' : 'Home'}
           </Link>
@@ -108,7 +114,7 @@ export default function Header() {
           </Link>
           <Link
             href="/contact"
-            className="inline-flex items-center justify-center px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground rounded-lg hover:scale-105 transition-all shadow-sm font-semibold font-mono text-xs uppercase tracking-wider whitespace-nowrap"
+            className="inline-flex items-center justify-center px-3 xl:px-4 py-1.5 xl:py-2 bg-slate-950 hover:bg-slate-800 text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground rounded-lg hover:scale-105 transition-all shadow-sm font-semibold font-mono text-xs uppercase tracking-wider whitespace-nowrap"
           >
             {isEs ? 'Agenda una llamada' : 'Book a call'}
           </Link>
