@@ -14,7 +14,14 @@ function toSignalPayload(item: PipelineCard): OpsSignalPayload | null {
   if (item.stage === 'posted') signal = 'posted';
   else if (item.readyForRotty || item.stage === 'approved') signal = 'ready-for-rotty';
   else if (item.marleyStatus === 'rejected') signal = 'marley-rejected';
-  else if (item.marleyStatus === 'approved' && item.stage === 'clearance') signal = 'marley-approved';
+  else if (
+    (item.marleyStatus === 'approved' && item.stage === 'clearance') ||
+    Boolean(item.verdictTag)
+  ) {
+    signal = item.verdictTag === 'SKIP' || item.verdictTag === 'REPEAT' || item.verdictTag === 'REJECTED'
+      ? 'marley-rejected'
+      : 'marley-approved';
+  }
 
   if (!signal) return null;
 
@@ -34,6 +41,10 @@ function toSignalPayload(item: PipelineCard): OpsSignalPayload | null {
     autoPostAllowed: false,
     marleyStatus: item.marleyStatus,
     marleyNote: item.marleyNote || null,
+    verdictTag: item.verdictTag || null,
+    photoStatus: item.photoStatus || null,
+    eventDate: item.eventDate || null,
+    unverifiedClaims: item.unverifiedClaims || [],
     approvedBy: item.approvedBy || null,
     draftCopy: item.draftCopy,
     links: item.links || null,

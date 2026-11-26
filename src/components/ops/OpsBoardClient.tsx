@@ -1195,7 +1195,17 @@ function PipelineCardTile({
       }`}
     >
       <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono">
-        <span className="px-1.5 py-0.5 rounded bg-muted text-foreground uppercase">{card.lane}</span>
+        <div className="flex items-center gap-1 min-w-0">
+          <span className="px-1.5 py-0.5 rounded bg-muted text-foreground uppercase">{card.lane}</span>
+          {card.verdictTag && (
+            <span className="px-1.5 py-0.5 rounded border border-border bg-card text-foreground/90 uppercase">
+              {card.verdictTag}
+            </span>
+          )}
+          {card.eventDate && (
+            <span className="text-muted-foreground truncate">{card.eventDate}</span>
+          )}
+        </div>
         {card.readyForRotty && card.stage !== 'posted' ? (
           <span className="px-1.5 py-0.5 rounded border border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
             Ready for Rotty
@@ -1217,11 +1227,14 @@ function PipelineCardTile({
         <p className="text-[11px] text-muted-foreground line-clamp-2">{card.note || card.marleyNote}</p>
       )}
 
-      {(card.discrepancies?.length || card.artifactsNeeded?.length) ? (
+      {(card.discrepancies?.length || card.unverifiedClaims?.length || card.artifactsNeeded?.length || card.flaggedNotes?.some((f) => f.startsWith('FLAG: Past event'))) ? (
         <div className="text-[10px] text-amber-600 dark:text-amber-300 flex items-center gap-1">
           <AlertTriangle className="w-3 h-3 shrink-0" />
           <span className="truncate">
-            {card.artifactsNeeded?.[0] || card.discrepancies?.[0]}
+            {card.artifactsNeeded?.[0] ||
+              card.unverifiedClaims?.[0] ||
+              card.discrepancies?.[0] ||
+              card.flaggedNotes?.find((f) => f.startsWith('FLAG: Past event'))}
           </span>
         </div>
       ) : null}

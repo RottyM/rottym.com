@@ -190,7 +190,7 @@ function CardEditorForm({
 
   return (
     <div className="space-y-4">
-      {(card.discrepancies?.length || card.artifactsNeeded?.length || card.flaggedNotes?.length) ? (
+      {(card.discrepancies?.length || card.unverifiedClaims?.length || card.artifactsNeeded?.length || card.flaggedNotes?.length) ? (
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs space-y-1">
           <div className="font-semibold text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
@@ -198,6 +198,9 @@ function CardEditorForm({
           </div>
           {card.discrepancies?.map((d, i) => (
             <p key={`d-${i}`} className="text-foreground/90">• Discrepancy: {d}</p>
+          ))}
+          {card.unverifiedClaims?.map((c, i) => (
+            <p key={`c-${i}`} className="text-foreground/90">• Unverified claim: {c}</p>
           ))}
           {card.artifactsNeeded?.map((a, i) => (
             <p key={`a-${i}`} className="text-foreground/90">• Artifact needed: {a}</p>

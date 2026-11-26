@@ -8,9 +8,14 @@ import {
   unauthorizedResponse,
 } from '@/lib/ops/auth';
 import {
+  applyEventDatePastFlag,
   cleanBotStringList,
+  findUnknownFields,
   laneToChannel,
+  normalizeEventDate,
   normalizeLane,
+  normalizeVerdictTag,
+  resolveEffectivePhotoStatus,
   syncVisualArtifactsNeeded,
 } from '@/lib/ops/drop-parser';
 import {
@@ -20,6 +25,41 @@ import {
   opsSetDoc,
 } from '@/lib/ops/firestore-rest';
 import type { ContentKind, PipelineCard, PipelineLane, PipelineLinks, PipelineStage } from '@/lib/ops/types';
+
+const ALLOWED_JOB_ITEM_FIELDS = new Set([
+  'id',
+  'clientId',
+  'title',
+  'lane',
+  'channel',
+  'contentType',
+  'stage',
+  'sourceUrl',
+  'sourceFile',
+  'assetFile',
+  'assetUrl',
+  'driveUrl',
+  'assetLink',
+  'imageUrl',
+  'assetSpec',
+  'artifactsNeeded',
+  'discrepancies',
+  'unverifiedClaims',
+  'photoStatus',
+  'eventDate',
+  'verdictTag',
+  'note',
+  'draftCopy',
+  'agentId',
+  'source',
+  'jobDate',
+  'links',
+  'externalPostUrl',
+  'readyForRotty',
+  'allowDuplicate',
+]);
+
+const ALLOWED_JOB_WRAPPER_FIELDS = new Set(['clientId', 'jobs']);
 
 const VALID_STAGES = new Set<PipelineStage>([
   'pulled',
@@ -121,8 +161,12 @@ export async function GET(request: Request) {
       if (needsWork === 'true') {
         const hasDisc = Boolean(item.discrepancies?.length);
         const hasArt = Boolean(item.artifactsNeeded?.length);
-        const needsSpecVisual = Boolean(item.assetSpec && !item.assetFile && !item.assetUrl);
-        if (!hasDisc && !hasArt && !needsSpecVisual) return false;
+        const hasClaims = Boolean(item.unverifiedClaims?.length);
+        const needsPhoto =
+          item.photoStatus === 'needed' ||
+          item.photoStatus === 'missing' ||
+          Boolean(item.assetSpec && !item.assetFile && !item.assetUrl);
+        if (!hasDisc && !hasArt && !hasClaims && !needsPhoto) return false;
       }
       return true;
     })
@@ -161,9 +205,40 @@ export async function POST(request: Request) {
     return forbiddenResponse();
   }
 
+  if (Array.isArray(body.jobs)) {
+    const wrapperUnknown = findUnknownFields(body, ALLOWED_JOB_WRAPPER_FIELDS);
+    if (wrapperUnknown.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Unknown wrapper field(s): ${wrapperUnknown.join(', ')}`,
+          unknownFields: wrapperUnknown,
+          allowedFields: Array.from(ALLOWED_JOB_WRAPPER_FIELDS),
+        },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+  }
+
   const inputs = Array.isArray(body.jobs) ? (body.jobs as Array<Record<string, unknown>>) : [body];
   if (inputs.length === 0 || inputs.length > 25) {
-    return NextResponse.json({ error: 'Provide 1 to 25 job items' }, { status: 400 });
+    return NextResponse.json({ error: 'Provide 1 to 25 job items' }, { status: 400, headers: NO_STORE_HEADERS });
+  }
+
+  for (const itemInput of inputs) {
+    if (!itemInput || typeof itemInput !== 'object' || Array.isArray(itemInput)) {
+      return NextResponse.json({ error: 'Each job item must be a JSON object' }, { status: 400, headers: NO_STORE_HEADERS });
+    }
+    const unknown = findUnknownFields(itemInput, ALLOWED_JOB_ITEM_FIELDS);
+    if (unknown.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Unknown field(s): ${unknown.join(', ')}${unknown.includes('url') ? ' (use "sourceUrl" instead of "url")' : ''}`,
+          unknownFields: unknown,
+          allowedFields: Array.from(ALLOWED_JOB_ITEM_FIELDS),
+        },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
   }
 
   await ensureOpsSeeded();
@@ -176,7 +251,7 @@ export async function POST(request: Request) {
   for (const itemInput of inputs) {
     const title = typeof itemInput.title === 'string' ? itemInput.title.trim().slice(0, 120) : '';
     if (!title) {
-      return NextResponse.json({ error: 'title is required on every job' }, { status: 400 });
+      return NextResponse.json({ error: 'title is required on every job' }, { status: 400, headers: NO_STORE_HEADERS });
     }
 
     const lane: PipelineLane = normalizeLane(
@@ -219,7 +294,7 @@ export async function POST(request: Request) {
               : { fb: externalPostUrl }
         : undefined);
 
-    const sourceUrl = sanitizeUrl(itemInput.sourceUrl || itemInput.url);
+    const sourceUrl = sanitizeUrl(itemInput.sourceUrl);
     const sourceFile =
       typeof itemInput.sourceFile === 'string' ? itemInput.sourceFile.trim().slice(0, 140) || undefined : undefined;
     const assetFile =
@@ -237,6 +312,27 @@ export async function POST(request: Request) {
       itemInput.discrepancies !== undefined
         ? cleanBotStringList(itemInput.discrepancies)
         : undefined;
+    const explicitClaims =
+      itemInput.unverifiedClaims !== undefined
+        ? cleanBotStringList(itemInput.unverifiedClaims)
+        : undefined;
+    const eventDate =
+      itemInput.eventDate !== undefined ? normalizeEventDate(itemInput.eventDate) : undefined;
+    if (typeof itemInput.eventDate === 'string' && itemInput.eventDate.trim() && !eventDate) {
+      return NextResponse.json(
+        { error: 'Invalid eventDate format. Expected YYYY-MM-DD.' },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+    const verdictTag =
+      itemInput.verdictTag !== undefined ? normalizeVerdictTag(itemInput.verdictTag) : undefined;
+    if (typeof itemInput.verdictTag === 'string' && itemInput.verdictTag.trim() && !verdictTag) {
+      return NextResponse.json(
+        { error: 'Invalid verdictTag. Allowed: NEW, FOLLOW-UP, REPEAT, SKIP, HOLD, REJECTED.' },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+
     const note =
       typeof itemInput.note === 'string' ? itemInput.note.trim().slice(0, 300) || undefined : undefined;
     const draftCopy = typeof itemInput.draftCopy === 'string' ? itemInput.draftCopy.slice(0, 2400) : '';
@@ -264,6 +360,7 @@ export async function POST(request: Request) {
       const effectiveAssetFile = assetFile || existing.assetFile;
       const effectiveAssetUrl = assetUrl || existing.assetUrl;
       const effectiveAssetSpec = assetSpec || existing.assetSpec;
+      const effectiveEventDate = eventDate || existing.eventDate;
       const wantsReady = itemInput.readyForRotty === true || requestedStage === 'approved';
 
       let nextStage: PipelineStage = existing.stage;
@@ -303,6 +400,17 @@ export async function POST(request: Request) {
         assetFile: effectiveAssetFile,
         assetUrl: effectiveAssetUrl,
         assetSpec: effectiveAssetSpec,
+        verdictTag: verdictTag || existing.verdictTag,
+        eventDate: effectiveEventDate,
+        photoStatus: resolveEffectivePhotoStatus({
+          explicit: itemInput.photoStatus,
+          existing: existing.photoStatus,
+          assetFile: effectiveAssetFile,
+          assetUrl: effectiveAssetUrl,
+          assetSpec: effectiveAssetSpec,
+        }),
+        unverifiedClaims:
+          explicitClaims !== undefined ? explicitClaims : existing.unverifiedClaims,
         artifactsNeeded: syncVisualArtifactsNeeded(
           existing.artifactsNeeded,
           explicitArtifacts,
@@ -314,7 +422,7 @@ export async function POST(request: Request) {
         note: note || existing.note,
         draftCopy: draftCopy.trim() ? draftCopy : existing.draftCopy,
         links: combinedLinks,
-        flaggedNotes: cleanedFlags.length > 0 ? cleanedFlags : undefined,
+        flaggedNotes: applyEventDatePastFlag(cleanedFlags, effectiveEventDate, nextStage),
         marleyStatus: nextStage === 'posted' ? 'approved' : existing.marleyStatus,
         approvedBy: nextStage === 'posted' ? existing.approvedBy || 'Rotty' : existing.approvedBy,
         updatedAt: now,
@@ -327,9 +435,9 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const flaggedNotes: string[] = [];
+    const baseFlags: string[] = [];
     if (!sourceUrl && safeStage !== 'posted' && safeStage !== 'archived') {
-      flaggedNotes.push('FLAG: Missing verified source URL — required before clearance.');
+      baseFlags.push('FLAG: Missing verified source URL — required before clearance.');
     }
 
     const contentType: ContentKind =
@@ -358,7 +466,7 @@ export async function POST(request: Request) {
       sourceUrl,
       note,
       draftCopy,
-      flaggedNotes: flaggedNotes.length > 0 ? flaggedNotes : undefined,
+      flaggedNotes: applyEventDatePastFlag(baseFlags, eventDate, safeStage),
       artifactsNeeded: syncVisualArtifactsNeeded(
         undefined,
         explicitArtifacts,
@@ -366,6 +474,15 @@ export async function POST(request: Request) {
         Boolean(assetFile || assetUrl)
       ),
       discrepancies: explicitDiscrepancies,
+      unverifiedClaims: explicitClaims,
+      verdictTag,
+      eventDate,
+      photoStatus: resolveEffectivePhotoStatus({
+        explicit: itemInput.photoStatus,
+        assetFile,
+        assetUrl,
+        assetSpec,
+      }),
       marleyStatus: safeStage === 'posted' ? 'approved' : 'pending',
       readyForRotty: false,
       approvedBy: safeStage === 'posted' ? 'Rotty' : undefined,

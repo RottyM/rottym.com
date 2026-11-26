@@ -6,7 +6,7 @@ import {
   resolveBotTargetClientId,
   unauthorizedResponse,
 } from '@/lib/ops/auth';
-import { inferAgentId, sanitizeAvatarUrl } from '@/lib/ops/drop-parser';
+import { findUnknownFields, inferAgentId, sanitizeAvatarUrl } from '@/lib/ops/drop-parser';
 import {
   appendOpsActivity,
   ensureOpsSeeded,
@@ -20,6 +20,22 @@ const VALID_STATUSES = new Set<AgentStatus>(['active', 'stand_down', 'on_hold', 
 const NO_STORE_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
 };
+const ALLOWED_CREW_FIELDS = new Set([
+  'clientId',
+  'agentId',
+  'name',
+  'role',
+  'model',
+  'bio',
+  'avatarUrl',
+  'photoUrl',
+  'imageUrl',
+  'avatar',
+  'status',
+  'statusNote',
+  'usagePct',
+  'resetNote',
+]);
 
 export async function GET(request: Request) {
   const actor = await authorizeBotOrOpsUser(request, 'Bot');
@@ -67,6 +83,18 @@ async function handleCrewUpdate(request: Request) {
     body = (await request.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400, headers: NO_STORE_HEADERS });
+  }
+
+  const unknown = findUnknownFields(body as Record<string, unknown>, ALLOWED_CREW_FIELDS);
+  if (unknown.length > 0) {
+    return NextResponse.json(
+      {
+        error: `Unknown field(s): ${unknown.join(', ')}`,
+        unknownFields: unknown,
+        allowedFields: Array.from(ALLOWED_CREW_FIELDS),
+      },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
   }
 
   const clientId = resolveBotTargetClientId(actor, body.clientId);

@@ -6,7 +6,7 @@ import {
   resolveBotTargetClientId,
   unauthorizedResponse,
 } from '@/lib/ops/auth';
-import { extractChatMentions, inferAgentId } from '@/lib/ops/drop-parser';
+import { extractChatMentions, findUnknownFields, inferAgentId } from '@/lib/ops/drop-parser';
 import {
   ensureOpsSeeded,
   opsDeleteDoc,
@@ -19,6 +19,15 @@ import type { ChatMessage, PipelineCard } from '@/lib/ops/types';
 const NO_STORE_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
 };
+const ALLOWED_CHAT_FIELDS = new Set([
+  'clientId',
+  'text',
+  'message',
+  'to',
+  'mentions',
+  'jobId',
+  'replyToId',
+]);
 
 function normalizeMentionKey(raw: string): string {
   const clean = raw.toLowerCase().replace(/[^a-z0-9_-]+/g, '').trim();
@@ -86,6 +95,18 @@ export async function POST(request: Request) {
     body = (await request.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400, headers: NO_STORE_HEADERS });
+  }
+
+  const unknown = findUnknownFields(body as Record<string, unknown>, ALLOWED_CHAT_FIELDS);
+  if (unknown.length > 0) {
+    return NextResponse.json(
+      {
+        error: `Unknown field(s): ${unknown.join(', ')}`,
+        unknownFields: unknown,
+        allowedFields: Array.from(ALLOWED_CHAT_FIELDS),
+      },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
   }
 
   const clientId = resolveBotTargetClientId(actor, body.clientId);

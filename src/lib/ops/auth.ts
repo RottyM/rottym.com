@@ -147,11 +147,21 @@ export interface BotActor {
   user?: VerifiedOpsUser;
 }
 
+function formatBotKeyName(rawKey: string): string {
+  const norm = rawKey.toUpperCase();
+  if (norm === 'CHEAT_CODE' || norm === 'CHEATCODE') return 'Cheat Code';
+  return rawKey
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+}
+
 /**
  * Authorizes either:
- * 1) A bot presenting Bearer WEBHOOK_SECRET (global) or WEBHOOK_SECRET_<CLIENT_ID> (scoped),
- *    paired with X-Bot-Name header; OR
- * 2) An authenticated Firebase user calling from /ops.
+ * 1) A per-bot token (`WEBHOOK_SECRET_BOT_<BOT>` or `WEBHOOK_SECRET_<CLIENT>_BOT_<BOT>`),
+ * 2) A shared bot token (`WEBHOOK_SECRET` or `WEBHOOK_SECRET_<CLIENT_ID>`) + `X-Bot-Name`, OR
+ * 3) An authenticated Firebase user calling from /ops.
  */
 export async function authorizeBotOrOpsUser(
   request: Request,
@@ -167,13 +177,34 @@ export async function authorizeBotOrOpsUser(
     .replace(/[^\w\s.-]/g, '')
     .slice(0, 32) || fallbackBotName;
 
+  for (const [key, val] of Object.entries(process.env)) {
+    if (!val?.trim()) continue;
+    if (key.startsWith('WEBHOOK_SECRET_BOT_')) {
+      if (timingSafeMatch(provided, val.trim())) {
+        const mapped = formatBotKeyName(key.slice('WEBHOOK_SECRET_BOT_'.length));
+        return { kind: 'bot', actorName: mapped || botName, scopedClientId: null };
+      }
+    } else if (key.startsWith('WEBHOOK_SECRET_') && key.includes('_BOT_')) {
+      const idx = key.indexOf('_BOT_');
+      const clientPart = key.slice('WEBHOOK_SECRET_'.length, idx);
+      const botPart = key.slice(idx + '_BOT_'.length);
+      if (clientPart && botPart && timingSafeMatch(provided, val.trim())) {
+        return {
+          kind: 'bot',
+          actorName: formatBotKeyName(botPart) || botName,
+          scopedClientId: clientPart.toLowerCase().replace(/_/g, '-'),
+        };
+      }
+    }
+  }
+
   const globalSecret = process.env.WEBHOOK_SECRET?.trim();
   if (globalSecret && timingSafeMatch(provided, globalSecret)) {
     return { kind: 'bot', actorName: botName, scopedClientId: null };
   }
 
   for (const [key, val] of Object.entries(process.env)) {
-    if (!key.startsWith('WEBHOOK_SECRET_') || !val?.trim()) continue;
+    if (!key.startsWith('WEBHOOK_SECRET_') || key.includes('_BOT_') || !val?.trim()) continue;
     if (timingSafeMatch(provided, val.trim())) {
       const clientSlug = key.slice('WEBHOOK_SECRET_'.length).toLowerCase().replace(/_/g, '-');
       return { kind: 'bot', actorName: botName, scopedClientId: clientSlug };
@@ -195,13 +226,17 @@ export async function authorizeBotOrOpsUser(
 
 export function isBotJobOwner(
   actor: BotActor,
-  card: { agentId?: string; source?: string }
+  card: { agentId?: string; source?: string; contentType?: string }
 ): boolean {
   if (actor.user) return true;
   const norm = (v?: string) => (v || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
   const caller = norm(actor.actorName);
   if (!caller || caller === 'bot') return false;
-  return caller === norm(card.agentId) || caller === norm(card.source);
+  const cardAgent = norm(card.agentId);
+  const cardSource = norm(card.source);
+  if (cardAgent === 'drivebridge' || cardSource.startsWith('drive')) return true;
+  if (card.contentType === 'image' && caller === 'pixel') return true;
+  return caller === cardAgent || caller === cardSource;
 }
 
 export function resolveBotTargetClientId(actor: BotActor, requestedClientId?: string | null): string | null {

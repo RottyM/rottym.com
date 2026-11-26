@@ -3,6 +3,8 @@ import type {
   ChannelId,
   ContentKind,
   GateState,
+  MarleyVerdictTag,
+  PhotoStatus,
   PipelineLane,
   PipelineStage,
 } from './types';
@@ -712,4 +714,91 @@ export function syncVisualArtifactsNeeded(
   );
   if (alreadyListed) return current;
   return [...current, `Visual needed (${assetSpec})`];
+}
+
+const VALID_VERDICT_TAGS = new Set<MarleyVerdictTag>([
+  'NEW',
+  'FOLLOW-UP',
+  'REPEAT',
+  'SKIP',
+  'HOLD',
+  'REJECTED',
+]);
+
+const VALID_PHOTO_STATUSES = new Set<PhotoStatus>([
+  'needed',
+  'missing',
+  'attached',
+  'verified',
+  'not_needed',
+]);
+
+export function findUnknownFields(
+  obj: Record<string, unknown>,
+  allowed: Set<string>
+): string[] {
+  return Object.keys(obj).filter((k) => !allowed.has(k));
+}
+
+export function normalizeVerdictTag(raw: unknown): MarleyVerdictTag | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const upper = raw.trim().toUpperCase().replace(/\s+/g, '-');
+  if (upper === 'FOLLOWUP') return 'FOLLOW-UP';
+  return VALID_VERDICT_TAGS.has(upper as MarleyVerdictTag)
+    ? (upper as MarleyVerdictTag)
+    : undefined;
+}
+
+export function normalizePhotoStatus(raw: unknown): PhotoStatus | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const clean = raw.trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if (clean === 'none' || clean === 'na') return 'not_needed';
+  return VALID_PHOTO_STATUSES.has(clean as PhotoStatus)
+    ? (clean as PhotoStatus)
+    : undefined;
+}
+
+export function normalizeEventDate(raw: unknown): string | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const m = raw.trim().match(/^(\d{4}-\d{2}-\d{2})$/);
+  return m ? m[1] : undefined;
+}
+
+export function todayEasternYmd(): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+  } catch {
+    return new Date().toISOString().slice(0, 10);
+  }
+}
+
+export function resolveEffectivePhotoStatus(opts: {
+  explicit?: unknown;
+  existing?: PhotoStatus;
+  assetFile?: string;
+  assetUrl?: string;
+  assetSpec?: string;
+}): PhotoStatus | undefined {
+  const parsed = normalizePhotoStatus(opts.explicit);
+  if (parsed) return parsed;
+  if (opts.assetFile || opts.assetUrl) {
+    return opts.existing === 'verified' ? 'verified' : 'attached';
+  }
+  if (opts.existing) return opts.existing;
+  if (opts.assetSpec) return 'needed';
+  return undefined;
+}
+
+export function applyEventDatePastFlag(
+  existingFlags: string[] | undefined,
+  eventDate: string | undefined,
+  stage: PipelineStage
+): string[] | undefined {
+  const cleaned = (existingFlags || []).filter(
+    (flag) => !flag.startsWith('FLAG: Past event date (')
+  );
+  if (eventDate && stage !== 'posted' && stage !== 'archived' && eventDate < todayEasternYmd()) {
+    cleaned.push(`FLAG: Past event date (${eventDate}) — verify before publishing.`);
+  }
+  return cleaned.length > 0 ? cleaned : undefined;
 }

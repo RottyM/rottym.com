@@ -10,6 +10,10 @@ export type ChannelId = 'linkedin' | 'meta' | 'x';
 
 export type PipelineStage = 'pulled' | 'clearance' | 'drafted' | 'approved' | 'posted' | 'archived';
 
+export type MarleyVerdictTag = 'NEW' | 'FOLLOW-UP' | 'REPEAT' | 'SKIP' | 'HOLD' | 'REJECTED';
+
+export type PhotoStatus = 'needed' | 'missing' | 'attached' | 'verified' | 'not_needed';
+
 export type ContentKind = 'post' | 'article' | 'image' | 'pull';
 
 export type GateState = 'hold' | 'blocked' | 'awaiting' | 'resolved';
@@ -73,8 +77,13 @@ export interface PipelineCard {
   flaggedNotes?: string[];
   marleyStatus: 'pending' | 'approved' | 'rejected';
   marleyNote?: string;
+  marleyReviewedBy?: string;
+  verdictTag?: MarleyVerdictTag;
   discrepancies?: string[];
+  unverifiedClaims?: string[];
   artifactsNeeded?: string[];
+  photoStatus?: PhotoStatus;
+  eventDate?: string;
   readyForRotty: boolean;
   approvedBy?: string;
   claimedBy?: string;
@@ -153,6 +162,10 @@ export interface OpsSignalPayload {
   autoPostAllowed: false;
   marleyStatus: 'pending' | 'approved' | 'rejected';
   marleyNote: string | null;
+  verdictTag: MarleyVerdictTag | null;
+  photoStatus: PhotoStatus | null;
+  eventDate: string | null;
+  unverifiedClaims: string[];
   approvedBy: string | null;
   draftCopy: string;
   links: PipelineLinks | null;

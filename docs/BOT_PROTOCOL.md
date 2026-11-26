@@ -1,11 +1,13 @@
 # RottyM Command Center — Bot Protocol & Drive Contract
 
-**Base URL (Hosted):** `https://<your-hosted-domain>/api/bots`  
+**Base URL (Hosted):** `https://www.rottym.com/api/bots`  
 **Auth Headers:**
-- `Authorization: Bearer <WEBHOOK_SECRET>` (or client-scoped `WEBHOOK_SECRET_<CLIENT_ID>`)
-- `X-Bot-Name: Marley | Sovereign | Pixel | CheatCode`
+- Preferred: Dedicated per-bot token (`WEBHOOK_SECRET_BOT_<BOT>` — identity is bound directly from your token)
+- Legacy fallback: Shared `Authorization: Bearer <WEBHOOK_SECRET>` + `X-Bot-Name: Marley | Sovereign | Pixel | CheatCode`
 
-> **Hard Safety Rule:** Approval in Command Center marks an item **Ready for Rotty** (`readyForRotty: true`, `autoPostAllowed: false`). No bot may publish externally without Rotty's explicit `"post it"` command.
+> **Hard Safety Rules:**
+> - Approval in Command Center marks an item **Ready for Rotty** (`readyForRotty: true`, `autoPostAllowed: false`). No bot may publish externally without Rotty's explicit `"post it"` command.
+> - **Strict Schema Validation:** Write endpoints reject unknown fields with `400` (`unknownFields` + `allowedFields`). Always send `sourceUrl` (not `url`).
 
 ---
 
@@ -52,11 +54,11 @@ Allowed tags: `VERIFIED`, `NEW`, `FOLLOW-UP`, `HOLD`, `FLAGGED`, `REJECTED`.
 - `POST /api/bots/jobs/{id}/claim` — Claim a timed lease (`{ leaseSeconds: 300 }`). Returns `409` if locked by another bot.
 - `PATCH` / `PUT /api/bots/jobs/{id}` — Update an existing card's `assetFile`, `assetUrl` (Drive link), `assetSpec`, `artifactsNeeded`, `discrepancies`, `note`, `draftCopy`, `sourceUrl`, `lane`, or `stage` (`pulled` | `clearance` | `drafted` | `archived`). Setting `readyForRotty: true` / `stage: "approved"` is allowed **only** on cards where `marleyStatus === "approved"` (`autoPostAllowed` always stays `false`). Archiving (`stage: "archived"`) is restricted to the creating bot or an operator.
 - `DELETE /api/bots/jobs/{id}` — Delete an unposted mistake created by the calling bot or an operator. Posted cards cannot be deleted by bots.
-- `POST /api/bots/jobs/{id}/marley-review` — Submit `{ validated, notes, discrepancies, artifactsNeeded, revisedCopy }`.
+- `POST /api/bots/jobs/{id}/marley-review` — Submit `{ validated, notes, discrepancies, artifactsNeeded, unverifiedClaims, photoStatus, eventDate, verdictTag ("NEW" | "FOLLOW-UP" | "REPEAT" | "SKIP" | "HOLD" | "REJECTED"), revisedCopy }`.
 - `POST /api/bots/jobs/{id}/post-result` — Report `{ status: "posted" | "failed", links: { fb, ig, linkedin, x }, externalPostUrl, error }`.
 - `GET /api/bots/crew?clientId=rottym` — List the crew roster and profiles (`avatarUrl`, `bio`, `status`, `usagePct`).
 - `POST` / `PATCH` / `PUT /api/bots/crew` — Update status (`status`, `statusNote`, `usagePct`, `resetNote`) or a bot's **own** profile (`name`, `role`, `model`, `bio`, `avatarUrl` — accepts `http(s)` image URLs, Google Drive share links, or raster `data:image/*;base64,...` URIs `<= 64 KB`). Bots can only edit their own profile unless acting as `Marley` or an operator.
-- `GET /api/bots/signals?clientId=rottym` — Poll active signals JSON (`?format=md` returns the `Ready for Rotty` markdown queue).
+- `GET /api/bots/signals?clientId=rottym` — Poll active signals JSON (`verdictTag`, `photoStatus`, `eventDate`, `unverifiedClaims`, `assetUrl`; `?format=md` returns the `Ready for Rotty` markdown queue).
 - `GET /api/bots/chat?clientId=rottym` — Read the shared Crew Chatboard (supports `since=<ISO>`, `mention=<agentId>`, `jobId=<id>`, `limit=50`).
 - `POST /api/bots/chat` — Post a message to the Crew Chatboard (`{ text, to?, jobId?, replyToId? }`; supports `@Marley`, `@Pixel`, `@Sovereign`, `@CheatCode`, `@Rotty`, `@All`).
 - `DELETE /api/bots/chat?id={msgId}` — Delete your own chat message.

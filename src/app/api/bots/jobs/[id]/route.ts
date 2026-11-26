@@ -7,13 +7,47 @@ import {
   resolveBotTargetClientId,
   unauthorizedResponse,
 } from '@/lib/ops/auth';
-import { cleanBotStringList, laneToChannel, normalizeLane, syncVisualArtifactsNeeded } from '@/lib/ops/drop-parser';
+import {
+  applyEventDatePastFlag,
+  cleanBotStringList,
+  findUnknownFields,
+  laneToChannel,
+  normalizeEventDate,
+  normalizeLane,
+  normalizeVerdictTag,
+  resolveEffectivePhotoStatus,
+  syncVisualArtifactsNeeded,
+} from '@/lib/ops/drop-parser';
 import { appendOpsActivity, opsDeleteDoc, opsGetDoc, opsSetDoc } from '@/lib/ops/firestore-rest';
 import type { PipelineCard, PipelineStage } from '@/lib/ops/types';
 
 const NO_STORE_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
 };
+
+const ALLOWED_JOB_PATCH_FIELDS = new Set([
+  'clientId',
+  'title',
+  'lane',
+  'channel',
+  'stage',
+  'readyForRotty',
+  'sourceUrl',
+  'note',
+  'draftCopy',
+  'assetFile',
+  'assetUrl',
+  'driveUrl',
+  'assetLink',
+  'imageUrl',
+  'assetSpec',
+  'artifactsNeeded',
+  'discrepancies',
+  'unverifiedClaims',
+  'photoStatus',
+  'eventDate',
+  'verdictTag',
+]);
 
 const VALID_BOT_EDIT_STAGES = new Set<PipelineStage>([
   'pulled',
@@ -88,6 +122,18 @@ async function handleUpsertJobById(
     body = (await request.json()) as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400, headers: NO_STORE_HEADERS });
+  }
+
+  const unknown = findUnknownFields(body, ALLOWED_JOB_PATCH_FIELDS);
+  if (unknown.length > 0) {
+    return NextResponse.json(
+      {
+        error: `Unknown field(s): ${unknown.join(', ')}${unknown.includes('url') ? ' (use "sourceUrl" instead of "url")' : ''}`,
+        unknownFields: unknown,
+        allowedFields: Array.from(ALLOWED_JOB_PATCH_FIELDS),
+      },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
   }
 
   const existing = await opsGetDoc<PipelineCard>('ops_pipeline', id);
@@ -169,6 +215,28 @@ async function handleUpsertJobById(
       ? body.assetSpec.trim().slice(0, 60) || undefined
       : existing.assetSpec;
 
+  const nextEventDate =
+    body.eventDate !== undefined ? normalizeEventDate(body.eventDate) : existing.eventDate;
+  if (typeof body.eventDate === 'string' && body.eventDate.trim() && !nextEventDate) {
+    return NextResponse.json(
+      { error: 'Invalid eventDate format. Expected YYYY-MM-DD.' },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+  const nextVerdictTag =
+    body.verdictTag !== undefined ? normalizeVerdictTag(body.verdictTag) : existing.verdictTag;
+  if (typeof body.verdictTag === 'string' && body.verdictTag.trim() && !nextVerdictTag) {
+    return NextResponse.json(
+      { error: 'Invalid verdictTag. Allowed: NEW, FOLLOW-UP, REPEAT, SKIP, HOLD, REJECTED.' },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  const nextSourceUrl = body.sourceUrl !== undefined ? sanitizeUrl(body.sourceUrl) : existing.sourceUrl;
+  const baseFlags = (existing.flaggedNotes || []).filter(
+    (flag) => !(nextSourceUrl || nextStage === 'posted') || !flag.startsWith('FLAG: Missing verified source URL')
+  );
+
   const updated: PipelineCard = {
     ...existing,
     title:
@@ -179,7 +247,7 @@ async function handleUpsertJobById(
     channel: laneToChannel(nextLane),
     stage: nextStage,
     readyForRotty: nextReady,
-    sourceUrl: body.sourceUrl !== undefined ? sanitizeUrl(body.sourceUrl) : existing.sourceUrl,
+    sourceUrl: nextSourceUrl,
     note:
       typeof body.note === 'string'
         ? body.note.trim().slice(0, 300) || undefined
@@ -189,6 +257,20 @@ async function handleUpsertJobById(
     assetFile: nextAssetFile,
     assetUrl: nextAssetUrl,
     assetSpec: nextAssetSpec,
+    verdictTag: nextVerdictTag,
+    eventDate: nextEventDate,
+    photoStatus: resolveEffectivePhotoStatus({
+      explicit: body.photoStatus,
+      existing: existing.photoStatus,
+      assetFile: nextAssetFile,
+      assetUrl: nextAssetUrl,
+      assetSpec: nextAssetSpec,
+    }),
+    unverifiedClaims:
+      body.unverifiedClaims !== undefined
+        ? cleanBotStringList(body.unverifiedClaims)
+        : existing.unverifiedClaims,
+    flaggedNotes: applyEventDatePastFlag(baseFlags, nextEventDate, nextStage),
     artifactsNeeded: syncVisualArtifactsNeeded(
       existing.artifactsNeeded,
       body.artifactsNeeded !== undefined ? cleanBotStringList(body.artifactsNeeded) : undefined,
