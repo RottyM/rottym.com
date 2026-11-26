@@ -56,8 +56,13 @@ async function fetchDriveWithBearer(
   fileId: string,
   token: string,
   sz: number
-): Promise<{ payload: { buf: ArrayBuffer; contentType: string } | null; authStatus?: number }> {
+): Promise<{
+  payload: { buf: ArrayBuffer; contentType: string } | null;
+  authStatus?: number;
+  driveError?: string;
+}> {
   let authStatus: number | undefined;
+  let driveError: string | undefined;
 
   // 1) Try media download directly
   const mediaRes = await fetch(
@@ -71,11 +76,15 @@ async function fetchDriveWithBearer(
   if (mediaRes.ok) {
     const payload = await toImagePayload(mediaRes);
     if (payload) return { payload };
-  } else if (mediaRes.status === 401 || mediaRes.status === 403) {
+  } else {
     authStatus = mediaRes.status;
+    const errBody = (await mediaRes.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+    driveError = errBody?.error?.message || `HTTP ${mediaRes.status}`;
   }
 
-  // 2) Fallback: ask Drive API for thumbnailLink
+  // 2) Fallback: ask Drive API for thumbnailLink (handles PDFs / non-direct images / view-only previews)
   const metaRes = await fetch(
     `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?fields=thumbnailLink,mimeType&supportsAllDrives=true`,
     {
@@ -85,26 +94,50 @@ async function fetchDriveWithBearer(
     }
   );
   if (metaRes.ok) {
-    const meta = (await metaRes.json().catch(() => ({}))) as { thumbnailLink?: string };
+    const meta = (await metaRes.json().catch(() => ({}))) as {
+      thumbnailLink?: string;
+      mimeType?: string;
+    };
     if (meta.thumbnailLink) {
-      const sizedThumbUrl = meta.thumbnailLink.replace(/=s\d+$/, `=w${sz}`);
-      for (const headers of [undefined, { Authorization: `Bearer ${token}` }]) {
-        const thumbRes = await fetch(sizedThumbUrl, {
-          headers,
-          cache: 'no-store',
-          signal: AbortSignal.timeout(10000),
-        });
-        if (thumbRes.ok) {
-          const payload = await toImagePayload(thumbRes);
-          if (payload) return { payload };
+      const scaledUrl =
+        sz > 240 && /=s\d+$/.test(meta.thumbnailLink)
+          ? meta.thumbnailLink.replace(/=s\d+$/, `=s${sz}`)
+          : null;
+      const thumbUrls = Array.from(
+        new Set([scaledUrl, meta.thumbnailLink].filter((u): u is string => Boolean(u)))
+      );
+      for (const thumbUrl of thumbUrls) {
+        for (const headers of [{ Authorization: `Bearer ${token}` }, undefined]) {
+          const thumbRes = await fetch(thumbUrl, {
+            headers,
+            cache: 'no-store',
+            signal: AbortSignal.timeout(10000),
+          });
+          if (thumbRes.ok) {
+            const payload = await toImagePayload(thumbRes);
+            if (payload) return { payload };
+          }
         }
       }
+      driveError = `Thumbnail fetch failed (${meta.mimeType || 'unknown type'})`;
+    } else {
+      driveError = `No Drive thumbnail (${meta.mimeType || 'no thumbnailLink'})`;
     }
-  } else if (!authStatus && (metaRes.status === 401 || metaRes.status === 403)) {
-    authStatus = metaRes.status;
+  } else {
+    if (!authStatus || metaRes.status === 401 || metaRes.status === 403) {
+      authStatus = metaRes.status;
+    }
+    const errBody = (await metaRes.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+    if (errBody?.error?.message) {
+      driveError = `${metaRes.status}: ${errBody.error.message}`;
+    } else if (!driveError) {
+      driveError = `HTTP ${metaRes.status}`;
+    }
   }
 
-  return { payload: null, authStatus };
+  return { payload: null, authStatus, driveError };
 }
 
 export async function GET(request: Request) {
@@ -123,6 +156,7 @@ export async function GET(request: Request) {
 
   const userGoogleToken = request.headers.get('x-google-access-token')?.trim();
   let driveAuthStatus: number | undefined;
+  let driveDiagnostic: string | undefined;
 
   // 1) Signed-in user's Google OAuth token (e.g. rmendez with drive.readonly scope)
   if (userGoogleToken) {
@@ -138,8 +172,9 @@ export async function GET(request: Request) {
         });
       }
       driveAuthStatus = result.authStatus;
-    } catch {
-      // Fall through to service account or public thumbnail
+      driveDiagnostic = result.driveError;
+    } catch (err) {
+      driveDiagnostic = err instanceof Error ? err.message : 'Drive fetch failed';
     }
   }
 
@@ -193,14 +228,18 @@ export async function GET(request: Request) {
   }
 
   const driveAuthRejected = Boolean(userGoogleToken && (driveAuthStatus === 401 || driveAuthStatus === 403));
+  const needsAccountSwitch = Boolean(userGoogleToken && driveAuthStatus === 404);
   return NextResponse.json(
     {
       error: driveAuthRejected
-        ? 'Your Google Drive token expired or lacks permission for this file. Reconnect Drive or upload a hosted copy.'
-        : 'Drive thumbnail unavailable. Sign in with Google Drive access or upload a hosted copy to the asset.',
+        ? 'Google Drive token expired or missing Drive read scope. Reconnect Drive and check Drive permission.'
+        : needsAccountSwitch
+          ? 'Drive file not found (404) for connected Google account — switch account or upload a hosted copy.'
+          : 'Drive thumbnail unavailable. Connect Google Drive or upload a hosted copy to the asset.',
       needsDriveAuth: !userGoogleToken || driveAuthRejected,
       driveAuthRejected,
       ...(driveAuthStatus ? { driveAuthStatus } : {}),
+      ...(driveDiagnostic ? { diagnostic: driveDiagnostic } : {}),
     },
     { status: 404 }
   );

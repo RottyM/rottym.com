@@ -39,6 +39,10 @@ import {
   assetStatusBadge,
   OpsAssetThumb,
 } from './OpsAssetThumb';
+import {
+  extractPrimaryArticleUrl,
+  OpsLinkCardPreview,
+} from './OpsLinkCardPreview';
 import type {
   CardAssetState,
   ClientLaneConfig,
@@ -662,6 +666,9 @@ export default function OpsDecisionDesk({
               const hasNeeded = cardAssets.some(
                 (a) => a.status === 'needed' || a.status === 'in_progress'
               );
+              const thumbAsset =
+                cardAssets.find((a) => Boolean(a.url?.trim() || a.file?.trim())) || null;
+              const listArticleUrl = !thumbAsset ? extractPrimaryArticleUrl(card) : null;
 
               return (
                 <div
@@ -720,48 +727,64 @@ export default function OpsDecisionDesk({
                     )}
                   </div>
 
-                  <div className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">
-                    {card.title}
-                  </div>
+                  <div className="flex items-start justify-between gap-2.5">
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">
+                        {card.title}
+                      </div>
 
-                  <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-muted-foreground">
-                    <span className="inline-flex items-center gap-1 truncate">
-                      {cardAssets.length > 0 ? (
-                        <span
-                          className={`inline-flex items-center gap-1 ${
-                            hasRejected
-                              ? 'text-red-600 dark:text-red-400 font-semibold'
-                              : hasDelivered
-                                ? 'text-amber-700 dark:text-amber-300 font-semibold'
-                                : completeness.canApproveReady
-                                  ? 'text-emerald-700 dark:text-emerald-300'
-                                  : hasNeeded
-                                    ? 'text-amber-700 dark:text-amber-300'
-                                    : 'text-cyan-700 dark:text-cyan-300'
-                          }`}
-                        >
-                          <ImageIcon className="w-2.5 h-2.5 shrink-0" />
-                          {hasRejected
-                            ? 'Asset rejected'
-                            : hasDelivered
-                              ? `Review (${cardAssets.filter((a) => a.status === 'delivered').length})`
-                              : completeness.canApproveReady
-                                ? `Assets ready (${cardAssets.length})`
-                                : hasNeeded
-                                  ? 'Asset needed'
-                                  : `${cardAssets.length} ${cardAssets.length === 1 ? 'asset' : 'assets'}`}
+                      <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-muted-foreground">
+                        <span className="inline-flex items-center gap-1 truncate">
+                          {cardAssets.length > 0 ? (
+                            <span
+                              className={`inline-flex items-center gap-1 ${
+                                hasRejected
+                                  ? 'text-red-600 dark:text-red-400 font-semibold'
+                                  : hasDelivered
+                                    ? 'text-amber-700 dark:text-amber-300 font-semibold'
+                                    : completeness.canApproveReady
+                                      ? 'text-emerald-700 dark:text-emerald-300'
+                                      : hasNeeded
+                                        ? 'text-amber-700 dark:text-amber-300'
+                                        : 'text-cyan-700 dark:text-cyan-300'
+                              }`}
+                            >
+                              <ImageIcon className="w-2.5 h-2.5 shrink-0" />
+                              {hasRejected
+                                ? 'Asset rejected'
+                                : hasDelivered
+                                  ? `Review (${cardAssets.filter((a) => a.status === 'delivered').length})`
+                                  : completeness.canApproveReady
+                                    ? `Assets ready (${cardAssets.length})`
+                                    : hasNeeded
+                                      ? 'Asset needed'
+                                      : `${cardAssets.length} ${cardAssets.length === 1 ? 'asset' : 'assets'}`}
+                            </span>
+                          ) : completeness.assetState === 'not_needed' ? (
+                            <span className="text-sky-700 dark:text-sky-300">
+                              {listArticleUrl ? 'Link card · No photo' : 'No image needed'}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 text-amber-700 dark:text-amber-300">
+                              <AlertTriangle className="w-2.5 h-2.5" /> Asset missing
+                            </span>
+                          )}
                         </span>
-                      ) : completeness.assetState === 'not_needed' ? (
-                        <span className="text-sky-700 dark:text-sky-300">No image needed</span>
-                      ) : (
-                        <span className="inline-flex items-center gap-0.5 text-amber-700 dark:text-amber-300">
-                          <AlertTriangle className="w-2.5 h-2.5" /> Asset missing
+                        <span className="truncate">
+                          {card.agentId} · {card.updatedAt?.slice(11, 16) || card.jobDate || ''}
                         </span>
-                      )}
-                    </span>
-                    <span className="truncate">
-                      {card.agentId} · {card.updatedAt?.slice(11, 16) || card.jobDate || ''}
-                    </span>
+                      </div>
+                    </div>
+
+                    {(thumbAsset || listArticleUrl) && (
+                      <div className="w-12 h-12 rounded-md border border-border overflow-hidden bg-muted/30 shrink-0">
+                        {thumbAsset ? (
+                          <OpsAssetThumb asset={thumbAsset} size="thumb" className="w-full h-full object-cover" />
+                        ) : listArticleUrl ? (
+                          <OpsLinkCardPreview url={listArticleUrl} variant="thumb" className="w-full h-full object-cover" />
+                        ) : null}
+                      </div>
+                    )}
                   </div>
 
                   {cardLiveLinks.length > 0 && (
@@ -981,7 +1004,7 @@ export default function OpsDecisionDesk({
                             disabled={busy}
                             onClick={async () => {
                               try {
-                                await signInOpsWithGoogle();
+                                await signInOpsWithGoogle({ requireDriveToken: true });
                                 onToast('Google Drive connected — reloading previews');
                               } catch (err) {
                                 onToast(err instanceof Error ? err.message : 'Unable to connect Google Drive');
@@ -1333,25 +1356,49 @@ export default function OpsDecisionDesk({
                       )}
                     </div>
                   ) : selectedCompleteness.noImageNeeded ? (
-                    <div className="px-3 py-2.5 text-xs text-sky-700 dark:text-sky-300 text-center bg-sky-500/5">
-                      <span className="font-semibold">Text-only post (no image)</span>
-                      {selectedCard.noImageNeededBy ? ` — marked by ${selectedCard.noImageNeededBy}` : ''}.{' '}
-                      {selectedCard.stage !== 'posted' && selectedCard.stage !== 'archived' && (
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => onSetNoImageNeeded(selectedCard, false)}
-                          className="underline font-mono ml-1 hover:opacity-80 disabled:opacity-50"
-                        >
-                          Require photo instead
-                        </button>
-                      )}
+                    <div className="p-3 bg-sky-500/5 space-y-2.5">
+                      <div className="text-xs text-sky-700 dark:text-sky-300 text-center">
+                        <span className="font-semibold">Text-only post (no image)</span>
+                        {selectedCard.noImageNeededBy ? ` — marked by ${selectedCard.noImageNeededBy}` : ''}.{' '}
+                        {selectedCard.stage !== 'posted' && selectedCard.stage !== 'archived' && (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => onSetNoImageNeeded(selectedCard, false)}
+                            className="underline font-mono ml-1 hover:opacity-80 disabled:opacity-50"
+                          >
+                            Require photo instead
+                          </button>
+                        )}
+                      </div>
+                      {(() => {
+                        const articleUrl = extractPrimaryArticleUrl(selectedCard);
+                        return articleUrl ? (
+                          <div className="space-y-1 max-w-lg mx-auto">
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                              Article Card Preview (as unfurled on X / FB / LinkedIn)
+                            </div>
+                            <OpsLinkCardPreview url={articleUrl} variant="card" />
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                   ) : (
                     <div className="px-3 py-3 text-xs text-amber-700 dark:text-amber-300 bg-amber-500/5 space-y-2.5">
                       <div className="text-center">
                         Asset missing{selectedCard.assetSpec ? ` (${selectedCard.assetSpec})` : ''} — assign a bot below, attach an asset, or set &ldquo;No image needed&rdquo;.
                       </div>
+                      {(() => {
+                        const articleUrl = extractPrimaryArticleUrl(selectedCard);
+                        return articleUrl ? (
+                          <div className="space-y-1 max-w-lg mx-auto text-left">
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                              Article Card Preview (from link)
+                            </div>
+                            <OpsLinkCardPreview url={articleUrl} variant="card" />
+                          </div>
+                        ) : null;
+                      })()}
                       {onAssignAssetTask && selectedCard.stage !== 'posted' && selectedCard.stage !== 'archived' && (
                         <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1 border-t border-amber-500/20 text-[11px] font-mono">
                           <span className="text-foreground/80">Assign asset →</span>

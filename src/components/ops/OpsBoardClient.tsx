@@ -70,6 +70,7 @@ import { OpsAssetLightbox, OpsAssetThumb, assetPlatformLabel } from './OpsAssetT
 import OpsBrandMark from './OpsBrandMark';
 import OpsDecisionDesk from './OpsDecisionDesk';
 import OpsDeskPanel from './OpsDeskPanel';
+import { extractPrimaryArticleUrl, OpsLinkCardPreview } from './OpsLinkCardPreview';
 import { OpsModalHost, type OpsModalState } from './OpsModals';
 
 type BoardColumnId = PipelineStage | 'ready';
@@ -2051,6 +2052,15 @@ function PipelineCardTile({
           </div>
         </div>
       )}
+
+      {cardAssets.length === 0 && (() => {
+        const articleUrl = extractPrimaryArticleUrl(card);
+        return articleUrl ? (
+          <div className="pt-0.5">
+            <OpsLinkCardPreview url={articleUrl} variant="card" compact />
+          </div>
+        ) : null;
+      })()}
 
       <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1 border-t border-border/60">
         <div className="flex flex-wrap items-center gap-1.5">

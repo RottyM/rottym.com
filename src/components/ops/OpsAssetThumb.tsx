@@ -7,6 +7,7 @@ import {
   clearGoogleDriveAccessToken,
   DRIVE_TOKEN_EVENT,
   getGoogleDriveAccessToken,
+  getGoogleDriveAccountEmail,
   getOpsAuth,
   signInOpsWithGoogle,
 } from '@/lib/ops/firebase-client';
@@ -76,7 +77,9 @@ export function OpsAssetThumb({
   const [loadedBlob, setLoadedBlob] = useState<{ key: string; url: string } | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
   const [browserFallbackKey, setBrowserFallbackKey] = useState<string | null>(null);
+  const [driveDiagnostic, setDriveDiagnostic] = useState<{ key: string; text: string } | null>(null);
   const [connectingDrive, setConnectingDrive] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
   const [tokenVersion, setTokenVersion] = useState(0);
 
   useEffect(() => {
@@ -108,12 +111,18 @@ export function OpsAssetThumb({
 
         const res = await fetch(endpoint, { headers, cache: 'no-store' });
         if (!res.ok) {
-          if (driveId && driveToken) {
+          if (driveId) {
             const errJson = (await res.json().catch(() => null)) as {
               driveAuthRejected?: boolean;
+              diagnostic?: string;
+              error?: string;
             } | null;
-            if (errJson?.driveAuthRejected) {
+            if (driveToken && errJson?.driveAuthRejected) {
               clearGoogleDriveAccessToken();
+            }
+            const diagText = errJson?.diagnostic || errJson?.error;
+            if (!cancelled && diagText) {
+              setDriveDiagnostic({ key: fetchKey, text: diagText });
             }
           }
           throw new Error(`HTTP ${res.status}`);
@@ -161,6 +170,8 @@ export function OpsAssetThumb({
   }
 
   const hasDriveToken = Boolean(getGoogleDriveAccessToken());
+  const driveEmail = getGoogleDriveAccountEmail();
+  const activeDiagnostic = driveDiagnostic?.key === fetchKey ? driveDiagnostic.text : null;
   const isUnuploadedPlaceholder = !rawUrl && !driveId;
   const emptyMessage = isUnuploadedPlaceholder
     ? asset.status === 'rejected'
@@ -184,17 +195,32 @@ export function OpsAssetThumb({
           <span className="mt-1 text-[10px] font-mono px-2 text-center truncate max-w-full">
             {emptyMessage}
           </span>
+          {driveId && activeDiagnostic && (
+            <span
+              className="mt-0.5 text-[10px] text-amber-700 dark:text-amber-300/90 text-center px-2 line-clamp-2 max-w-full"
+              title={activeDiagnostic}
+            >
+              {activeDiagnostic}
+              {driveEmail ? ` (${driveEmail})` : ''}
+            </span>
+          )}
+          {connectError && (
+            <span className="mt-0.5 text-[10px] text-red-600 dark:text-red-400 text-center px-2 max-w-full">
+              {connectError}
+            </span>
+          )}
           {driveId && (!hasDriveToken || failed) && (
             <button
               type="button"
               disabled={connectingDrive}
               onClick={async (e) => {
                 e.stopPropagation();
+                setConnectError(null);
                 setConnectingDrive(true);
                 try {
-                  await signInOpsWithGoogle();
-                } catch {
-                  // Token handler updates automatically on success
+                  await signInOpsWithGoogle({ requireDriveToken: true });
+                } catch (err) {
+                  setConnectError(err instanceof Error ? err.message : 'Google Drive auth failed');
                 } finally {
                   setConnectingDrive(false);
                 }

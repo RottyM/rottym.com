@@ -54,6 +54,7 @@ export function getOpsFirestore(): Firestore {
 
 const DRIVE_TOKEN_KEY = 'ops_google_drive_token';
 const DRIVE_TOKEN_EXP_KEY = 'ops_google_drive_token_exp';
+const DRIVE_EMAIL_KEY = 'ops_google_drive_email';
 
 export function getGoogleDriveAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -73,6 +74,15 @@ export function getGoogleDriveAccessToken(): string | null {
   }
 }
 
+export function getGoogleDriveAccountEmail(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return sessionStorage.getItem(DRIVE_EMAIL_KEY);
+  } catch {
+    return null;
+  }
+}
+
 export const DRIVE_TOKEN_EVENT = 'ops-drive-token-updated';
 
 export function clearGoogleDriveAccessToken() {
@@ -80,23 +90,33 @@ export function clearGoogleDriveAccessToken() {
   try {
     sessionStorage.removeItem(DRIVE_TOKEN_KEY);
     sessionStorage.removeItem(DRIVE_TOKEN_EXP_KEY);
+    sessionStorage.removeItem(DRIVE_EMAIL_KEY);
     window.dispatchEvent(new Event(DRIVE_TOKEN_EVENT));
   } catch {
     // ignore storage failure
   }
 }
 
-export async function signInOpsWithGoogle() {
+export async function signInOpsWithGoogle(options?: { requireDriveToken?: boolean }) {
   const auth = getOpsAuth();
   const provider = new GoogleAuthProvider();
   provider.addScope('https://www.googleapis.com/auth/drive.readonly');
-  provider.setCustomParameters({ prompt: 'select_account' });
+  provider.setCustomParameters({
+    prompt: options?.requireDriveToken ? 'consent select_account' : 'select_account',
+    include_granted_scopes: 'true',
+  });
   const cred = await signInWithPopup(auth, provider);
   const oauth = GoogleAuthProvider.credentialFromResult(cred);
+  if (options?.requireDriveToken && !oauth?.accessToken) {
+    throw new Error('Google sign-in completed without a Drive OAuth token — make sure Drive access is checked.');
+  }
   if (oauth?.accessToken && typeof window !== 'undefined') {
     try {
       sessionStorage.setItem(DRIVE_TOKEN_KEY, oauth.accessToken);
       sessionStorage.setItem(DRIVE_TOKEN_EXP_KEY, String(Date.now() + 50 * 60 * 1000));
+      if (cred.user?.email) {
+        sessionStorage.setItem(DRIVE_EMAIL_KEY, cred.user.email);
+      }
       window.dispatchEvent(new Event(DRIVE_TOKEN_EVENT));
     } catch {
       // ignore storage failure
