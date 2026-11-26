@@ -147,9 +147,11 @@ export async function POST(request: Request) {
           ? body.statusNote.trim().slice(0, 180) || undefined
           : existing.statusNote,
       usagePct:
-        typeof body.usagePct === 'number' && Number.isFinite(body.usagePct)
-          ? Math.max(0, Math.min(100, Math.round(body.usagePct)))
-          : existing.usagePct,
+        body.usagePct === null
+          ? undefined
+          : typeof body.usagePct === 'number' && Number.isFinite(body.usagePct)
+            ? Math.max(0, Math.min(100, Math.round(body.usagePct)))
+            : existing.usagePct,
       resetNote:
         typeof body.resetNote === 'string'
           ? body.resetNote.trim().slice(0, 80) || undefined

@@ -629,7 +629,7 @@ function CrewEditorForm({
               set: setGroup,
               status,
               statusNote,
-              usagePct: usagePct !== '' ? Number(usagePct) : undefined,
+              usagePct: usagePct !== '' ? Number(usagePct) : null,
               resetNote,
             })
           }
