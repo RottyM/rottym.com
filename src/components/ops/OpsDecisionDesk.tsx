@@ -23,9 +23,11 @@ import {
   getCardFormatBadges,
   getCardPublishedLinks,
   getEffectiveRequestStatus,
+  getUpdateAlertMeta,
   POST_FORMAT_LABELS,
   resolveVisualPreviewUrl,
   splitTextWithUrls,
+  type UpdateAlertKind,
 } from '@/lib/ops/drop-parser';
 import {
   DRIVE_TOKEN_EVENT,
@@ -64,9 +66,6 @@ const getDriveTokenServerSnapshot = () => false;
 type DeskItem =
   | { kind: 'post'; key: string; card: PipelineCard }
   | { kind: 'request'; key: string; request: OpsRequest };
-
-const UPDATED_GLOW_CLS =
-  'border-cyan-500 dark:border-cyan-400 ring-2 ring-cyan-500/45 dark:ring-cyan-400/50 shadow-[0_0_20px_rgba(34,211,238,0.45)]';
 
 function isReadyItem(card: PipelineCard): boolean {
   return (
@@ -206,7 +205,7 @@ export default function OpsDecisionDesk({
   lanes,
   nowMs,
   busy,
-  highlightedIds,
+  highlightKinds,
   onEditCard,
   onAssignCard,
   onAssignAssetTask,
@@ -228,7 +227,7 @@ export default function OpsDecisionDesk({
   lanes: ClientLaneConfig[];
   nowMs: number;
   busy: boolean;
-  highlightedIds: Set<string>;
+  highlightKinds: Map<string, UpdateAlertKind>;
   onEditCard: (card: PipelineCard) => void;
   onAssignCard?: (card: PipelineCard, assignedTo: string) => Promise<void>;
   onAssignAssetTask?: (
@@ -410,6 +409,42 @@ export default function OpsDecisionDesk({
     { id: 'all', label: 'All', count: counts.all },
   ];
 
+  const tabAlerts = useMemo<Record<DeskTab, UpdateAlertKind | undefined>>(() => {
+    const pickAlert = (
+      matchCards: PipelineCard[],
+      matchReqs: OpsRequest[]
+    ): UpdateAlertKind | undefined => {
+      let result: UpdateAlertKind | undefined;
+      for (const c of matchCards) {
+        const k = highlightKinds.get(c.id);
+        if (k === 'new') return 'new';
+        if (k === 'updated') result = 'updated';
+      }
+      for (const r of matchReqs) {
+        const k = highlightKinds.get(r.id);
+        if (k === 'new') return 'new';
+        if (k === 'updated') result = 'updated';
+      }
+      return result;
+    };
+
+    const active = pipeline.filter((c) => c.stage !== 'archived');
+    const openReqs = requests.filter((r) => {
+      const st = getEffectiveRequestStatus(r, nowMs);
+      return st === 'pending' || st === 'decided';
+    });
+
+    return {
+      action: pickAlert(active.filter(isActionItem), openReqs),
+      approved: pickAlert(active.filter(isApprovedCrewItem), []),
+      ready: pickAlert(active.filter(isReadyItem), []),
+      requests: pickAlert([], requests),
+      drops: pickAlert(active.filter(isDropItem), []),
+      posted: pickAlert(active.filter((c) => c.stage === 'posted'), []),
+      all: pickAlert(active, requests),
+    };
+  }, [pipeline, requests, nowMs, highlightKinds]);
+
   return (
     <section className="rounded-xl border border-border bg-card p-3 flex flex-col gap-2.5 lg:h-[620px] overflow-hidden [overflow-anchor:none]">
       {/* Compact Dynamic Queue Header (auto-advances after each decision) */}
@@ -417,6 +452,7 @@ export default function OpsDecisionDesk({
         <div className="flex flex-wrap items-center gap-1">
           {tabs.map((t) => {
             const active = tab === t.id;
+            const alertMeta = getUpdateAlertMeta(tabAlerts[t.id]);
             return (
               <button
                 key={t.id}
@@ -426,14 +462,21 @@ export default function OpsDecisionDesk({
                   setSelectedKey(null);
                   setFocusedAssetId(null);
                 }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
-                  active
-                    ? 'border-accent bg-accent/15 text-foreground font-semibold'
-                    : 'border-border bg-background hover:border-accent/50 text-muted-foreground hover:text-foreground'
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
+                  alertMeta && !active
+                    ? alertMeta.tabBorderCls
+                    : active && alertMeta
+                      ? `${alertMeta.tabBorderCls} font-semibold ring-1 ring-current/25`
+                      : active
+                        ? 'border-accent bg-accent/15 text-foreground font-semibold'
+                        : 'border-border bg-background hover:border-accent/50 text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {t.label}{' '}
-                <span className="font-mono text-[11px] opacity-80">({t.count})</span>
+                {alertMeta && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${alertMeta.dotCls}`} />}
+                <span>
+                  {t.label}{' '}
+                  <span className="font-mono text-[11px] opacity-80">({t.count})</span>
+                </span>
               </button>
             );
           })}
@@ -494,7 +537,7 @@ export default function OpsDecisionDesk({
                 const req = item.request;
                 const reqStatus = getEffectiveRequestStatus(req, nowMs);
                 const badge = requestStatusBadge(reqStatus);
-                const isGlow = highlightedIds.has(req.id);
+                const reqAlert = getUpdateAlertMeta(highlightKinds.get(req.id));
 
                 return (
                   <div
@@ -509,8 +552,8 @@ export default function OpsDecisionDesk({
                       }
                     }}
                     className={`w-full text-left rounded-lg border p-2.5 transition-all duration-300 space-y-1 cursor-pointer ${
-                      isGlow
-                        ? UPDATED_GLOW_CLS
+                      reqAlert
+                        ? reqAlert.cardBorderCls
                         : selected
                           ? 'border-accent bg-accent/10'
                           : 'border-border bg-background/60 hover:border-accent/50'
@@ -518,6 +561,11 @@ export default function OpsDecisionDesk({
                   >
                     <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono">
                       <div className="flex items-center gap-1 min-w-0">
+                        {reqAlert && (
+                          <span className={`px-1 py-0 rounded border shrink-0 text-[9px] ${reqAlert.badgeCls}`}>
+                            {reqAlert.label}
+                          </span>
+                        )}
                         <span className="px-1.5 py-0.2 rounded bg-violet-500/15 text-violet-700 dark:text-violet-300 uppercase shrink-0 font-semibold">
                           Request
                         </span>
@@ -553,7 +601,7 @@ export default function OpsDecisionDesk({
 
               const card = item.card;
               const badge = stageBadge(card);
-              const isGlow = highlightedIds.has(card.id);
+              const cardAlert = getUpdateAlertMeta(highlightKinds.get(card.id));
               const completeness = getCardCompleteness(card);
               const cardAssets = getCardAssets(card);
               const cardLiveLinks = getCardPublishedLinks(card);
@@ -572,8 +620,8 @@ export default function OpsDecisionDesk({
                     }
                   }}
                   className={`w-full text-left rounded-lg border p-2.5 transition-all duration-300 space-y-1 cursor-pointer ${
-                    isGlow
-                      ? UPDATED_GLOW_CLS
+                    cardAlert
+                      ? cardAlert.cardBorderCls
                       : selected
                         ? 'border-accent bg-accent/10'
                         : 'border-border bg-background/60 hover:border-accent/50'
@@ -581,6 +629,11 @@ export default function OpsDecisionDesk({
                 >
                   <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono">
                     <div className="flex items-center gap-1 min-w-0">
+                      {cardAlert && (
+                        <span className={`px-1 py-0 rounded border shrink-0 text-[9px] ${cardAlert.badgeCls}`}>
+                          {cardAlert.label}
+                        </span>
+                      )}
                       <span className="px-1.5 py-0.2 rounded bg-muted text-foreground uppercase shrink-0">
                         {card.lane}
                       </span>
@@ -662,8 +715,14 @@ export default function OpsDecisionDesk({
           </div>
 
           {/* Full Draft Decision Reader */}
-          {selectedCard && selectedCompleteness && (
-            <div className="min-h-0 flex flex-col rounded-lg border border-border bg-background/70 overflow-hidden">
+          {selectedCard && selectedCompleteness && (() => {
+            const readerAlert = getUpdateAlertMeta(highlightKinds.get(selectedCard.id));
+            return (
+            <div
+              className={`min-h-0 flex flex-col rounded-lg border overflow-hidden transition-all duration-300 ${
+                readerAlert ? readerAlert.cardBorderCls : 'border-border bg-background/70'
+              }`}
+            >
               {/* Reader Header + Navigation */}
               <div className="px-3.5 py-2.5 border-b border-border/80 flex flex-wrap items-start justify-between gap-2 bg-card/50 shrink-0">
                 <div className="min-w-0 flex-1 space-y-1">
@@ -671,6 +730,11 @@ export default function OpsDecisionDesk({
                     const fmt = getCardFormatBadges(selectedCard);
                     return (
                       <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
+                        {readerAlert && (
+                          <span className={`px-1.5 py-0.5 rounded border ${readerAlert.badgeCls}`}>
+                            {readerAlert.label}
+                          </span>
+                        )}
                         <span className="px-1.5 py-0.5 rounded bg-muted text-foreground uppercase">
                           {selectedCard.lane}
                         </span>
@@ -1590,15 +1654,27 @@ export default function OpsDecisionDesk({
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* Request Decision Reader */}
-          {selectedRequest && selectedRequestStatus && (
-            <div className="min-h-0 flex flex-col rounded-lg border border-border bg-background/70 overflow-hidden">
+          {selectedRequest && selectedRequestStatus && (() => {
+            const reqReaderAlert = getUpdateAlertMeta(highlightKinds.get(selectedRequest.id));
+            return (
+            <div
+              className={`min-h-0 flex flex-col rounded-lg border overflow-hidden transition-all duration-300 ${
+                reqReaderAlert ? reqReaderAlert.cardBorderCls : 'border-border bg-background/70'
+              }`}
+            >
               {/* Reader Header + Navigation */}
               <div className="px-3.5 py-2.5 border-b border-border/80 flex flex-wrap items-start justify-between gap-2 bg-card/50 shrink-0">
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
+                    {reqReaderAlert && (
+                      <span className={`px-1.5 py-0.5 rounded border ${reqReaderAlert.badgeCls}`}>
+                        {reqReaderAlert.label}
+                      </span>
+                    )}
                     <span className="px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-700 dark:text-violet-300 uppercase font-semibold">
                       Request
                     </span>
@@ -1928,7 +2004,8 @@ export default function OpsDecisionDesk({
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
         </div>
       )}
     </section>

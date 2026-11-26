@@ -2092,3 +2092,43 @@ export function parseConnectorAlert(
     },
   };
 }
+
+export type UpdateAlertKind = 'new' | 'updated';
+
+export interface UpdateAlertMeta {
+  kind: UpdateAlertKind;
+  label: string;
+  cardBorderCls: string;
+  tabBorderCls: string;
+  badgeCls: string;
+  dotCls: string;
+}
+
+/** Shared color tokens for temporary update borders/pills (emerald = new, amber = updated). */
+export function getUpdateAlertMeta(kind?: UpdateAlertKind): UpdateAlertMeta | null {
+  if (!kind) return null;
+  if (kind === 'new') {
+    return {
+      kind,
+      label: 'NEW',
+      cardBorderCls:
+        'border-emerald-500 dark:border-emerald-400 ring-2 ring-emerald-500/45 dark:ring-emerald-400/50 bg-emerald-500/[0.08] dark:bg-emerald-500/[0.11] shadow-[0_0_22px_rgba(16,185,129,0.4)]',
+      tabBorderCls:
+        'border-emerald-500/80 dark:border-emerald-400/80 bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 shadow-[0_0_12px_rgba(16,185,129,0.28)]',
+      badgeCls:
+        'border-emerald-500/50 bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 font-semibold',
+      dotCls: 'bg-emerald-400 animate-pulse',
+    };
+  }
+  return {
+    kind,
+    label: 'UPDATED',
+    cardBorderCls:
+      'border-amber-500 dark:border-amber-400 ring-2 ring-amber-500/45 dark:ring-amber-400/50 bg-amber-500/[0.08] dark:bg-amber-500/[0.11] shadow-[0_0_22px_rgba(245,158,11,0.4)]',
+    tabBorderCls:
+      'border-amber-500/80 dark:border-amber-400/80 bg-amber-500/15 text-amber-900 dark:text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.28)]',
+    badgeCls:
+      'border-amber-500/50 bg-amber-500/20 text-amber-800 dark:text-amber-200 font-semibold',
+    dotCls: 'bg-amber-400 animate-pulse',
+  };
+}

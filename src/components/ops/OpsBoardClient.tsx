@@ -61,8 +61,10 @@ import {
   getCardFormatBadges,
   getCardPublishedLinks,
   getEffectiveRequestStatus,
+  getUpdateAlertMeta,
   resolveAvatarRenderUrl,
   splitTextWithUrls,
+  type UpdateAlertKind,
 } from '@/lib/ops/drop-parser';
 import { OpsAssetLightbox, OpsAssetThumb, assetPlatformLabel } from './OpsAssetThumb';
 import OpsBrandMark from './OpsBrandMark';
@@ -170,7 +172,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   const [lightboxAsset, setLightboxAsset] = useState<JobAsset | null>(null);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [highlightedIds, setHighlightedIds] = useState<Set<string>>(() => new Set());
+  const [highlightKinds, setHighlightKinds] = useState<Map<string, UpdateAlertKind>>(() => new Map());
   const stampSnapshotRef = useRef<{
     clientId: string;
     initialized: { crew: boolean; pipeline: boolean; chat: boolean; requests: boolean };
@@ -185,7 +187,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
     initialized: { crew: false, pipeline: false, chat: false, requests: false },
     stamps: { crew: new Map(), pipeline: new Map(), chat: new Map(), requests: new Map() },
   });
-  const highlightExpiryRef = useRef<Map<string, number>>(new Map());
+  const highlightExpiryRef = useRef<Map<string, { expiresAt: number; kind: UpdateAlertKind }>>(new Map());
 
   const applyTrackedUpdate = useCallback(
     <T extends { id: string; updatedAt?: string; createdAt?: string }>(
@@ -205,16 +207,18 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
           requests: new Map(),
         };
         highlightExpiryRef.current.clear();
-        setHighlightedIds((prev) => (prev.size > 0 ? new Set() : prev));
+        setHighlightKinds((prev) => (prev.size > 0 ? new Map() : prev));
       }
 
       const prevMap = store.stamps[kind];
-      const changed: string[] = [];
+      const changed: Array<{ id: string; alertKind: UpdateAlertKind }> = [];
       if (store.initialized[kind]) {
         for (const item of nextList) {
           const nextStamp = item.updatedAt || item.createdAt || '';
-          if (prevMap.get(item.id) !== nextStamp) {
-            changed.push(item.id);
+          if (!prevMap.has(item.id)) {
+            changed.push({ id: item.id, alertKind: 'new' });
+          } else if (prevMap.get(item.id) !== nextStamp) {
+            changed.push({ id: item.id, alertKind: 'updated' });
           }
         }
       }
@@ -227,23 +231,30 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
       store.initialized[kind] = true;
 
       if (changed.length > 0) {
-        const expiresAt = Date.now() + 6000;
-        for (const id of changed) {
-          highlightExpiryRef.current.set(id, expiresAt);
+        const HIGHLIGHT_MS = 20_000;
+        const expiresAt = Date.now() + HIGHLIGHT_MS;
+        for (const { id, alertKind } of changed) {
+          const existingMeta = highlightExpiryRef.current.get(id);
+          const mergedKind: UpdateAlertKind =
+            existingMeta?.kind === 'new' || alertKind === 'new' ? 'new' : 'updated';
+          highlightExpiryRef.current.set(id, { expiresAt, kind: mergedKind });
         }
-        setHighlightedIds((prev) => {
-          const copy = new Set(prev);
-          for (const id of changed) copy.add(id);
+        setHighlightKinds((prev) => {
+          const copy = new Map(prev);
+          for (const { id, alertKind } of changed) {
+            const cur = copy.get(id);
+            copy.set(id, cur === 'new' || alertKind === 'new' ? 'new' : 'updated');
+          }
           return copy;
         });
         setTimeout(() => {
           const nowMs = Date.now();
-          setHighlightedIds((prev) => {
-            const copy = new Set(prev);
+          setHighlightKinds((prev) => {
+            const copy = new Map(prev);
             let mutated = false;
-            for (const id of changed) {
-              const exp = highlightExpiryRef.current.get(id) ?? 0;
-              if (nowMs >= exp - 50) {
+            for (const { id } of changed) {
+              const meta = highlightExpiryRef.current.get(id);
+              if (meta && nowMs >= meta.expiresAt - 50) {
                 copy.delete(id);
                 highlightExpiryRef.current.delete(id);
                 mutated = true;
@@ -251,7 +262,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             }
             return mutated ? copy : prev;
           });
-        }, 6000);
+        }, HIGHLIGHT_MS);
       }
 
       setter(nextList);
@@ -896,7 +907,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                 </span>
                 {sortedCrew.map((m) => {
                   const dotCls = STATUS_DOT[m.status] || STATUS_DOT.active;
-                  const isGlow = highlightedIds.has(m.id);
+                  const crewAlert = getUpdateAlertMeta(highlightKinds.get(m.id));
                   const hasConnAlert = Boolean(m.connectorAlert && m.connectorAlert.status !== 'ok');
                   const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
                   const tip = [
@@ -915,8 +926,8 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       className={`inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-lg border text-[11px] font-medium transition-all duration-500 ${
                         hasConnAlert
                           ? 'border-red-500/70 bg-red-500/15 text-red-700 dark:text-red-300'
-                          : isGlow
-                            ? `${UPDATED_CARD_GLOW_CLS} bg-background/70`
+                          : crewAlert
+                            ? crewAlert.cardBorderCls
                             : 'border-border bg-background/70 hover:border-accent/60'
                       }`}
                     >
@@ -1008,7 +1019,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   lanes={activeClient?.lanes || []}
                   nowMs={nowMs}
                   busy={busy}
-                  highlightedIds={highlightedIds}
+                  highlightKinds={highlightKinds}
                   onEditCard={(card) => setModal({ type: 'card', card })}
                   onAssignCard={async (card, assignedTo) => {
                     const label = crew.find((c) => c.agentId === assignedTo)?.name || assignedTo || 'Unassigned';
@@ -1113,7 +1124,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   messages={chat}
                   crew={crew}
                   pipeline={pipeline}
-                  highlightedIds={highlightedIds}
+                  highlightKinds={highlightKinds}
                   busy={busy}
                   onOpenJob={(card) => setModal({ type: 'card', card })}
                   onSend={async (text, to) => {
@@ -1168,7 +1179,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                     <UnifiedCrewPanel
                       members={sortedCrew}
                       activeCount={activeCrewCount}
-                      highlightedIds={highlightedIds}
+                      highlightKinds={highlightKinds}
                       onSelect={(member) => setModal({ type: 'crew', member })}
                       onAdd={() => setModal({ type: 'create_crew', defaultSet: 'new' })}
                       onCollapse={() => setDeckCollapsed(true)}
@@ -1179,7 +1190,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       messages={chat}
                       crew={crew}
                       pipeline={pipeline}
-                      highlightedIds={highlightedIds}
+                      highlightKinds={highlightKinds}
                       busy={busy}
                       onOpenJob={(card) => setModal({ type: 'card', card })}
                       onSend={async (text, to) => {
@@ -1308,7 +1319,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                                   card={card}
                                   nowMs={nowMs}
                                   busy={busy}
-                                  highlighted={highlightedIds.has(card.id)}
+                                  highlightKind={highlightKinds.get(card.id)}
                                   onEdit={() => setModal({ type: 'card', card })}
                                   onReadyForRotty={() =>
                                     postAction(
@@ -1351,7 +1362,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                         card={card}
                         nowMs={nowMs}
                         busy={busy}
-                        highlighted={highlightedIds.has(card.id)}
+                        highlightKind={highlightKinds.get(card.id)}
                         onEdit={() => setModal({ type: 'card', card })}
                         onReadyForRotty={() =>
                           postAction(
@@ -1539,9 +1550,6 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   );
 }
 
-const UPDATED_CARD_GLOW_CLS =
-  'border-cyan-500 dark:border-cyan-400 ring-2 ring-cyan-500/45 dark:ring-cyan-400/50 shadow-[0_0_20px_rgba(34,211,238,0.45)]';
-
 /** Compact circular avatar with status dot and initial-letter fallback for top crew pills. */
 function CrewPillAvatar({
   name,
@@ -1594,14 +1602,14 @@ const STATUS_DOT: Record<AgentStatus, string> = {
 function UnifiedCrewPanel({
   members,
   activeCount,
-  highlightedIds,
+  highlightKinds,
   onSelect,
   onAdd,
   onCollapse,
 }: {
   members: CrewMember[];
   activeCount: number;
-  highlightedIds: Set<string>;
+  highlightKinds: Map<string, UpdateAlertKind>;
   onSelect: (m: CrewMember) => void;
   onAdd?: () => void;
   onCollapse?: () => void;
@@ -1647,7 +1655,7 @@ function UnifiedCrewPanel({
         {members.map((m) => {
           const badge = AGENT_BADGE[m.status] || AGENT_BADGE.active;
           const dotCls = STATUS_DOT[m.status] || STATUS_DOT.active;
-          const isGlow = highlightedIds.has(m.id);
+          const crewAlert = getUpdateAlertMeta(highlightKinds.get(m.id));
           const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
           const initials =
             m.name
@@ -1667,7 +1675,7 @@ function UnifiedCrewPanel({
               title={tooltip}
               onClick={() => onSelect(m)}
               className={`relative text-left rounded-lg border bg-background/60 px-2 py-1.5 transition-all duration-500 overflow-hidden ${
-                isGlow ? UPDATED_CARD_GLOW_CLS : 'border-border hover:border-accent/60'
+                crewAlert ? crewAlert.cardBorderCls : 'border-border hover:border-accent/60'
               }`}
             >
               <div className="flex items-center gap-2 min-w-0">
@@ -1726,7 +1734,7 @@ function PipelineCardTile({
   card,
   nowMs,
   busy,
-  highlighted,
+  highlightKind,
   onEdit,
   onReadyForRotty,
   onPostIt,
@@ -1737,7 +1745,7 @@ function PipelineCardTile({
   card: PipelineCard;
   nowMs: number;
   busy: boolean;
-  highlighted: boolean;
+  highlightKind?: UpdateAlertKind;
   onEdit: () => void;
   onReadyForRotty: () => void;
   onPostIt: () => void;
@@ -1780,11 +1788,13 @@ function PipelineCardTile({
     void onReorderAssets(reordered);
   };
 
+  const tileAlert = getUpdateAlertMeta(highlightKind);
+
   return (
     <div
       className={`rounded-lg border bg-background p-2.5 space-y-1.5 transition-all duration-500 ${
-        highlighted
-          ? UPDATED_CARD_GLOW_CLS
+        tileAlert
+          ? tileAlert.cardBorderCls
           : card.postIt && isReady
             ? 'border-emerald-500/60 ring-1 ring-emerald-500/25'
             : 'border-border hover:border-accent/50'
@@ -2285,7 +2295,7 @@ function CrewChatPanel({
   messages,
   crew,
   pipeline = [],
-  highlightedIds,
+  highlightKinds,
   busy,
   tall = false,
   onOpenJob,
@@ -2295,7 +2305,7 @@ function CrewChatPanel({
   messages: ChatMessage[];
   crew: CrewMember[];
   pipeline?: PipelineCard[];
-  highlightedIds: Set<string>;
+  highlightKinds: Map<string, UpdateAlertKind>;
   busy: boolean;
   tall?: boolean;
   onOpenJob?: (card: PipelineCard) => void;
@@ -2379,6 +2389,34 @@ function CrewChatPanel({
   const activeChipLabel =
     CHAT_TARGET_CHIPS.find((c) => c.key === targetMention)?.label || '@All';
 
+  const chatAlerts = useMemo(() => {
+    const channelAlert = new Map<string, UpdateAlertKind>();
+    let overallKind: UpdateAlertKind | undefined;
+    let activeCount = 0;
+    for (const m of messages) {
+      const k = highlightKinds.get(m.id);
+      if (!k) continue;
+      activeCount += 1;
+      overallKind = overallKind === 'new' || k === 'new' ? 'new' : 'updated';
+      const handles = new Set<string>([
+        normalizeChatHandle(m.senderId),
+        normalizeChatHandle(m.senderName),
+        ...(m.mentions || []).map((t) => normalizeChatHandle(t)),
+      ]);
+      for (const chip of CHAT_TARGET_CHIPS) {
+        if (chip.key === 'all') continue;
+        if (handles.has(normalizeChatHandle(chip.key))) {
+          const prev = channelAlert.get(chip.key);
+          channelAlert.set(chip.key, prev === 'new' || k === 'new' ? 'new' : 'updated');
+        }
+      }
+    }
+    if (overallKind) channelAlert.set('all', overallKind);
+    return { channelAlert, overallKind, activeCount };
+  }, [messages, highlightKinds]);
+
+  const headerAlertMeta = getUpdateAlertMeta(chatAlerts.overallKind);
+
   const appendMentionTag = (mentionToken: string) => {
     if (!mentionToken) return;
     setDraft((prev) => {
@@ -2404,6 +2442,11 @@ function CrewChatPanel({
               Crew Chat
             </h2>
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            {headerAlertMeta && (
+              <span className={`px-1.5 py-0 rounded border text-[9px] font-mono ${headerAlertMeta.badgeCls}`}>
+                {chatAlerts.activeCount} {headerAlertMeta.label}
+              </span>
+            )}
           </div>
           <span className="text-[10px] font-mono text-muted-foreground">
             {targetMention === 'all'
@@ -2415,6 +2458,7 @@ function CrewChatPanel({
         <nav aria-label="Crew chat filters" className="flex items-center gap-1 overflow-x-auto ops-scroll pb-0.5">
           {CHAT_TARGET_CHIPS.map((chip) => {
             const active = targetMention === chip.key;
+            const chipAlert = getUpdateAlertMeta(chatAlerts.channelAlert.get(chip.key));
             return (
               <button
                 key={chip.key}
@@ -2431,13 +2475,18 @@ function CrewChatPanel({
                     : `Filter & target ${chip.label} (click again for @All)`
                 }
                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium border whitespace-nowrap transition-all ${
-                  active
-                    ? 'bg-cyan-500/15 border-cyan-500/45 text-cyan-800 dark:text-cyan-200 shadow-sm'
-                    : 'bg-background/70 border-border text-muted-foreground hover:text-foreground hover:border-accent/50'
+                  chipAlert && !active
+                    ? chipAlert.tabBorderCls
+                    : active && chipAlert
+                      ? `${chipAlert.tabBorderCls} font-semibold`
+                      : active
+                        ? 'bg-cyan-500/15 border-cyan-500/45 text-cyan-800 dark:text-cyan-200 shadow-sm'
+                        : 'bg-background/70 border-border text-muted-foreground hover:text-foreground hover:border-accent/50'
                 }`}
               >
                 {chip.key === 'all' ? (
                   <>
+                    {chipAlert && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${chipAlert.dotCls}`} />}
                     <span>{chip.label}</span>
                     <span className="px-1 rounded text-[9px] font-mono bg-cyan-500/25 text-cyan-900 dark:text-cyan-100">
                       {messages.length}
@@ -2445,7 +2494,9 @@ function CrewChatPanel({
                   </>
                 ) : (
                   <>
-                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${chip.dotCls}`} />
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${chipAlert ? chipAlert.dotCls : chip.dotCls}`}
+                    />
                     <span>{chip.label}</span>
                   </>
                 )}
@@ -2487,7 +2538,7 @@ function CrewChatPanel({
               const prevDateKey = idx > 0 ? filteredMessages[idx - 1]?.createdAt?.slice(0, 10) || '' : '';
               const showDateDivider = Boolean(dateKey && dateKey !== prevDateKey);
 
-              const isGlow = highlightedIds.has(m.id);
+              const msgAlert = getUpdateAlertMeta(highlightKinds.get(m.id));
               const isOp = m.senderKind === 'operator';
               const senderInfo =
                 crewInfoByHandle.get(normalizeChatHandle(m.senderId)) ||
@@ -2526,7 +2577,7 @@ function CrewChatPanel({
                     /* Compact Crew Reply Card */
                     <article
                       className={`group rounded-xl border bg-background/75 p-2.5 ml-3 border-r-2 transition-all duration-500 ${
-                        isGlow ? UPDATED_CARD_GLOW_CLS : `border-border ${senderAccent.accentBorderR}`
+                        msgAlert ? msgAlert.cardBorderCls : `border-border ${senderAccent.accentBorderR}`
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 pb-1">
@@ -2540,6 +2591,11 @@ function CrewChatPanel({
                             <span className={`text-xs font-bold truncate ${senderAccent.accentText}`}>
                               {m.senderName}
                             </span>
+                            {msgAlert && (
+                              <span className={`px-1 py-0 rounded border text-[8px] font-mono ${msgAlert.badgeCls}`}>
+                                {msgAlert.label}
+                              </span>
+                            )}
                             {m.mentions && m.mentions.length > 0 && (
                               <span className="text-[10px] font-mono text-accent truncate">
                                 {m.mentions.map((tag) => `@${tag}`).join(' ')}
@@ -2583,7 +2639,7 @@ function CrewChatPanel({
                     /* Operator Dispatch / Assignment Card */
                     <article
                       className={`group rounded-xl border border-l-4 bg-background/75 p-2.5 transition-all duration-500 ${
-                        isGlow ? UPDATED_CARD_GLOW_CLS : `border-border ${operatorBorderL}`
+                        msgAlert ? msgAlert.cardBorderCls : `border-border ${operatorBorderL}`
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 pb-1.5 mb-1.5">
@@ -2591,6 +2647,11 @@ function CrewChatPanel({
                           <CrewChatAvatar name={m.senderName} src={senderInfo?.avatar} isOperator />
                           <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                             <span className="text-xs font-bold text-foreground">{m.senderName}</span>
+                            {msgAlert && (
+                              <span className={`px-1 py-0 rounded border text-[8px] font-mono ${msgAlert.badgeCls}`}>
+                                {msgAlert.label}
+                              </span>
+                            )}
                             <span className="px-1.5 py-0 rounded text-[9px] font-mono font-semibold bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/35">
                               Operator
                             </span>
@@ -2718,7 +2779,7 @@ function CrewChatPanel({
                     /* Bot Structured Report Card */
                     <article
                       className={`group rounded-xl border bg-background/75 p-2.5 transition-all duration-500 ${
-                        isGlow ? UPDATED_CARD_GLOW_CLS : 'border-border'
+                        msgAlert ? msgAlert.cardBorderCls : 'border-border'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/70 mb-2">
@@ -2733,6 +2794,11 @@ function CrewChatPanel({
                               <span className="text-xs font-bold text-foreground truncate">
                                 {m.senderName}
                               </span>
+                              {msgAlert && (
+                                <span className={`px-1 py-0 rounded border text-[8px] font-mono ${msgAlert.badgeCls}`}>
+                                  {msgAlert.label}
+                                </span>
+                              )}
                               {/\bverified\b|\blive\b/i.test(m.text) ? (
                                 <span className="px-1.5 py-0 rounded text-[9px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
                                   VERIFIED
