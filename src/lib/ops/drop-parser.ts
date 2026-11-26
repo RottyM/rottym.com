@@ -661,6 +661,31 @@ export function resolveAvatarRenderUrl(raw?: string): string | undefined {
   return trimmed;
 }
 
+export function extractChatMentions(text: string, explicit?: unknown): string[] | undefined {
+  const found = new Set<string>();
+  const addMention = (raw: string) => {
+    const clean = raw.toLowerCase().replace(/[^a-z0-9_-]+/g, '').trim();
+    if (!clean) return;
+    if (clean === 'cheatcode' || clean === 'cheatcodes') {
+      found.add('cheat-code');
+      return;
+    }
+    found.add(clean);
+  };
+
+  for (const match of text.matchAll(/@([a-zA-Z0-9_-]{2,32})/g)) {
+    addMention(match[1]);
+  }
+  if (typeof explicit === 'string') {
+    for (const part of explicit.split(',')) addMention(part);
+  } else if (Array.isArray(explicit)) {
+    for (const item of explicit) {
+      if (typeof item === 'string') addMention(item);
+    }
+  }
+  return found.size > 0 ? Array.from(found).slice(0, 12) : undefined;
+}
+
 export function syncVisualArtifactsNeeded(
   baseArtifacts: string[] | undefined,
   explicitArtifacts: string[] | undefined,

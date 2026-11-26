@@ -14,6 +14,7 @@ import {
   Layers,
   Lock,
   LogOut,
+  MessageSquare,
   Moon,
   Plus,
   RefreshCw,
@@ -22,6 +23,7 @@ import {
   ShieldAlert,
   Sparkles,
   Sun,
+  Trash2,
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import {
@@ -35,6 +37,7 @@ import {
 import type {
   ActivityEntry,
   AgentStatus,
+  ChatMessage,
   ClientWorkspace,
   CrewMember,
   GateItem,
@@ -120,6 +123,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   const [gates, setGates] = useState<GateItem[]>([]);
   const [metrics, setMetrics] = useState<MetricsSnapshot | null>(null);
   const [activity, setActivity] = useState<ActivityEntry[]>([]);
+  const [chat, setChat] = useState<ChatMessage[]>([]);
 
   const [syncLive, setSyncLive] = useState(false);
   const [laneFilter, setLaneFilter] = useState<PipelineLane | 'all'>('all');
@@ -130,18 +134,18 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   const [highlightedIds, setHighlightedIds] = useState<Set<string>>(() => new Set());
   const stampSnapshotRef = useRef<{
     clientId: string;
-    initialized: { crew: boolean; pipeline: boolean };
-    stamps: { crew: Map<string, string>; pipeline: Map<string, string> };
+    initialized: { crew: boolean; pipeline: boolean; chat: boolean };
+    stamps: { crew: Map<string, string>; pipeline: Map<string, string>; chat: Map<string, string> };
   }>({
     clientId: 'rottym',
-    initialized: { crew: false, pipeline: false },
-    stamps: { crew: new Map(), pipeline: new Map() },
+    initialized: { crew: false, pipeline: false, chat: false },
+    stamps: { crew: new Map(), pipeline: new Map(), chat: new Map() },
   });
   const highlightExpiryRef = useRef<Map<string, number>>(new Map());
 
   const applyTrackedUpdate = useCallback(
-    <T extends { id: string; updatedAt?: string }>(
-      kind: 'crew' | 'pipeline',
+    <T extends { id: string; updatedAt?: string; createdAt?: string }>(
+      kind: 'crew' | 'pipeline' | 'chat',
       clientScope: string,
       nextList: T[],
       setter: (items: T[]) => void
@@ -149,8 +153,8 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
       const store = stampSnapshotRef.current;
       if (store.clientId !== clientScope) {
         store.clientId = clientScope;
-        store.initialized = { crew: false, pipeline: false };
-        store.stamps = { crew: new Map(), pipeline: new Map() };
+        store.initialized = { crew: false, pipeline: false, chat: false };
+        store.stamps = { crew: new Map(), pipeline: new Map(), chat: new Map() };
         highlightExpiryRef.current.clear();
         setHighlightedIds((prev) => (prev.size > 0 ? new Set() : prev));
       }
@@ -159,7 +163,8 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
       const changed: string[] = [];
       if (store.initialized[kind]) {
         for (const item of nextList) {
-          if (prevMap.get(item.id) !== (item.updatedAt || '')) {
+          const nextStamp = item.updatedAt || item.createdAt || '';
+          if (prevMap.get(item.id) !== nextStamp) {
             changed.push(item.id);
           }
         }
@@ -167,7 +172,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
 
       const nextMap = new Map<string, string>();
       for (const item of nextList) {
-        nextMap.set(item.id, item.updatedAt || '');
+        nextMap.set(item.id, item.updatedAt || item.createdAt || '');
       }
       store.stamps[kind] = nextMap;
       store.initialized[kind] = true;
@@ -305,9 +310,11 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         gates: GateItem[];
         metrics: MetricsSnapshot | null;
         activity: ActivityEntry[];
+        chat?: ChatMessage[];
       };
       applyTrackedUpdate('crew', activeClientId, data.crew || [], setCrew);
       applyTrackedUpdate('pipeline', activeClientId, data.pipeline || [], setPipeline);
+      applyTrackedUpdate('chat', activeClientId, data.chat || [], setChat);
       setGates(data.gates || []);
       setMetrics(data.metrics || null);
       setActivity(data.activity || []);
@@ -330,9 +337,11 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             gates: GateItem[];
             metrics: MetricsSnapshot | null;
             activity: ActivityEntry[];
+            chat?: ChatMessage[];
           };
           applyTrackedUpdate('crew', activeClientId, data.crew || [], setCrew);
           applyTrackedUpdate('pipeline', activeClientId, data.pipeline || [], setPipeline);
+          applyTrackedUpdate('chat', activeClientId, data.chat || [], setChat);
           setGates(data.gates || []);
           setMetrics(data.metrics || null);
           setActivity(data.activity || []);
@@ -397,6 +406,17 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             const list = snap.docs.map((d) => d.data() as ActivityEntry);
             list.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
             setActivity(list.slice(0, 25));
+          }
+        )
+      );
+      unsubs.push(
+        onSnapshot(
+          query(collection(db, 'ops_chat'), where('clientId', '==', activeClientId)),
+          (snap) => {
+            setSyncLive(true);
+            const list = snap.docs.map((d) => d.data() as ChatMessage);
+            list.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+            applyTrackedUpdate('chat', activeClientId, list.slice(-60), setChat);
           }
         )
       );
@@ -757,6 +777,20 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
               onAdd={() => setModal({ type: 'create_crew', defaultSet: 'new' })}
             />
           </section>
+
+          {/* Crew Chatboard */}
+          <CrewChatPanel
+            messages={chat}
+            crew={crew}
+            highlightedIds={highlightedIds}
+            busy={busy}
+            onSend={async (text) => {
+              await postAction({ action: 'post_chat', text }, 'Sent message to Crew Chat');
+            }}
+            onDelete={async (id) => {
+              await postAction({ action: 'delete_chat', id }, 'Removed chat message');
+            }}
+          />
 
           {/* Lanes Bar */}
           <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
@@ -1239,11 +1273,194 @@ function PipelineCardTile({
             className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border border-cyan-500/35 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/10"
           >
             <Check className="w-2.5 h-2.5" />
-            Ready
+            Queue Ready
           </button>
         )}
       </div>
     </div>
+  );
+}
+
+function CrewChatPanel({
+  messages,
+  crew,
+  highlightedIds,
+  busy,
+  onSend,
+  onDelete,
+}: {
+  messages: ChatMessage[];
+  crew: CrewMember[];
+  highlightedIds: Set<string>;
+  busy: boolean;
+  onSend: (text: string) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}) {
+  const [draft, setDraft] = useState('');
+  const listEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    listEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [messages.length]);
+
+  const avatarBySender = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of crew) {
+      const resolved = resolveAvatarRenderUrl(c.avatarUrl);
+      if (resolved) {
+        map.set(c.agentId.toLowerCase(), resolved);
+        map.set(c.name.toLowerCase(), resolved);
+      }
+    }
+    return map;
+  }, [crew]);
+
+  const mentionChips = ['@All', '@Marley', '@Sovereign', '@Pixel', '@CheatCode'];
+
+  const appendMention = (tag: string) => {
+    setDraft((prev) => {
+      const prefix = prev.trimEnd();
+      return prefix ? `${prefix} ${tag} ` : `${tag} `;
+    });
+  };
+
+  return (
+    <section className="rounded-xl border border-border bg-card p-3.5 sm:p-4 space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-accent" />
+          <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
+            Crew Chatboard
+          </h2>
+          <span className="text-[11px] font-mono text-muted-foreground">{messages.length}</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1">
+          {mentionChips.map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              onClick={() => appendMention(chip)}
+              className="px-2 py-0.5 rounded-md text-[10px] font-mono border border-border bg-background hover:border-accent text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+        {messages.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border bg-background/40 px-3 py-4 text-xs text-muted-foreground text-center">
+            No messages yet — bots can talk via <span className="font-mono text-foreground">/api/bots/chat</span> or you can ping them below as Rotty.
+          </div>
+        ) : (
+          messages.map((m) => {
+            const isGlow = highlightedIds.has(m.id);
+            const isOp = m.senderKind === 'operator';
+            const avatarSrc =
+              avatarBySender.get(m.senderId.toLowerCase()) ||
+              avatarBySender.get(m.senderName.toLowerCase());
+            const initials =
+              m.senderName
+                .split(/\s+/)
+                .slice(0, 2)
+                .map((w) => w[0]?.toUpperCase() || '')
+                .join('') || '?';
+
+            return (
+              <div
+                key={m.id}
+                className={`group rounded-lg border bg-background/70 px-3 py-2 transition-all duration-500 flex items-start gap-2.5 ${
+                  isGlow
+                    ? UPDATED_CARD_GLOW_CLS
+                    : isOp
+                      ? 'border-accent/40'
+                      : 'border-border'
+                }`}
+              >
+                <div className="relative w-7 h-7 rounded-full border border-border bg-accent/15 text-accent font-mono text-[10px] font-bold flex items-center justify-center shrink-0 overflow-hidden mt-0.5">
+                  <span>{initials}</span>
+                  {avatarSrc && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={avatarSrc}
+                      alt={m.senderName}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                      <span className="text-xs font-bold text-foreground">{m.senderName}</span>
+                      {isOp && (
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-mono border border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
+                          Operator
+                        </span>
+                      )}
+                      {m.jobTitle && (
+                        <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-muted text-muted-foreground truncate max-w-[220px]">
+                          Re: {m.jobTitle}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[10px] font-mono text-muted-foreground">
+                        {m.createdAt?.slice(11, 16) || ''}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="Delete chat message"
+                        disabled={busy}
+                        onClick={() => onDelete(m.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded text-muted-foreground hover:text-red-500 transition-opacity disabled:opacity-40"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-foreground/95 whitespace-pre-wrap break-words leading-relaxed">
+                    {m.text}
+                  </p>
+                </div>
+              </div>
+            );
+          })
+        )}
+        <div ref={listEndRef} />
+      </div>
+
+      <form
+        className="flex items-center gap-2 pt-1 border-t border-border/70"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          const trimmed = draft.trim();
+          if (!trimmed || busy) return;
+          setDraft('');
+          await onSend(trimmed);
+        }}
+      >
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="Message the crew as Rotty (use @Marley, @Sovereign, @Pixel, @CheatCode, @All)..."
+          className="flex-1 min-w-0 px-3 py-1.5 rounded-lg text-xs bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+        />
+        <button
+          type="submit"
+          disabled={busy || !draft.trim()}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
+        >
+          <Send className="w-3.5 h-3.5" />
+          Send
+        </button>
+      </form>
+    </section>
   );
 }
 

@@ -9,6 +9,7 @@ import {
 } from './seed';
 import type {
   ActivityEntry,
+  ChatMessage,
   ClientWorkspace,
   CrewMember,
   GateItem,
@@ -251,18 +252,21 @@ export async function loadClientBoardSnapshot(clientId: string): Promise<{
   gates: GateItem[];
   metrics: MetricsSnapshot | null;
   activity: ActivityEntry[];
+  chat: ChatMessage[];
 }> {
   await ensureOpsSeeded();
-  const [crew, pipeline, gates, metrics, activity] = await Promise.all([
+  const [crew, pipeline, gates, metrics, activity, chat] = await Promise.all([
     opsQueryByClient<CrewMember>('ops_crew', clientId),
     opsQueryByClient<PipelineCard>('ops_pipeline', clientId),
     opsQueryByClient<GateItem>('ops_gates', clientId),
     opsGetDoc<MetricsSnapshot>('ops_metrics', clientId),
     opsQueryByClient<ActivityEntry>('ops_activity', clientId),
+    opsQueryByClient<ChatMessage>('ops_chat', clientId),
   ]);
 
   pipeline.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
   activity.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+  chat.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
 
   return {
     crew,
@@ -270,5 +274,6 @@ export async function loadClientBoardSnapshot(clientId: string): Promise<{
     gates,
     metrics,
     activity: activity.slice(0, 30),
+    chat: chat.slice(-60),
   };
 }

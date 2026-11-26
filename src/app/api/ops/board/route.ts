@@ -6,6 +6,7 @@ import {
   unauthorizedResponse,
 } from '@/lib/ops/auth';
 import {
+  extractChatMentions,
   laneToChannel,
   normalizeLane,
   parseAdminPasteBlock,
@@ -23,6 +24,7 @@ import {
 } from '@/lib/ops/firestore-rest';
 import type {
   AgentStatus,
+  ChatMessage,
   ContentKind,
   CrewMember,
   CrewSet,
@@ -635,6 +637,48 @@ export async function POST(request: Request) {
       await appendOpsActivity(clientId, user.name, `pasted drop (${card.lane})`, card.title);
       return NextResponse.json({ ok: true, kind: 'drop', card }, { status: 201 });
     }
+  }
+
+  if (action === 'post_chat') {
+    const rawText = typeof body.text === 'string' ? body.text : '';
+    const text = rawText.trim().slice(0, 1200);
+    if (!text) {
+      return NextResponse.json({ error: 'text is required' }, { status: 400 });
+    }
+    const jobId = typeof body.jobId === 'string' && body.jobId.trim() ? body.jobId.trim().slice(0, 120) : undefined;
+    let jobTitle: string | undefined;
+    if (jobId) {
+      const job = await opsGetDoc<PipelineCard>('ops_pipeline', jobId);
+      if (job && job.clientId === clientId) jobTitle = job.title;
+    }
+    const msg: ChatMessage = {
+      id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      clientId,
+      senderId: 'rotty',
+      senderName: 'Rotty',
+      senderKind: 'operator',
+      text,
+      mentions: extractChatMentions(text, body.to ?? body.mentions),
+      jobId,
+      jobTitle,
+      replyToId:
+        typeof body.replyToId === 'string' && body.replyToId.trim()
+          ? body.replyToId.trim().slice(0, 120)
+          : undefined,
+      createdAt: now,
+    };
+    await opsSetDoc('ops_chat', msg.id, msg as unknown as Record<string, unknown>);
+    return NextResponse.json({ ok: true, message: msg }, { status: 201 });
+  }
+
+  if (action === 'delete_chat') {
+    const id = typeof body.id === 'string' ? body.id.trim() : '';
+    const existing = id ? await opsGetDoc<ChatMessage>('ops_chat', id) : null;
+    if (!existing || existing.clientId !== clientId) {
+      return NextResponse.json({ error: 'Chat message not found' }, { status: 404 });
+    }
+    await opsDeleteDoc('ops_chat', id);
+    return NextResponse.json({ ok: true, deletedId: id }, { status: 200 });
   }
 
   return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });

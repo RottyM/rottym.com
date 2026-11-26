@@ -123,6 +123,20 @@ export interface ActivityEntry {
   text: string;
 }
 
+export interface ChatMessage {
+  id: string;
+  clientId: string;
+  senderId: string;
+  senderName: string;
+  senderKind: 'bot' | 'operator';
+  text: string;
+  mentions?: string[];
+  jobId?: string;
+  jobTitle?: string;
+  replyToId?: string;
+  createdAt: string;
+}
+
 export interface OpsSignalPayload {
   id: string;
   clientId: string;

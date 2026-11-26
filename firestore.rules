@@ -145,6 +145,21 @@ rules_version = '2';
 //     - target: string (required)
 //     - text: string (required)
 //
+// Collection: ops_chat/{docId}
+//   Document ID: chat message ID (append-only via backend)
+//   Fields:
+//     - id: string (required)
+//     - clientId: string (required, references ops_clients/{clientId})
+//     - senderId: string (required)
+//     - senderName: string (required)
+//     - senderKind: string (required, 'bot' | 'operator')
+//     - text: string (required)
+//     - mentions: list<string> (optional)
+//     - jobId: string (optional)
+//     - jobTitle: string (optional)
+//     - replyToId: string (optional)
+//     - createdAt: string (required, ISO-8601)
+//
 // ===============================================================
 
 service cloud.firestore {
@@ -287,6 +302,13 @@ service cloud.firestore {
     // Append-only activity log: readable only by the owner or verified
     // members of the referenced `clientId` workspace. All client writes denied.
     match /ops_activity/{docId} {
+      allow get, list: if isOpsOwner() || isClientScopedMember(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // Command Center chat messages: readable only by the owner or verified
+    // members of the referenced `clientId` workspace. All client writes denied.
+    match /ops_chat/{docId} {
       allow get, list: if isOpsOwner() || isClientScopedMember(resource.data);
       allow create, update, delete: if false;
     }
