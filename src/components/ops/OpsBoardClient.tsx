@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import {
@@ -72,6 +72,28 @@ import OpsDecisionDesk from './OpsDecisionDesk';
 import OpsDeskPanel from './OpsDeskPanel';
 import { extractPrimaryArticleUrl, OpsLinkCardPreview } from './OpsLinkCardPreview';
 import { OpsModalHost, type OpsModalState } from './OpsModals';
+
+const CREW_EXPANDED_KEY = 'rottym_ops_crew_expanded';
+const CREW_EXPANDED_EVENT = 'ops-crew-expanded-changed';
+
+function subscribeCrewExpanded(cb: () => void) {
+  window.addEventListener(CREW_EXPANDED_EVENT, cb);
+  window.addEventListener('storage', cb);
+  return () => {
+    window.removeEventListener(CREW_EXPANDED_EVENT, cb);
+    window.removeEventListener('storage', cb);
+  };
+}
+
+function getCrewExpandedSnapshot(): boolean {
+  try {
+    return window.localStorage.getItem(CREW_EXPANDED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+const getCrewExpandedServerSnapshot = () => false;
 
 type BoardColumnId = PipelineStage | 'ready';
 
@@ -162,8 +184,23 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   const [syncLive, setSyncLive] = useState(false);
   const [opsView, setOpsView] = useState<'desk' | 'board'>('desk');
   const [deckCollapsed, setDeckCollapsed] = useState(false);
+  const crewExpanded = useSyncExternalStore(
+    subscribeCrewExpanded,
+    getCrewExpandedSnapshot,
+    getCrewExpandedServerSnapshot
+  );
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [laneFilter, setLaneFilter] = useState<PipelineLane | 'all'>('all');
+
+  const toggleCrewExpanded = useCallback(() => {
+    const next = !getCrewExpandedSnapshot();
+    try {
+      window.localStorage.setItem(CREW_EXPANDED_KEY, next ? '1' : '0');
+    } catch {
+      // ignore storage errors
+    }
+    window.dispatchEvent(new Event(CREW_EXPANDED_EVENT));
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => setNowMs(Date.now()), 15000);
@@ -665,6 +702,32 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
     return postCount + reqCount;
   }, [pipeline, requests, nowMs]);
 
+  const rosterSummaryStats = useMemo(() => {
+    let inFlight = 0;
+    let needsAsset = 0;
+    for (const p of pipeline) {
+      if (p.stage === 'posted' || p.stage === 'archived') continue;
+      inFlight += 1;
+      const lock = getCardCompleteness(p).lockReason;
+      if (
+        lock === 'needs_photo' ||
+        lock === 'needs_copy_and_photo' ||
+        lock === 'asset_rejected' ||
+        lock === 'needs_asset_approval'
+      ) {
+        needsAsset += 1;
+      }
+    }
+    const openGates = gates.filter((g) => g.state !== 'resolved').length;
+    const crewAlerts = crew.filter((c) => c.connectorAlert && c.connectorAlert.status !== 'ok').length;
+    return {
+      inFlight,
+      needsAsset,
+      blocked: openGates + crewAlerts,
+      hasCrewAlert: crewAlerts > 0,
+    };
+  }, [pipeline, gates, crew]);
+
   const filteredPipeline = useMemo(
     () =>
       pipeline.filter((p) => {
@@ -1007,52 +1070,111 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
 
             {opsView === 'desk' ? (
               <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1 justify-end">
-                <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 mr-1 shrink-0">
-                  Crew {activeCrewCount}/{crew.length}
-                </span>
-                {sortedCrew.map((m) => {
-                  const dotCls = STATUS_DOT[m.status] || STATUS_DOT.active;
-                  const crewAlert = getUpdateAlertMeta(highlightKinds.get(m.id));
-                  const hasConnAlert = Boolean(m.connectorAlert && m.connectorAlert.status !== 'ok');
-                  const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
-                  const tip = [
-                    m.name,
-                    `${m.role} · ${m.model}`,
-                    hasConnAlert ? `ALERT: ${m.connectorAlert?.message}` : m.statusNote,
-                  ]
-                    .filter(Boolean)
-                    .join(' — ');
-                  return (
-                    <button
-                      key={m.id}
-                      type="button"
-                      title={tip}
-                      onClick={() => setModal({ type: 'crew', member: m })}
-                      className={`inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-lg border text-[11px] font-medium transition-all duration-500 ${
-                        hasConnAlert
-                          ? 'border-red-500/70 bg-red-500/15 text-red-700 dark:text-red-300'
-                          : crewAlert
-                            ? crewAlert.cardBorderCls
-                            : 'border-border bg-background/70 hover:border-accent/60'
-                      }`}
-                    >
-                      <CrewPillAvatar
-                        name={m.name}
-                        src={avatarSrc}
-                        dotCls={hasConnAlert ? 'bg-red-500 animate-pulse' : dotCls}
-                      />
-                      <span className="truncate max-w-[90px]">{m.name}</span>
-                    </button>
-                  );
-                })}
                 <button
                   type="button"
-                  onClick={() => setModal({ type: 'create_crew', defaultSet: 'new' })}
-                  className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-lg border border-border bg-background hover:border-accent text-[11px] text-muted-foreground hover:text-foreground"
+                  aria-expanded={crewExpanded}
+                  onClick={toggleCrewExpanded}
+                  title={crewExpanded ? 'Collapse crew roster pills' : 'Expand full crew roster pills'}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-mono transition-colors shrink-0 ${
+                    rosterSummaryStats.hasCrewAlert
+                      ? 'border-red-500/60 bg-red-500/15 text-red-700 dark:text-red-300'
+                      : crewExpanded
+                        ? 'border-accent/55 bg-accent/10 text-foreground'
+                        : 'border-border bg-background/70 hover:border-accent/60 text-foreground'
+                  }`}
                 >
-                  <Plus className="w-3 h-3" />
-                  Add
+                  <span
+                    className={`w-2 h-2 rounded-full shrink-0 ${
+                      rosterSummaryStats.hasCrewAlert
+                        ? 'bg-red-500 animate-pulse'
+                        : 'bg-emerald-500'
+                    }`}
+                  />
+                  <span>Crew</span>
+                  <span className="px-1.5 py-0 rounded bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/35 text-[10px] font-semibold">
+                    {activeCrewCount}/{crew.length}
+                  </span>
+                  {crewExpanded ? (
+                    <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                  )}
                 </button>
+
+                {crewExpanded && (
+                  <>
+                    {sortedCrew.map((m) => {
+                      const dotCls = STATUS_DOT[m.status] || STATUS_DOT.active;
+                      const crewAlert = getUpdateAlertMeta(highlightKinds.get(m.id));
+                      const hasConnAlert = Boolean(m.connectorAlert && m.connectorAlert.status !== 'ok');
+                      const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
+                      const tip = [
+                        m.name,
+                        `${m.role} · ${m.model}`,
+                        hasConnAlert ? `ALERT: ${m.connectorAlert?.message}` : m.statusNote,
+                      ]
+                        .filter(Boolean)
+                        .join(' — ');
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          title={tip}
+                          onClick={() => setModal({ type: 'crew', member: m })}
+                          className={`inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-lg border text-[11px] font-medium transition-all duration-500 ${
+                            hasConnAlert
+                              ? 'border-red-500/70 bg-red-500/15 text-red-700 dark:text-red-300'
+                              : crewAlert
+                                ? crewAlert.cardBorderCls
+                                : 'border-border bg-background/70 hover:border-accent/60'
+                          }`}
+                        >
+                          <CrewPillAvatar
+                            name={m.name}
+                            src={avatarSrc}
+                            dotCls={hasConnAlert ? 'bg-red-500 animate-pulse' : dotCls}
+                          />
+                          <span className="truncate max-w-[90px]">{m.name}</span>
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => setModal({ type: 'create_crew', defaultSet: 'new' })}
+                      className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-lg border border-border bg-background hover:border-accent text-[11px] text-muted-foreground hover:text-foreground"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Add
+                    </button>
+                  </>
+                )}
+
+                <div className="hidden sm:flex items-center gap-2 pl-2 ml-0.5 border-l border-border/80 text-[11px] font-mono text-muted-foreground shrink-0">
+                  <span>
+                    In Flight:{' '}
+                    <span className="text-foreground font-semibold">{rosterSummaryStats.inFlight}</span>
+                  </span>
+                  <span className="text-border">·</span>
+                  <span>
+                    Needs Asset:{' '}
+                    <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                      {rosterSummaryStats.needsAsset}
+                    </span>
+                  </span>
+                  <span className="text-border">·</span>
+                  <span>
+                    Blocked:{' '}
+                    <span
+                      className={`font-semibold ${
+                        rosterSummaryStats.blocked > 0
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-foreground'
+                      }`}
+                    >
+                      {rosterSummaryStats.blocked}
+                    </span>
+                  </span>
+                </div>
               </div>
             ) : (
               <div className="text-[11px] font-mono text-muted-foreground">
