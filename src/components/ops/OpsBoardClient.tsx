@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import {
@@ -127,6 +127,83 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   const [modal, setModal] = useState<OpsModalState>({ type: 'closed' });
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [highlightedIds, setHighlightedIds] = useState<Set<string>>(() => new Set());
+  const stampSnapshotRef = useRef<{
+    clientId: string;
+    initialized: { crew: boolean; pipeline: boolean };
+    stamps: { crew: Map<string, string>; pipeline: Map<string, string> };
+  }>({
+    clientId: 'rottym',
+    initialized: { crew: false, pipeline: false },
+    stamps: { crew: new Map(), pipeline: new Map() },
+  });
+  const highlightExpiryRef = useRef<Map<string, number>>(new Map());
+
+  const applyTrackedUpdate = useCallback(
+    <T extends { id: string; updatedAt?: string }>(
+      kind: 'crew' | 'pipeline',
+      clientScope: string,
+      nextList: T[],
+      setter: (items: T[]) => void
+    ) => {
+      const store = stampSnapshotRef.current;
+      if (store.clientId !== clientScope) {
+        store.clientId = clientScope;
+        store.initialized = { crew: false, pipeline: false };
+        store.stamps = { crew: new Map(), pipeline: new Map() };
+        highlightExpiryRef.current.clear();
+        setHighlightedIds((prev) => (prev.size > 0 ? new Set() : prev));
+      }
+
+      const prevMap = store.stamps[kind];
+      const changed: string[] = [];
+      if (store.initialized[kind]) {
+        for (const item of nextList) {
+          if (prevMap.get(item.id) !== (item.updatedAt || '')) {
+            changed.push(item.id);
+          }
+        }
+      }
+
+      const nextMap = new Map<string, string>();
+      for (const item of nextList) {
+        nextMap.set(item.id, item.updatedAt || '');
+      }
+      store.stamps[kind] = nextMap;
+      store.initialized[kind] = true;
+
+      if (changed.length > 0) {
+        const expiresAt = Date.now() + 6000;
+        for (const id of changed) {
+          highlightExpiryRef.current.set(id, expiresAt);
+        }
+        setHighlightedIds((prev) => {
+          const copy = new Set(prev);
+          for (const id of changed) copy.add(id);
+          return copy;
+        });
+        setTimeout(() => {
+          const nowMs = Date.now();
+          setHighlightedIds((prev) => {
+            const copy = new Set(prev);
+            let mutated = false;
+            for (const id of changed) {
+              const exp = highlightExpiryRef.current.get(id) ?? 0;
+              if (nowMs >= exp - 50) {
+                copy.delete(id);
+                highlightExpiryRef.current.delete(id);
+                mutated = true;
+              }
+            }
+            return mutated ? copy : prev;
+          });
+        }, 6000);
+      }
+
+      setter(nextList);
+    },
+    []
+  );
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -229,15 +306,15 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         metrics: MetricsSnapshot | null;
         activity: ActivityEntry[];
       };
-      setCrew(data.crew || []);
-      setPipeline(data.pipeline || []);
+      applyTrackedUpdate('crew', activeClientId, data.crew || [], setCrew);
+      applyTrackedUpdate('pipeline', activeClientId, data.pipeline || [], setPipeline);
       setGates(data.gates || []);
       setMetrics(data.metrics || null);
       setActivity(data.activity || []);
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Unable to load board');
     }
-  }, [fbUser, activeClientId, accessDeniedMsg, authorizedFetch, showToast]);
+  }, [fbUser, activeClientId, accessDeniedMsg, authorizedFetch, showToast, applyTrackedUpdate]);
 
   useEffect(() => {
     if (!fbUser || clients.length === 0 || !activeClientId || accessDeniedMsg) return;
@@ -254,8 +331,8 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             metrics: MetricsSnapshot | null;
             activity: ActivityEntry[];
           };
-          setCrew(data.crew || []);
-          setPipeline(data.pipeline || []);
+          applyTrackedUpdate('crew', activeClientId, data.crew || [], setCrew);
+          applyTrackedUpdate('pipeline', activeClientId, data.pipeline || [], setPipeline);
           setGates(data.gates || []);
           setMetrics(data.metrics || null);
           setActivity(data.activity || []);
@@ -276,7 +353,12 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
           query(collection(db, 'ops_crew'), where('clientId', '==', activeClientId)),
           (snap) => {
             setSyncLive(true);
-            setCrew(snap.docs.map((d) => d.data() as CrewMember));
+            applyTrackedUpdate(
+              'crew',
+              activeClientId,
+              snap.docs.map((d) => d.data() as CrewMember),
+              setCrew
+            );
           },
           () => setSyncLive(false)
         )
@@ -288,7 +370,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             setSyncLive(true);
             const list = snap.docs.map((d) => d.data() as PipelineCard);
             list.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
-            setPipeline(list);
+            applyTrackedUpdate('pipeline', activeClientId, list, setPipeline);
           },
           () => setSyncLive(false)
         )
@@ -346,7 +428,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
       document.removeEventListener('visibilitychange', onFocusOrVisible);
       unsubs.forEach((u) => u());
     };
-  }, [fbUser, clients.length, activeClientId, accessDeniedMsg, authorizedFetch, syncLive]);
+  }, [fbUser, clients.length, activeClientId, accessDeniedMsg, authorizedFetch, syncLive, applyTrackedUpdate]);
 
   const activeClient = useMemo(
     () => clients.find((c) => c.id === activeClientId) || clients[0] || null,
@@ -663,12 +745,14 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             <CrewGroupCard
               title="Crew — Original Set"
               members={originalCrew}
+              highlightedIds={highlightedIds}
               onSelect={(member) => setModal({ type: 'crew', member })}
               onAdd={() => setModal({ type: 'create_crew', defaultSet: 'original' })}
             />
             <CrewGroupCard
               title="Crew — New Set"
               members={newCrew}
+              highlightedIds={highlightedIds}
               onSelect={(member) => setModal({ type: 'crew', member })}
               onAdd={() => setModal({ type: 'create_crew', defaultSet: 'new' })}
             />
@@ -772,6 +856,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                             <PipelineCardTile
                               key={card.id}
                               card={card}
+                              highlighted={highlightedIds.has(card.id)}
                               onEdit={() => setModal({ type: 'card', card })}
                               onReadyForRotty={() =>
                                 postAction(
@@ -793,6 +878,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   <PipelineCardTile
                     key={card.id}
                     card={card}
+                    highlighted={highlightedIds.has(card.id)}
                     onEdit={() => setModal({ type: 'card', card })}
                     onReadyForRotty={() =>
                       postAction(
@@ -945,14 +1031,19 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   );
 }
 
+const UPDATED_CARD_GLOW_CLS =
+  'border-cyan-500 dark:border-cyan-400 ring-2 ring-cyan-500/45 dark:ring-cyan-400/50 shadow-[0_0_20px_rgba(34,211,238,0.45)]';
+
 function CrewGroupCard({
   title,
   members,
+  highlightedIds,
   onSelect,
   onAdd,
 }: {
   title: string;
   members: CrewMember[];
+  highlightedIds: Set<string>;
   onSelect: (m: CrewMember) => void;
   onAdd?: () => void;
 }) {
@@ -977,6 +1068,7 @@ function CrewGroupCard({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {members.map((m) => {
           const badge = AGENT_BADGE[m.status] || AGENT_BADGE.active;
+          const isGlow = highlightedIds.has(m.id);
           const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
           const initials =
             m.name
@@ -989,7 +1081,9 @@ function CrewGroupCard({
               key={m.id}
               type="button"
               onClick={() => onSelect(m)}
-              className="text-left rounded-lg border border-border bg-background/60 hover:border-accent/60 p-2.5 transition-colors space-y-1.5"
+              className={`text-left rounded-lg border bg-background/60 p-2.5 transition-all duration-500 space-y-1.5 ${
+                isGlow ? UPDATED_CARD_GLOW_CLS : 'border-border hover:border-accent/60'
+              }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
@@ -1044,10 +1138,12 @@ function CrewGroupCard({
 
 function PipelineCardTile({
   card,
+  highlighted,
   onEdit,
   onReadyForRotty,
 }: {
   card: PipelineCard;
+  highlighted: boolean;
   onEdit: () => void;
   onReadyForRotty: () => void;
 }) {
@@ -1059,7 +1155,11 @@ function PipelineCardTile({
   ].filter((x): x is { label: string; href: string } => Boolean(x));
 
   return (
-    <div className="rounded-lg border border-border bg-background p-2.5 space-y-2 hover:border-accent/50 transition-colors">
+    <div
+      className={`rounded-lg border bg-background p-2.5 space-y-2 transition-all duration-500 ${
+        highlighted ? UPDATED_CARD_GLOW_CLS : 'border-border hover:border-accent/50'
+      }`}
+    >
       <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono">
         <span className="px-1.5 py-0.5 rounded bg-muted text-foreground uppercase">{card.lane}</span>
         {card.readyForRotty && card.stage !== 'posted' ? (
