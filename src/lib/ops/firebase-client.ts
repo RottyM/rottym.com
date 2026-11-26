@@ -9,7 +9,11 @@ import {
   signOut,
   type Auth,
 } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import {
+  getFirestore,
+  initializeFirestore,
+  type Firestore,
+} from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -19,6 +23,8 @@ const firebaseConfig = {
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
+
+let cachedDb: Firestore | null = null;
 
 export function hasFirebaseClientConfig(): boolean {
   return Boolean(firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId);
@@ -34,7 +40,16 @@ export function getOpsAuth(): Auth {
 }
 
 export function getOpsFirestore(): Firestore {
-  return getFirestore(getOpsFirebaseApp());
+  if (cachedDb) return cachedDb;
+  const app = getOpsFirebaseApp();
+  try {
+    cachedDb = initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+    });
+  } catch {
+    cachedDb = getFirestore(app);
+  }
+  return cachedDb;
 }
 
 export async function signInOpsWithGoogle() {

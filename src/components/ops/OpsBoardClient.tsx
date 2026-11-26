@@ -16,6 +16,7 @@ import {
   LogOut,
   Moon,
   Plus,
+  RefreshCw,
   Send,
   Settings,
   ShieldAlert,
@@ -240,27 +241,30 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   useEffect(() => {
     if (!fbUser || clients.length === 0 || !activeClientId || accessDeniedMsg) return;
     let cancelled = false;
-    authorizedFetch(`/api/ops/board?clientId=${encodeURIComponent(activeClientId)}`)
-      .then((raw) => {
-        if (cancelled) return;
-        const data = raw as {
-          crew: CrewMember[];
-          pipeline: PipelineCard[];
-          gates: GateItem[];
-          metrics: MetricsSnapshot | null;
-          activity: ActivityEntry[];
-        };
-        setCrew(data.crew || []);
-        setPipeline(data.pipeline || []);
-        setGates(data.gates || []);
-        setMetrics(data.metrics || null);
-        setActivity(data.activity || []);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          showToast(err instanceof Error ? err.message : 'Unable to load board');
-        }
-      });
+
+    const pullLatest = () => {
+      authorizedFetch(`/api/ops/board?clientId=${encodeURIComponent(activeClientId)}`)
+        .then((raw) => {
+          if (cancelled) return;
+          const data = raw as {
+            crew: CrewMember[];
+            pipeline: PipelineCard[];
+            gates: GateItem[];
+            metrics: MetricsSnapshot | null;
+            activity: ActivityEntry[];
+          };
+          setCrew(data.crew || []);
+          setPipeline(data.pipeline || []);
+          setGates(data.gates || []);
+          setMetrics(data.metrics || null);
+          setActivity(data.activity || []);
+        })
+        .catch(() => {
+          // Keep current state if background poll transiently fails
+        });
+    };
+
+    pullLatest();
 
     const db = getOpsFirestore();
     const unsubs: Array<() => void> = [];
@@ -280,10 +284,12 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         onSnapshot(
           query(collection(db, 'ops_pipeline'), where('clientId', '==', activeClientId)),
           (snap) => {
+            setSyncLive(true);
             const list = snap.docs.map((d) => d.data() as PipelineCard);
             list.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
             setPipeline(list);
-          }
+          },
+          () => setSyncLive(false)
         )
       );
       unsubs.push(
@@ -312,14 +318,34 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         )
       );
     } catch {
-      // Snapshot listener unavailable; API sync remains active
+      // Snapshot listener unavailable; 4s auto-poll remains active
     }
+
+    // Background polling safety net: updates every 4s if WebChannel is blocked (e.g. Brave Shields),
+    // or every 15s even when Firestore snapshot is active, plus immediate sync on window focus.
+    const intervalMs = syncLive ? 15000 : 4000;
+    const pollTimer = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        pullLatest();
+      }
+    }, intervalMs);
+
+    const onFocusOrVisible = () => {
+      if (document.visibilityState === 'visible') {
+        pullLatest();
+      }
+    };
+    window.addEventListener('focus', onFocusOrVisible);
+    document.addEventListener('visibilitychange', onFocusOrVisible);
 
     return () => {
       cancelled = true;
+      clearInterval(pollTimer);
+      window.removeEventListener('focus', onFocusOrVisible);
+      document.removeEventListener('visibilitychange', onFocusOrVisible);
       unsubs.forEach((u) => u());
     };
-  }, [fbUser, clients.length, activeClientId, accessDeniedMsg, authorizedFetch, showToast]);
+  }, [fbUser, clients.length, activeClientId, accessDeniedMsg, authorizedFetch, syncLive]);
 
   const activeClient = useMemo(
     () => clients.find((c) => c.id === activeClientId) || clients[0] || null,
@@ -497,7 +523,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   </span>
                   <span aria-hidden="true">·</span>
                   <span className={syncLive ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
-                    {syncLive ? 'Live Firestore Sync' : 'API Sync'}
+                    {syncLive ? 'Live Firestore Sync' : 'Auto-Sync (4s)'}
                   </span>
                 </div>
               </div>
@@ -556,6 +582,15 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
               <Settings className="w-3.5 h-3.5 text-accent" />
               {mode === 'admin' ? 'Board' : 'Admin'}
             </Link>
+
+            <button
+              type="button"
+              aria-label="Refresh board now"
+              onClick={() => loadBoardViaApi()}
+              className="p-1.5 rounded-lg border border-border bg-card hover:border-accent text-muted-foreground hover:text-foreground"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
 
             <button
               type="button"

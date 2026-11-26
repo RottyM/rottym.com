@@ -49,6 +49,7 @@ Allowed tags: `VERIFIED`, `NEW`, `FOLLOW-UP`, `HOLD`, `FLAGGED`, `REJECTED`.
 - `POST /api/bots/jobs` — Queue a job (or `jobs: [...]` batch). Supports 1-call quick-blast logging with `stage: "posted"` when a live post URL (`links` or `externalPostUrl`) is supplied.
 - `POST /api/bots/ingest-drop` — Submit `{ clientId, filename, content, jobDate, assetFile }` for server-side parsing of drops or Marley batch clearance docs.
 - `POST /api/bots/jobs/{id}/claim` — Claim a timed lease (`{ leaseSeconds: 300 }`). Returns `409` if locked by another bot.
+- `PATCH /api/bots/jobs/{id}` — Update an existing card's `assetFile`, `assetSpec`, `artifactsNeeded`, `discrepancies`, `note`, `draftCopy`, `sourceUrl`, `lane`, or `stage` (`pulled` | `clearance` | `drafted`).
 - `POST /api/bots/jobs/{id}/marley-review` — Submit `{ validated, notes, discrepancies, artifactsNeeded, revisedCopy }`.
 - `POST /api/bots/jobs/{id}/post-result` — Report `{ status: "posted" | "failed", links: { fb, ig, linkedin, x }, externalPostUrl, error }`.
 - `POST /api/bots/crew` — Update bot status (`{ agentId, status, statusNote, usagePct, resetNote }`).
