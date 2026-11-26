@@ -24,6 +24,7 @@ export default function Header() {
   const isCampaignRoute = CAMPAIGN_ROUTES.some(
     (route) => pathname === route || pathname?.startsWith(`${route}/`)
   );
+  const isOpsRoute = pathname === '/ops' || pathname?.startsWith('/ops/');
   const hideLangToggle = pathname === '/resume' || pathname?.startsWith('/resume/');
 
   useEffect(() => {
@@ -71,7 +72,7 @@ export default function Header() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [mobileMenuOpen]);
 
-  if (isCampaignRoute) {
+  if (isCampaignRoute || isOpsRoute) {
     return null;
   }
 

@@ -1,13 +1,48 @@
 {
-    "hosting": {
-        "source": ".",
-        "ignore": [
-            "firebase.json",
-            "**/.*",
-            "**/node_modules/**"
-        ],
-        "frameworksBackend": {
-            "region": "us-central1"
-        }
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "RottyM Command Center",
+        "supportEmail": "rmendez@rottym.com",
+        "authorizedRedirectUris": [
+          "https://rottym-com-vibe.firebaseapp.com/__/auth/handler",
+          "https://rottym-com-vibe.web.app/__/auth/handler",
+          "https://rottym-com-vibe--ops-preview-apgwl7wf.web.app/__/auth/handler",
+          "https://www.rottym.com/__/auth/handler",
+          "https://rottym.com/__/auth/handler"
+        ]
+      }
     }
+  },
+  "hosting": {
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "/api/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-store, no-cache, must-revalidate, max-age=0"
+          },
+          {
+            "key": "CDN-Cache-Control",
+            "value": "no-store"
+          }
+        ]
+      }
+    ],
+    "frameworksBackend": {
+      "region": "us-central1"
+    }
+  }
 }
