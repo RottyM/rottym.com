@@ -102,9 +102,33 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     window.document.documentElement.lang = lang;
     const key = pathname && pathname !== '/' ? pathname.replace(/\/+$/, '') : '/';
     const entry = ROUTE_TITLES[key];
-    if (entry) {
-      window.document.title = entry[lang];
-    }
+    if (!entry) return;
+
+    const targetTitle = entry[lang];
+    const syncTitle = () => {
+      if (window.document.title !== targetTitle) {
+        window.document.title = targetTitle;
+      }
+    };
+
+    syncTitle();
+    const rafId = window.requestAnimationFrame(syncTitle);
+    const timerId = window.setTimeout(syncTitle, 50);
+
+    // Next.js 16 streams/reconciles <title> metadata into <head> after initial mount;
+    // re-apply the active language title if <head> updates <title> back to SSR English.
+    const observer = new MutationObserver(syncTitle);
+    observer.observe(window.document.head, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(timerId);
+      observer.disconnect();
+    };
   }, [lang, pathname]);
 
   const setTheme = (newTheme: Theme) => setThemeState(newTheme);
