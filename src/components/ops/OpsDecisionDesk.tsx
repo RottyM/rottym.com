@@ -98,7 +98,7 @@ function stageBadge(card: PipelineCard): { label: string; cls: string } {
   if (card.postIt && isReadyItem(card)) {
     return {
       label: 'Post it Armed',
-      cls: 'border-emerald-500/55 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold',
+      cls: 'border-emerald-500/55 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-medium',
     };
   }
   if (isReadyItem(card)) {
@@ -195,7 +195,7 @@ function requestStatusBadge(status: RequestStatus): { label: string; cls: string
   }
   return {
     label: 'Needs Decision',
-    cls: 'border-violet-500/45 bg-violet-500/15 text-violet-700 dark:text-violet-300 font-semibold',
+    cls: 'border-violet-500/45 bg-violet-500/15 text-violet-700 dark:text-violet-300 font-medium',
   };
 }
 
@@ -491,11 +491,11 @@ export default function OpsDecisionDesk({
                   alertMeta && !active
                     ? alertMeta.tabBorderCls
                     : active && alertMeta
-                      ? `${alertMeta.tabBorderCls} font-semibold ring-1 ring-current/25`
+                      ? `${alertMeta.tabBorderCls} font-normal ring-1 ring-current/25`
                       : hasUnseen && !active
                         ? 'border-amber-500/60 bg-amber-500/10 text-amber-900 dark:text-amber-200'
                         : active
-                          ? 'border-accent bg-accent/15 text-foreground font-semibold'
+                          ? 'border-accent bg-accent/15 text-foreground font-medium'
                           : 'border-border bg-background hover:border-accent/50 text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -547,7 +547,7 @@ export default function OpsDecisionDesk({
       {items.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center p-6 rounded-lg border border-dashed border-border bg-background/40 space-y-2.5">
           <Inbox className="w-7 h-7 text-accent/70" />
-          <div className="text-sm font-semibold text-foreground">
+          <div className="text-sm font-medium text-foreground">
             {tab === 'action'
               ? 'All caught up — nothing waiting on your decision'
               : 'No items in this view'}
@@ -616,11 +616,11 @@ export default function OpsDecisionDesk({
                             {reqAlert.label}
                           </span>
                         ) : reqUnseen ? (
-                          <span className="px-1 py-0 rounded border border-amber-500/45 bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0 text-[9px] font-semibold">
+                          <span className="px-1 py-0 rounded border border-amber-500/45 bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0 text-[9px] font-normal">
                             NEW
                           </span>
                         ) : null}
-                        <span className="px-1.5 py-0.2 rounded bg-violet-500/15 text-violet-700 dark:text-violet-300 uppercase shrink-0 font-semibold">
+                        <span className="px-1.5 py-0.2 rounded bg-violet-500/15 text-violet-700 dark:text-violet-300 uppercase shrink-0 font-medium">
                           Request
                         </span>
                         <span className={`px-1.5 py-0.2 rounded border shrink-0 ${badge.cls}`}>
@@ -635,7 +635,7 @@ export default function OpsDecisionDesk({
                       <span className="text-accent truncate">{req.raisedByName}</span>
                     </div>
 
-                    <div className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">
+                    <div className="text-xs font-medium text-foreground line-clamp-2 leading-snug">
                       {req.title}
                     </div>
 
@@ -703,14 +703,14 @@ export default function OpsDecisionDesk({
                           {cardAlert.label}
                         </span>
                       ) : cardUnseen ? (
-                        <span className="px-1 py-0 rounded border border-amber-500/45 bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0 text-[9px] font-semibold">
+                        <span className="px-1 py-0 rounded border border-amber-500/45 bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0 text-[9px] font-normal">
                           UPDATED
                         </span>
                       ) : null}
                       <span className="px-1.5 py-0.2 rounded bg-muted text-foreground uppercase shrink-0">
                         {card.lane}
                       </span>
-                      <span className="px-1.5 py-0.2 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold shrink-0">
+                      <span className="px-1.5 py-0.2 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium shrink-0">
                         {fmt.primary}{fmt.secondary ? ` · ${fmt.secondary}` : ''}
                       </span>
                       <span className={`px-1.5 py-0.2 rounded border shrink-0 ${badge.cls}`}>
@@ -729,7 +729,7 @@ export default function OpsDecisionDesk({
 
                   <div className="flex items-start justify-between gap-2.5">
                     <div className="min-w-0 flex-1 space-y-1">
-                      <div className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">
+                      <div className="text-xs font-medium text-foreground line-clamp-2 leading-snug">
                         {card.title}
                       </div>
 
@@ -739,9 +739,9 @@ export default function OpsDecisionDesk({
                             <span
                               className={`inline-flex items-center gap-1 ${
                                 hasRejected
-                                  ? 'text-red-600 dark:text-red-400 font-semibold'
+                                  ? 'text-red-600 dark:text-red-400 font-medium'
                                   : hasDelivered
-                                    ? 'text-amber-700 dark:text-amber-300 font-semibold'
+                                    ? 'text-amber-700 dark:text-amber-300 font-medium'
                                     : completeness.canApproveReady
                                       ? 'text-emerald-700 dark:text-emerald-300'
                                       : hasNeeded
@@ -851,7 +851,7 @@ export default function OpsDecisionDesk({
                               void onSetPostFormat(selectedCard, v ? (v as PostFormat) : null);
                             }}
                             title="Deliverable format (auto-detected if left on Auto)"
-                            className="px-1.5 py-0.5 rounded border border-indigo-500/45 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold text-[10px] focus:outline-none focus:border-accent disabled:opacity-50"
+                            className="px-1.5 py-0.5 rounded border border-indigo-500/45 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium text-[10px] focus:outline-none focus:border-accent disabled:opacity-50"
                           >
                             <option value="">
                               Type: {fmt.primary}{fmt.secondary ? ` · ${fmt.secondary}` : ''} (Auto)
@@ -863,7 +863,7 @@ export default function OpsDecisionDesk({
                             ))}
                           </select>
                         ) : (
-                          <span className="px-1.5 py-0.5 rounded border border-indigo-500/45 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold">
+                          <span className="px-1.5 py-0.5 rounded border border-indigo-500/45 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium">
                             {fmt.primary}{fmt.secondary ? ` · ${fmt.secondary}` : ''}
                           </span>
                         )}
@@ -910,7 +910,7 @@ export default function OpsDecisionDesk({
                       </div>
                     );
                   })()}
-                  <h3 className="text-sm font-bold text-foreground leading-snug">
+                  <h3 className="text-sm font-medium text-foreground leading-snug">
                     {selectedCard.title}
                   </h3>
                 </div>
@@ -945,7 +945,7 @@ export default function OpsDecisionDesk({
                 {/* Published Post Live Links (prominent at top of details) */}
                 {(selectedCard.stage === 'posted' || selectedPublishedLinks.length > 0) && (
                   <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                    <span className="text-[11px] font-mono font-normal uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
                       {selectedPublishedLinks.length > 0 ? 'Live Published Post' : 'Published'}
                     </span>
                     {selectedPublishedLinks.length > 0 ? (
@@ -957,7 +957,7 @@ export default function OpsDecisionDesk({
                             target="_blank"
                             rel="noopener noreferrer"
                             title={l.href}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-normal bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
                           >
                             Preview {l.label} <ExternalLink className="w-3 h-3" />
                           </a>
@@ -976,7 +976,7 @@ export default function OpsDecisionDesk({
                   <div className="px-3 py-1.5 border-b border-border/70 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
                     <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                       <ImageIcon className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
-                      <span className="font-semibold text-foreground">
+                      <span className="font-medium text-foreground">
                         Assets ({selectedCardAssets.length})
                       </span>
                       <span
@@ -1283,7 +1283,7 @@ export default function OpsDecisionDesk({
                                         });
                                         setMetaEditAssetId(null);
                                       }}
-                                      className="px-2.5 py-1 rounded text-[10px] font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
+                                      className="px-2.5 py-1 rounded text-[10px] font-normal bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
                                     >
                                       Save Alt/Credit
                                     </button>
@@ -1358,7 +1358,7 @@ export default function OpsDecisionDesk({
                   ) : selectedCompleteness.noImageNeeded ? (
                     <div className="p-3 bg-sky-500/5 space-y-2.5">
                       <div className="text-xs text-sky-700 dark:text-sky-300 text-center">
-                        <span className="font-semibold">Text-only post (no image)</span>
+                        <span className="font-medium">Text-only post (no image)</span>
                         {selectedCard.noImageNeededBy ? ` — marked by ${selectedCard.noImageNeededBy}` : ''}.{' '}
                         {selectedCard.stage !== 'posted' && selectedCard.stage !== 'archived' && (
                           <button
@@ -1462,7 +1462,7 @@ export default function OpsDecisionDesk({
                               });
                               setAssignAssetSpec('');
                             }}
-                            className="px-2.5 py-1 rounded bg-amber-600 text-white hover:bg-amber-500 font-semibold disabled:opacity-50"
+                            className="px-2.5 py-1 rounded bg-amber-600 text-white hover:bg-amber-500 font-medium disabled:opacity-50"
                           >
                             Assign Asset
                           </button>
@@ -1539,7 +1539,7 @@ export default function OpsDecisionDesk({
                             setAssignAssetSpec('');
                             setAssignAssetOpen(false);
                           }}
-                          className="px-2.5 py-1 rounded bg-accent text-accent-foreground hover:opacity-90 font-semibold disabled:opacity-50"
+                          className="px-2.5 py-1 rounded bg-accent text-accent-foreground hover:opacity-90 font-medium disabled:opacity-50"
                         >
                           Assign Asset
                         </button>
@@ -1618,7 +1618,7 @@ export default function OpsDecisionDesk({
                     selectedCard.artifactsNeeded?.length ||
                     selectedCard.flaggedNotes?.length) ? (
                     <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-[11px] space-y-1">
-                      <div className="font-semibold text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
+                      <div className="font-medium text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                         Flags &amp; Requirements
                       </div>
@@ -1759,7 +1759,7 @@ export default function OpsDecisionDesk({
                           target="_blank"
                           rel="noopener noreferrer"
                           title={l.href}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-normal bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
                         >
                           {selectedPublishedLinks.length === 1
                             ? `Preview ${l.label}`
@@ -1793,7 +1793,7 @@ export default function OpsDecisionDesk({
                             setSelectedKey(nextKey);
                             setFocusedAssetId(null);
                           }}
-                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
                         >
                           <Send className="w-3.5 h-3.5" />
                           Post it
@@ -1808,7 +1808,7 @@ export default function OpsDecisionDesk({
                         type="button"
                         disabled={busy}
                         onClick={() => onCancelPostIt(selectedCard)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-amber-500/45 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-amber-500/45 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 disabled:opacity-50"
                       >
                         Cancel Post it
                       </button>
@@ -1827,7 +1827,7 @@ export default function OpsDecisionDesk({
                               setFocusedAssetId(null);
                             }}
                             title="Move to Ready for Rotty queue without firing Post it yet"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-cyan-500/45 bg-cyan-500/15 text-cyan-800 dark:text-cyan-200 hover:bg-cyan-500/25 disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-cyan-500/45 bg-cyan-500/15 text-cyan-800 dark:text-cyan-200 hover:bg-cyan-500/25 disabled:opacity-50"
                           >
                             <Check className="w-3.5 h-3.5" />
                             Mark Ready
@@ -1843,7 +1843,7 @@ export default function OpsDecisionDesk({
                             setFocusedAssetId(null);
                           }}
                           title="Mark Ready and arm Post it right away"
-                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
                         >
                           <Send className="w-3.5 h-3.5" />
                           Post it
@@ -1886,7 +1886,7 @@ export default function OpsDecisionDesk({
                             setFocusedAssetId(null);
                           }}
                           title="Approve delivered asset(s) and arm Post it immediately"
-                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
                         >
                           <Send className="w-3.5 h-3.5" />
                           Post it
@@ -1922,7 +1922,7 @@ export default function OpsDecisionDesk({
                             setFocusedAssetId(null);
                           }}
                           title="Copy and approved visual are ready — fire Post it now without waiting for alt text/credit"
-                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
                         >
                           <Send className="w-3.5 h-3.5" />
                           Post it
@@ -1948,7 +1948,7 @@ export default function OpsDecisionDesk({
                         setFocusedAssetId(null);
                       }}
                       title="Approve draft and move to Crew Queue (no image required yet)"
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
                     >
                       <Check className="w-3.5 h-3.5" />
                       Approve
@@ -1978,7 +1978,7 @@ export default function OpsDecisionDesk({
                         {reqReaderAlert.label}
                       </span>
                     )}
-                    <span className="px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-700 dark:text-violet-300 uppercase font-semibold">
+                    <span className="px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-700 dark:text-violet-300 uppercase font-medium">
                       Request
                     </span>
                     <span className={`px-1.5 py-0.5 rounded border ${requestStatusBadge(selectedRequestStatus).cls}`}>
@@ -1999,7 +1999,7 @@ export default function OpsDecisionDesk({
                       </span>
                     )}
                   </div>
-                  <h3 className="text-sm font-bold text-foreground leading-snug">
+                  <h3 className="text-sm font-medium text-foreground leading-snug">
                     {selectedRequest.title}
                   </h3>
                 </div>
@@ -2033,7 +2033,7 @@ export default function OpsDecisionDesk({
               <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain [overflow-anchor:none] ops-scroll p-3.5 space-y-3.5">
                 {/* One-line Context */}
                 <div className="rounded-lg border border-violet-500/35 bg-violet-500/10 px-3 py-2 text-xs text-foreground">
-                  <span className="font-mono uppercase text-[10px] text-violet-700 dark:text-violet-300 mr-1.5 font-semibold">
+                  <span className="font-mono uppercase text-[10px] text-violet-700 dark:text-violet-300 mr-1.5 font-normal">
                     Why it needs you:
                   </span>
                   {renderLinkifiedText(selectedRequest.context)}
@@ -2079,7 +2079,7 @@ export default function OpsDecisionDesk({
                     <div className="px-3 py-1.5 border-b border-border/70 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
                       <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                         <FileText className="w-3.5 h-3.5 text-accent shrink-0" />
-                        <span className="font-semibold text-foreground">Prepared Work</span>
+                        <span className="font-medium text-foreground">Prepared Work</span>
                         {selectedRequest.preparedFile && (
                           <span className="px-1.5 py-0 rounded bg-muted text-muted-foreground truncate max-w-[240px]">
                             {selectedRequest.preparedFile}
@@ -2199,7 +2199,7 @@ export default function OpsDecisionDesk({
                   <div className="space-y-1.5 text-foreground/90">
                     <div>
                       <span className="font-mono text-muted-foreground mr-1.5">1. Raised:</span>
-                      <span className="font-semibold text-foreground">{selectedRequest.raisedByName}</span>
+                      <span className="font-medium text-foreground">{selectedRequest.raisedByName}</span>
                       <span className="text-muted-foreground">
                         {' '}· {new Date(selectedRequest.raisedAt).toLocaleString()}
                       </span>
@@ -2207,7 +2207,7 @@ export default function OpsDecisionDesk({
                     {selectedRequest.decidedAt && (
                       <div>
                         <span className="font-mono text-muted-foreground mr-1.5">2. Decision:</span>
-                        <span className="font-semibold text-cyan-700 dark:text-cyan-300">
+                        <span className="font-medium text-cyan-700 dark:text-cyan-300">
                           {selectedRequest.decisionLabel || selectedRequest.decision}
                         </span>
                         <span className="text-muted-foreground">
@@ -2302,7 +2302,7 @@ export default function OpsDecisionDesk({
                           setSelectedKey(nextKey);
                           setFocusedAssetId(null);
                         }}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
                           act.tone === 'danger'
                             ? 'border border-red-500/45 bg-red-500/10 text-red-700 dark:text-red-300 hover:bg-red-500/20'
                             : act.tone === 'primary'

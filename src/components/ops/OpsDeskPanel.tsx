@@ -99,7 +99,7 @@ export default function OpsDeskPanel({
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5 space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-sm font-bold text-foreground">
+            <h1 className="text-sm font-medium text-foreground">
               AI Desk — Multi-Model Post Drafting ({activeClient?.name})
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -205,7 +205,7 @@ export default function OpsDeskPanel({
               type="button"
               disabled={running || !prompt.trim() || !selectedModel?.configured}
               onClick={runLive}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
             >
               <Play className="w-3.5 h-3.5" />
               {running
@@ -221,7 +221,7 @@ export default function OpsDeskPanel({
       {output && (
         <div className="rounded-xl border border-border bg-card p-4 sm:p-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <span className="text-xs font-medium text-foreground flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-accent" />
               Output — {modelUsed}
             </span>

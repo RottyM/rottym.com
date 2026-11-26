@@ -164,7 +164,7 @@ export function OpsLinkCardPreview({
           </span>
           <ExternalLink className="w-3 h-3 shrink-0 opacity-70 group-hover:text-accent" />
         </div>
-        <div className={`${compact ? 'text-[11px]' : 'text-xs'} font-semibold text-foreground line-clamp-2 leading-snug`}>
+        <div className={`${compact ? 'text-[11px]' : 'text-xs'} font-medium text-foreground line-clamp-2 leading-snug`}>
           {isLoading
             ? `Resolving link card (${domainFallback})...`
             : preview?.title || url}

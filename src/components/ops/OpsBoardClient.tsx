@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import {
-  Activity,
   AlertTriangle,
   Check,
   ChevronDown,
@@ -41,12 +40,10 @@ import {
   signOutOps,
 } from '@/lib/ops/firebase-client';
 import type {
-  ActivityEntry,
   AgentStatus,
   ChatMessage,
   ClientWorkspace,
   CrewMember,
-  GateItem,
   GateState,
   JobAsset,
   MetricsSnapshot,
@@ -123,13 +120,6 @@ const AGENT_BADGE: Record<AgentStatus, { label: string; cls: string }> = {
   out: { label: 'Out', cls: 'border-border bg-muted text-muted-foreground' },
 };
 
-const GATE_BADGE: Record<GateState, { label: string; cls: string }> = {
-  hold: { label: 'HOLD', cls: 'border-amber-500/45 bg-amber-500/15 text-amber-700 dark:text-amber-300' },
-  blocked: { label: 'BLOCKED', cls: 'border-red-500/45 bg-red-500/15 text-red-700 dark:text-red-300' },
-  awaiting: { label: 'AWAITING', cls: 'border-cyan-500/45 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300' },
-  resolved: { label: 'RESOLVED', cls: 'border-emerald-500/45 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' },
-};
-
 function useEasternClock(): string {
   const [clock, setClock] = useState('');
   useEffect(() => {
@@ -176,9 +166,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   const [crew, setCrew] = useState<CrewMember[]>([]);
   const [pipeline, setPipeline] = useState<PipelineCard[]>([]);
   const [requests, setRequests] = useState<OpsRequest[]>([]);
-  const [gates, setGates] = useState<GateItem[]>([]);
   const [metrics, setMetrics] = useState<MetricsSnapshot | null>(null);
-  const [activity, setActivity] = useState<ActivityEntry[]>([]);
   const [chat, setChat] = useState<ChatMessage[]>([]);
 
   const [syncLive, setSyncLive] = useState(false);
@@ -451,9 +439,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         setCrew([]);
         setPipeline([]);
         setRequests([]);
-        setGates([]);
         setMetrics(null);
-        setActivity([]);
         setAccessDeniedMsg(null);
       }
     });
@@ -511,18 +497,14 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         crew: CrewMember[];
         pipeline: PipelineCard[];
         requests?: OpsRequest[];
-        gates: GateItem[];
         metrics: MetricsSnapshot | null;
-        activity: ActivityEntry[];
         chat?: ChatMessage[];
       };
       applyTrackedUpdate('crew', activeClientId, data.crew || [], setCrew);
       applyTrackedUpdate('pipeline', activeClientId, data.pipeline || [], setPipeline);
       applyTrackedUpdate('requests', activeClientId, data.requests || [], setRequests);
       applyTrackedUpdate('chat', activeClientId, data.chat || [], setChat);
-      setGates(data.gates || []);
       setMetrics(data.metrics || null);
-      setActivity(data.activity || []);
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Unable to load board');
     }
@@ -540,18 +522,14 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             crew: CrewMember[];
             pipeline: PipelineCard[];
             requests?: OpsRequest[];
-            gates: GateItem[];
             metrics: MetricsSnapshot | null;
-            activity: ActivityEntry[];
             chat?: ChatMessage[];
           };
           applyTrackedUpdate('crew', activeClientId, data.crew || [], setCrew);
           applyTrackedUpdate('pipeline', activeClientId, data.pipeline || [], setPipeline);
           applyTrackedUpdate('requests', activeClientId, data.requests || [], setRequests);
           applyTrackedUpdate('chat', activeClientId, data.chat || [], setChat);
-          setGates(data.gates || []);
           setMetrics(data.metrics || null);
-          setActivity(data.activity || []);
         })
         .catch(() => {
           // Keep current state if background poll transiently fails
@@ -593,26 +571,10 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
       );
       unsubs.push(
         onSnapshot(
-          query(collection(db, 'ops_gates'), where('clientId', '==', activeClientId)),
-          (snap) => setGates(snap.docs.map((d) => d.data() as GateItem))
-        )
-      );
-      unsubs.push(
-        onSnapshot(
           query(collection(db, 'ops_metrics'), where('clientId', '==', activeClientId)),
           (snap) => {
             const first = snap.docs[0]?.data() as MetricsSnapshot | undefined;
             if (first) setMetrics(first);
-          }
-        )
-      );
-      unsubs.push(
-        onSnapshot(
-          query(collection(db, 'ops_activity'), where('clientId', '==', activeClientId)),
-          (snap) => {
-            const list = snap.docs.map((d) => d.data() as ActivityEntry);
-            list.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
-            setActivity(list.slice(0, 25));
           }
         )
       );
@@ -705,10 +667,12 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   const rosterSummaryStats = useMemo(() => {
     let inFlight = 0;
     let needsAsset = 0;
+    let rejectedAssets = 0;
     for (const p of pipeline) {
       if (p.stage === 'posted' || p.stage === 'archived') continue;
       inFlight += 1;
       const lock = getCardCompleteness(p).lockReason;
+      if (lock === 'asset_rejected') rejectedAssets += 1;
       if (
         lock === 'needs_photo' ||
         lock === 'needs_copy_and_photo' ||
@@ -718,15 +682,14 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         needsAsset += 1;
       }
     }
-    const openGates = gates.filter((g) => g.state !== 'resolved').length;
     const crewAlerts = crew.filter((c) => c.connectorAlert && c.connectorAlert.status !== 'ok').length;
     return {
       inFlight,
       needsAsset,
-      blocked: openGates + crewAlerts,
+      blocked: rejectedAssets + crewAlerts,
       hasCrewAlert: crewAlerts > 0,
     };
-  }, [pipeline, gates, crew]);
+  }, [pipeline, crew]);
 
   const filteredPipeline = useMemo(
     () =>
@@ -796,7 +759,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
           <div className="flex items-center gap-3">
             <OpsBrandMark size={36} />
             <div>
-              <h1 className="text-base font-bold text-foreground">RottyM Command Center</h1>
+              <h1 className="text-base font-medium text-foreground">RottyM Command Center</h1>
               <p className="text-xs text-muted-foreground">Private AI crew &amp; pipeline operations</p>
             </div>
           </div>
@@ -817,7 +780,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                 setAuthError(err instanceof Error ? err.message : 'Google sign-in failed');
               }
             }}
-            className="w-full py-2.5 px-4 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+            className="w-full py-2.5 px-4 rounded-lg bg-accent text-accent-foreground text-sm font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
           >
             <Lock className="w-4 h-4" />
             Sign in with Google
@@ -856,7 +819,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             />
             <button
               type="submit"
-              className="w-full py-2 px-4 rounded-lg border border-border text-xs font-semibold hover:border-accent text-foreground transition-colors"
+              className="w-full py-2 px-4 rounded-lg border border-border text-xs font-medium hover:border-accent text-foreground transition-colors"
             >
               Sign in with Email
             </button>
@@ -871,13 +834,13 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-md stitch-card rounded-2xl p-6 space-y-4 text-center">
           <ShieldAlert className="w-8 h-8 text-red-500 mx-auto" />
-          <h1 className="text-base font-bold text-foreground">Access Restricted</h1>
+          <h1 className="text-base font-medium text-foreground">Access Restricted</h1>
           <p className="text-xs text-muted-foreground">{accessDeniedMsg}</p>
           <p className="text-xs font-mono text-muted-foreground">{fbUser.email}</p>
           <button
             type="button"
             onClick={() => signOutOps()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:border-accent"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border text-xs font-medium hover:border-accent"
           >
             <LogOut className="w-3.5 h-3.5" />
             Sign out
@@ -896,7 +859,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             <Link href="/ops" className="flex items-center gap-2.5 min-w-0">
               <OpsBrandMark size={30} />
               <div className="min-w-0">
-                <div className="text-sm font-bold tracking-tight truncate">
+                <div className="text-sm font-medium tracking-tight truncate">
                   {activeClient?.name || 'RottyM Command Center'}
                 </div>
                 <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-2 truncate">
@@ -935,7 +898,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             <button
               type="button"
               onClick={() => setModal({ type: 'desk_paste' })}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:opacity-90"
             >
               <Sparkles className="w-3.5 h-3.5" />
               Desk Paste
@@ -1046,7 +1009,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
               <button
                 type="button"
                 onClick={() => setOpsView('desk')}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-accent text-accent-foreground"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-accent text-accent-foreground"
               >
                 <Inbox className="w-3.5 h-3.5" />
                 Decision Desk
@@ -1091,7 +1054,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                     }`}
                   />
                   <span>Crew</span>
-                  <span className="px-1.5 py-0 rounded bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/35 text-[10px] font-semibold">
+                  <span className="px-1.5 py-0 rounded bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/35 text-[10px] font-normal">
                     {activeCrewCount}/{crew.length}
                   </span>
                   {crewExpanded ? (
@@ -1152,12 +1115,12 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                 <div className="hidden sm:flex items-center gap-2 pl-2 ml-0.5 border-l border-border/80 text-[11px] font-mono text-muted-foreground shrink-0">
                   <span>
                     In Flight:{' '}
-                    <span className="text-foreground font-semibold">{rosterSummaryStats.inFlight}</span>
+                    <span className="text-foreground font-medium">{rosterSummaryStats.inFlight}</span>
                   </span>
                   <span className="text-border">·</span>
                   <span>
                     Needs Asset:{' '}
-                    <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                    <span className="text-amber-600 dark:text-amber-400 font-medium">
                       {rosterSummaryStats.needsAsset}
                     </span>
                   </span>
@@ -1165,7 +1128,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   <span>
                     Blocked:{' '}
                     <span
-                      className={`font-semibold ${
+                      className={`font-medium ${
                         rosterSummaryStats.blocked > 0
                           ? 'text-red-600 dark:text-red-400'
                           : 'text-foreground'
@@ -1201,7 +1164,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                 >
                   <div className="flex flex-wrap items-center gap-2 min-w-0">
                     <ShieldAlert className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
-                    <span className="px-1.5 py-0.5 rounded bg-red-600 text-white font-mono text-[10px] font-bold uppercase">
+                    <span className="px-1.5 py-0.5 rounded bg-red-600 text-white font-mono text-[10px] font-medium uppercase">
                       {statusLabel}
                     </span>
                     {alert.platform && (
@@ -1209,7 +1172,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                         {alert.platform}
                       </span>
                     )}
-                    <span className="font-semibold">{m.name}:</span>
+                    <span className="font-medium">{m.name}:</span>
                     <span className="break-words">{alert.message}</span>
                     {(alert.account || alert.expectedAccount) && (
                       <span className="font-mono text-[11px] opacity-85">
@@ -1228,7 +1191,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                         `Cleared connector alert for ${m.name}`
                       )
                     }
-                    className="px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold border border-red-500/50 bg-background/80 hover:bg-background text-red-700 dark:text-red-300 disabled:opacity-50 shrink-0"
+                    className="px-2.5 py-1 rounded-md text-[11px] font-mono font-normal border border-red-500/50 bg-background/80 hover:bg-background text-red-700 dark:text-red-300 disabled:opacity-50 shrink-0"
                   >
                     Clear Alert
                   </button>
@@ -1383,8 +1346,8 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   <div className="flex flex-wrap items-center gap-3 min-w-0">
                     <div className="inline-flex items-center gap-1.5 text-xs font-mono">
                       <Users className="w-3.5 h-3.5 text-accent" />
-                      <span className="font-bold uppercase tracking-wider text-foreground">Crew</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                      <span className="font-medium uppercase tracking-wider text-foreground">Crew</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                         {activeCrewCount}/{crew.length} active
                       </span>
                     </div>
@@ -1460,7 +1423,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       }`}
                     >
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-foreground truncate">{lane.label}</div>
+                        <div className="text-xs font-medium text-foreground truncate">{lane.label}</div>
                         <div className="text-[10px] text-muted-foreground truncate">{lane.scheduleNote}</div>
                       </div>
                       <span className="text-[11px] font-mono text-accent shrink-0">{count} open</span>
@@ -1540,7 +1503,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       return (
                         <div key={col.id} className="rounded-xl border border-border bg-card/60 p-2.5 space-y-2.5">
                           <div className="flex items-center justify-between px-1">
-                            <span className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
+                            <span className="text-xs font-medium uppercase tracking-wider font-mono text-foreground">
                               {col.label}
                             </span>
                             <span className="text-[11px] font-mono text-muted-foreground">{cards.length}</span>
@@ -1632,112 +1595,6 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
               </section>
             </>
           )}
-
-          {/* Bottom Grid: Gates, Manual Funnel + Showroom, Activity Feed */}
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Gates & Holds */}
-            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
-                  Gates &amp; Holds
-                </h2>
-                <span className="text-[11px] font-mono text-muted-foreground">{gates.length} items</span>
-              </div>
-              <div className="space-y-2">
-                {gates.map((g) => {
-                  const badge = GATE_BADGE[g.state] || GATE_BADGE.hold;
-                  return (
-                    <div key={g.id} className="rounded-lg border border-border bg-background/60 p-2.5 space-y-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-semibold text-foreground">{g.label}</span>
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${badge.cls}`}>
-                          {badge.label}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground">{g.detail}</p>
-                      <div className="text-[10px] font-mono text-muted-foreground/80">Since: {g.since}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Funnel Metrics + Showroom Status */}
-            <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
-                  Funnel (Manual)
-                </h2>
-                <span className="text-[10px] font-mono text-accent">
-                  As of {metrics?.asOf || '—'}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-lg border border-border bg-background/60 p-2.5">
-                  <div className="text-[10px] font-mono text-muted-foreground">Sessions</div>
-                  <div className="text-lg font-bold text-foreground">
-                    {metrics?.sessions ?? '—'}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground truncate">
-                    {metrics?.sessionsPeriod || 'Manual'}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-border bg-background/60 p-2.5">
-                  <div className="text-[10px] font-mono text-muted-foreground">Leads</div>
-                  <div className="text-lg font-bold text-foreground">
-                    {metrics?.generateLead ?? '—'}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground">generate_lead</div>
-                </div>
-                <div className="rounded-lg border border-border bg-background/60 p-2.5">
-                  <div className="text-[10px] font-mono text-muted-foreground">X Followers</div>
-                  <div className="text-lg font-bold text-foreground">
-                    {metrics?.xFollowers?.toLocaleString() ?? '—'}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground">@CausingPanic1</div>
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-border bg-background/60 p-3 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
-                    Showroom Build
-                  </span>
-                  <span className="text-[11px] font-semibold text-accent">
-                    {metrics?.showroomPhase || 'Unset'}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {metrics?.showroomNote || 'Update manually in /ops/admin.'}
-                </p>
-              </div>
-            </div>
-
-            {/* Activity Feed */}
-            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-accent" />
-                  Activity Feed
-                </h2>
-                <span className="text-[11px] font-mono text-muted-foreground">Latest {activity.length}</span>
-              </div>
-              <div className="space-y-2 max-h-[260px] overflow-y-auto ops-scroll pr-1">
-                {activity.map((ev) => (
-                  <div key={ev.id} className="text-xs border-b border-border/60 pb-2 last:border-0">
-                    <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-muted-foreground">
-                      <span className="font-semibold text-accent">{ev.actor}</span>
-                      <span>{new Date(ev.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                    <div className="text-foreground/90 mt-0.5 break-words">
-                      {renderLinkifiedText(ev.text)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
         </main>
       )}
 
@@ -1806,7 +1663,7 @@ function CrewPillAvatar({
   const showImage = Boolean(src && failedSrc !== src);
 
   return (
-    <span className="relative w-[18px] h-[18px] rounded-full border border-border/80 bg-accent/15 text-accent font-mono text-[8px] font-bold inline-flex items-center justify-center shrink-0">
+    <span className="relative w-[18px] h-[18px] rounded-full border border-border/80 bg-accent/15 text-accent font-mono text-[8px] font-medium inline-flex items-center justify-center shrink-0">
       <span className="overflow-hidden w-full h-full rounded-full flex items-center justify-center relative">
         <span>{initials}</span>
         {showImage && (
@@ -1855,7 +1712,7 @@ function UnifiedCrewPanel({
       <div className="flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <Users className="w-3.5 h-3.5 text-accent shrink-0" />
-          <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
+          <h2 className="text-xs font-medium uppercase tracking-wider font-mono text-foreground">
             Crew
           </h2>
           <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
@@ -1915,7 +1772,7 @@ function UnifiedCrewPanel({
               }`}
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className="relative w-6 h-6 rounded-full border border-border bg-accent/15 text-accent font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
+                <div className="relative w-6 h-6 rounded-full border border-border bg-accent/15 text-accent font-mono text-[10px] font-medium flex items-center justify-center shrink-0">
                   <span className="overflow-hidden w-full h-full rounded-full flex items-center justify-center relative">
                     <span>{initials}</span>
                     {avatarSrc && (
@@ -1937,7 +1794,7 @@ function UnifiedCrewPanel({
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
-                    <span className="text-[11px] font-bold text-foreground truncate leading-tight">
+                    <span className="text-[11px] font-medium text-foreground truncate leading-tight">
                       {m.name}
                     </span>
                     <span className={`px-1 py-0 rounded text-[9px] font-mono border shrink-0 leading-tight ${badge.cls}`}>
@@ -2059,7 +1916,7 @@ function PipelineCardTile({
           )}
           {card.postIt && isReady ? (
             <span
-              className="px-1.5 py-0.5 rounded border border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold shrink-0"
+              className="px-1.5 py-0.5 rounded border border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-medium shrink-0"
               title={card.postItAt ? `Post it clicked at ${card.postItAt}` : 'Post it armed'}
             >
               Post it Armed
@@ -2088,7 +1945,7 @@ function PipelineCardTile({
       <button
         type="button"
         onClick={onEdit}
-        className="text-left block w-full text-xs font-semibold text-foreground hover:text-accent leading-snug"
+        className="text-left block w-full text-xs font-medium text-foreground hover:text-accent leading-snug"
       >
         {card.title}
       </button>
@@ -2254,7 +2111,7 @@ function PipelineCardTile({
               type="button"
               disabled={busy}
               onClick={onPostIt}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-normal bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors"
             >
               <Send className="w-2.5 h-2.5" />
               Post it
@@ -2516,7 +2373,7 @@ function CrewChatAvatar({
 
   return (
     <div
-      className={`relative w-7 h-7 rounded-full border font-mono text-[10px] font-bold flex items-center justify-center shrink-0 ${
+      className={`relative w-7 h-7 rounded-full border font-mono text-[10px] font-medium flex items-center justify-center shrink-0 ${
         isOperator
           ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-700 dark:text-cyan-300 shadow-[0_0_12px_-3px_rgba(6,182,212,0.35)]'
           : 'bg-accent/15 border-border text-accent'
@@ -2584,6 +2441,9 @@ function CrewChatPanel({
   onDelete: (id: string) => Promise<void>;
 }) {
   const [draft, setDraft] = useState('');
+  const [caretPos, setCaretPos] = useState(0);
+  const [mentionActiveIndex, setMentionActiveIndex] = useState(0);
+  const [mentionDismissed, setMentionDismissed] = useState(false);
   const [targetMention, setTargetMention] = useState<string>('all');
   const [showJumpLatest, setShowJumpLatest] = useState(false);
 
@@ -2728,6 +2588,103 @@ function CrewChatPanel({
     inputRef.current?.focus();
   };
 
+  const mentionCandidates = useMemo(() => {
+    const items: Array<{
+      key: string;
+      name: string;
+      agentId: string;
+      role: string;
+      mentionToken: string;
+      avatar?: string;
+      dotCls: string;
+    }> = [];
+    const seen = new Set<string>();
+    const activePriority = (s: AgentStatus) => (s === 'active' ? 0 : s === 'on_call' ? 1 : 2);
+    const orderedCrew = [...crew].sort((a, b) => {
+      const d = activePriority(a.status) - activePriority(b.status);
+      return d !== 0 ? d : a.name.localeCompare(b.name);
+    });
+    for (const c of orderedCrew) {
+      const handle = normalizeChatHandle(c.agentId);
+      if (!handle || handle === 'rotty' || seen.has(handle)) continue;
+      seen.add(handle);
+      items.push({
+        key: c.id || c.agentId,
+        name: c.name,
+        agentId: c.agentId,
+        role: c.role,
+        mentionToken: `@${c.name.replace(/\s+/g, '')}`,
+        avatar: resolveAvatarRenderUrl(c.avatarUrl),
+        dotCls: STATUS_DOT[c.status] || STATUS_DOT.active,
+      });
+    }
+    items.push({
+      key: 'all',
+      name: 'All Crew',
+      agentId: 'all',
+      role: 'Notify everyone on deck',
+      mentionToken: '@All',
+      dotCls: 'bg-cyan-400',
+    });
+    return items;
+  }, [crew]);
+
+  const activeMention = useMemo(() => {
+    const clampedPos = Math.max(0, Math.min(caretPos, draft.length));
+    const before = draft.slice(0, clampedPos);
+    const m = before.match(/(?:^|\s)@([a-zA-Z0-9_-]*)$/);
+    if (!m) return null;
+    const atIndex = before.lastIndexOf('@');
+    return {
+      atIndex,
+      endIndex: clampedPos,
+      query: (m[1] || '').toLowerCase(),
+    };
+  }, [draft, caretPos]);
+
+  const filteredMentions = useMemo(() => {
+    if (!activeMention || mentionDismissed) return [];
+    const q = activeMention.query.replace(/[^a-z0-9]/g, '');
+    if (!q) return mentionCandidates;
+    const prefixMatches: typeof mentionCandidates = [];
+    const subMatches: typeof mentionCandidates = [];
+    for (const item of mentionCandidates) {
+      const nName = item.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const nId = item.agentId.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const nTok = item.mentionToken.slice(1).toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (nName.startsWith(q) || nId.startsWith(q) || nTok.startsWith(q)) {
+        prefixMatches.push(item);
+      } else if (nName.includes(q) || nId.includes(q) || nTok.includes(q)) {
+        subMatches.push(item);
+      }
+    }
+    return [...prefixMatches, ...subMatches];
+  }, [activeMention, mentionDismissed, mentionCandidates]);
+
+  const safeMentionIdx = Math.min(
+    mentionActiveIndex,
+    Math.max(0, filteredMentions.length - 1)
+  );
+
+  const insertMentionChoice = (mentionToken: string) => {
+    if (!activeMention) return;
+    const before = draft.slice(0, activeMention.atIndex);
+    const after = draft.slice(activeMention.endIndex).replace(/^\s+/, '');
+    const inserted = `${before}${mentionToken} `;
+    const nextDraft = `${inserted}${after}`;
+    setDraft(nextDraft);
+    setCaretPos(inserted.length);
+    setMentionDismissed(false);
+    setMentionActiveIndex(0);
+    requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (el) {
+        el.focus();
+        el.setSelectionRange(inserted.length, inserted.length);
+      }
+    });
+  };
+
   return (
     <section
       className={`rounded-xl border border-border bg-card flex flex-col overflow-hidden [overflow-anchor:none] ${
@@ -2739,7 +2696,7 @@ function CrewChatPanel({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <MessageSquare className="w-3.5 h-3.5 text-accent shrink-0" />
-            <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
+            <h2 className="text-xs font-medium uppercase tracking-wider font-mono text-foreground">
               Crew Chat
             </h2>
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
@@ -2779,7 +2736,7 @@ function CrewChatPanel({
                   chipAlert && !active
                     ? chipAlert.tabBorderCls
                     : active && chipAlert
-                      ? `${chipAlert.tabBorderCls} font-semibold`
+                      ? `${chipAlert.tabBorderCls} font-normal`
                       : active
                         ? 'bg-cyan-500/15 border-cyan-500/45 text-cyan-800 dark:text-cyan-200 shadow-sm'
                         : 'bg-background/70 border-border text-muted-foreground hover:text-foreground hover:border-accent/50'
@@ -2889,7 +2846,7 @@ function CrewChatPanel({
                             badgeDotCls={senderInfo?.dotCls}
                           />
                           <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                            <span className={`text-xs font-bold truncate ${senderAccent.accentText}`}>
+                            <span className={`text-xs font-medium truncate ${senderAccent.accentText}`}>
                               {m.senderName}
                             </span>
                             {msgAlert && (
@@ -2947,17 +2904,17 @@ function CrewChatPanel({
                         <div className="flex items-center gap-2 min-w-0">
                           <CrewChatAvatar name={m.senderName} src={senderInfo?.avatar} isOperator />
                           <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                            <span className="text-xs font-bold text-foreground">{m.senderName}</span>
+                            <span className="text-xs font-medium text-foreground">{m.senderName}</span>
                             {msgAlert && (
                               <span className={`px-1 py-0 rounded border text-[8px] font-mono ${msgAlert.badgeCls}`}>
                                 {msgAlert.label}
                               </span>
                             )}
-                            <span className="px-1.5 py-0 rounded text-[9px] font-mono font-semibold bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/35">
+                            <span className="px-1.5 py-0 rounded text-[9px] font-mono font-normal bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/35">
                               Operator
                             </span>
                             {m.mentions && m.mentions.length > 0 && (
-                              <span className={`text-[11px] font-semibold truncate ${targetAccent.accentText}`}>
+                              <span className={`text-[11px] font-medium truncate ${targetAccent.accentText}`}>
                                 {m.mentions.map((tag) => `@${tag}`).join(' ')}
                               </span>
                             )}
@@ -3000,7 +2957,7 @@ function CrewChatPanel({
                             )}
                             {cardMeta && (
                               <span
-                                className={`px-1.5 py-0.5 rounded text-[9px] font-semibold border shrink-0 leading-none ${cardMeta.statusCls}`}
+                                className={`px-1.5 py-0.5 rounded text-[9px] font-normal border shrink-0 leading-none ${cardMeta.statusCls}`}
                               >
                                 {cardMeta.statusLabel}
                               </span>
@@ -3092,7 +3049,7 @@ function CrewChatPanel({
                           />
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-1.5 leading-tight">
-                              <span className="text-xs font-bold text-foreground truncate">
+                              <span className="text-xs font-medium text-foreground truncate">
                                 {m.senderName}
                               </span>
                               {msgAlert && (
@@ -3101,7 +3058,7 @@ function CrewChatPanel({
                                 </span>
                               )}
                               {/\bverified\b|\blive\b/i.test(m.text) ? (
-                                <span className="px-1.5 py-0 rounded text-[9px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
+                                <span className="px-1.5 py-0 rounded text-[9px] font-normal bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
                                   VERIFIED
                                 </span>
                               ) : senderInfo?.statusLabel ? (
@@ -3226,7 +3183,7 @@ function CrewChatPanel({
               setShowJumpLatest(false);
               el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
             }}
-            className="absolute bottom-2 right-3 px-2.5 py-1 rounded-lg text-[10px] font-mono font-semibold bg-accent text-accent-foreground shadow-md hover:opacity-90 transition-opacity"
+            className="absolute bottom-2 right-3 px-2.5 py-1 rounded-lg text-[10px] font-mono font-normal bg-accent text-accent-foreground shadow-md hover:opacity-90 transition-opacity"
           >
             ↓ Latest
           </button>
@@ -3261,15 +3218,97 @@ function CrewChatPanel({
           forceScrollRef.current = true;
           stickToBottomRef.current = true;
           setDraft('');
+          setCaretPos(0);
+          setMentionDismissed(false);
           await onSend(trimmed, to);
         }}
       >
         <div className="relative flex-1 min-w-0">
+          {filteredMentions.length > 0 && (
+            <div
+              role="listbox"
+              aria-label="Mention crew member"
+              className="absolute bottom-full left-0 right-0 mb-1.5 z-30 rounded-xl border border-border bg-card shadow-xl overflow-hidden max-h-44 overflow-y-auto ops-scroll"
+            >
+              <div className="px-2.5 py-1 border-b border-border/70 bg-muted/40 flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                <span>Crew Mentions</span>
+                <span>↑↓ select · Enter / Tab</span>
+              </div>
+              {filteredMentions.map((item, idx) => {
+                const selected = idx === safeMentionIdx;
+                return (
+                  <button
+                    key={`ac-${item.key}`}
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      insertMentionChoice(item.mentionToken);
+                    }}
+                    className={`w-full px-2.5 py-1.5 flex items-center justify-between gap-2 text-left text-xs transition-colors ${
+                      selected
+                        ? 'bg-accent/15 text-foreground'
+                        : 'hover:bg-muted/60 text-foreground/90'
+                    }`}
+                  >
+                    <span className="inline-flex items-center gap-2 min-w-0">
+                      <CrewPillAvatar
+                        name={item.name}
+                        src={item.avatar}
+                        dotCls={item.dotCls}
+                      />
+                      <span className="font-medium truncate">{item.mentionToken}</span>
+                      <span className="text-[10px] text-muted-foreground truncate">
+                        {item.role}
+                      </span>
+                    </span>
+                    <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+                      {item.agentId}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <input
             ref={inputRef}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder={`Message ${activeChipLabel} as Rotty...`}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              setCaretPos(e.target.selectionStart ?? e.target.value.length);
+              setMentionDismissed(false);
+              setMentionActiveIndex(0);
+            }}
+            onClick={(e) => {
+              const target = e.currentTarget;
+              setCaretPos(target.selectionStart ?? target.value.length);
+            }}
+            onKeyUp={(e) => {
+              if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Escape') return;
+              const target = e.currentTarget;
+              setCaretPos(target.selectionStart ?? target.value.length);
+            }}
+            onKeyDown={(e) => {
+              if (filteredMentions.length === 0) return;
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setMentionActiveIndex((prev) => (prev + 1) % filteredMentions.length);
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setMentionActiveIndex(
+                  (prev) => (prev - 1 + filteredMentions.length) % filteredMentions.length
+                );
+              } else if (e.key === 'Enter' || e.key === 'Tab') {
+                e.preventDefault();
+                const chosen = filteredMentions[safeMentionIdx] || filteredMentions[0];
+                if (chosen) insertMentionChoice(chosen.mentionToken);
+              } else if (e.key === 'Escape') {
+                e.preventDefault();
+                setMentionDismissed(true);
+              }
+            }}
+            placeholder={`Message ${activeChipLabel} as Rotty (type @)...`}
             className="w-full pl-3 pr-7 py-2 rounded-xl text-xs bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
           />
           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-muted-foreground border border-border rounded px-1 pointer-events-none">
@@ -3279,7 +3318,7 @@ function CrewChatPanel({
         <button
           type="submit"
           disabled={busy || !draft.trim()}
-          className="h-8 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-semibold text-xs inline-flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 shrink-0 transition-all"
+          className="h-8 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-medium text-xs inline-flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 shrink-0 transition-all"
         >
           <span className="hidden sm:inline">Send</span>
           <Send className="w-3.5 h-3.5" />
@@ -3342,7 +3381,7 @@ function OpsAdminPanel({
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-sm font-bold text-foreground">Quick Paste Box — {activeClient?.name}</h1>
+            <h1 className="text-sm font-medium text-foreground">Quick Paste Box — {activeClient?.name}</h1>
             <p className="text-xs text-muted-foreground">
               Paste a Gemini/Grok raw list, a Drive drop with frontmatter, Marley batch clearance markdown, or a YAML crew/gate/metrics snippet.
             </p>
@@ -3373,7 +3412,7 @@ function OpsAdminPanel({
               await onPostAction({ action: 'paste', raw: pasteText, defaultLane }, 'Paste applied to board');
               setPasteText('');
             }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
           >
             <Sparkles className="w-3.5 h-3.5" />
             Apply Paste
@@ -3403,7 +3442,7 @@ function OpsAdminPanel({
             setNewNote('');
           }}
         >
-          <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
+          <h2 className="text-xs font-medium uppercase tracking-wider font-mono text-foreground">
             Add Pipeline Card
           </h2>
           <input
@@ -3440,7 +3479,7 @@ function OpsAdminPanel({
             onChange={(e) => setNewNote(e.target.value)}
             className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border"
           />
-          <button type="submit" disabled={busy} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-accent text-accent-foreground">
+          <button type="submit" disabled={busy} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground">
             <Plus className="w-3.5 h-3.5" /> Add Card
           </button>
         </form>
@@ -3458,7 +3497,7 @@ function OpsAdminPanel({
               setCrewNote('');
             }}
           >
-            <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">Update Crew Status</h2>
+            <h2 className="text-xs font-medium uppercase tracking-wider font-mono text-foreground">Update Crew Status</h2>
             <div className="grid grid-cols-2 gap-2">
               <select value={crewAgentId} onChange={(e) => setCrewAgentId(e.target.value)} className="px-3 py-2 rounded-lg text-xs bg-background border border-border">
                 {crew.map((c) => (
@@ -3479,7 +3518,7 @@ function OpsAdminPanel({
               onChange={(e) => setCrewNote(e.target.value)}
               className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border"
             />
-            <button type="submit" disabled={busy} className="px-3.5 py-2 rounded-lg text-xs font-semibold bg-accent text-accent-foreground">
+            <button type="submit" disabled={busy} className="px-3.5 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground">
               Save Crew
             </button>
           </form>
@@ -3496,7 +3535,7 @@ function OpsAdminPanel({
               setGateDetail('');
             }}
           >
-            <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">Add / Update Gate</h2>
+            <h2 className="text-xs font-medium uppercase tracking-wider font-mono text-foreground">Add / Update Gate</h2>
             <div className="grid grid-cols-2 gap-2">
               <input required placeholder="Gate label" value={gateLabel} onChange={(e) => setGateLabel(e.target.value)} className="px-3 py-2 rounded-lg text-xs bg-background border border-border" />
               <select value={gateState} onChange={(e) => setGateState(e.target.value as GateState)} className="px-3 py-2 rounded-lg text-xs bg-background border border-border">
@@ -3508,7 +3547,7 @@ function OpsAdminPanel({
             </div>
             <input placeholder="Detail" value={gateDetail} onChange={(e) => setGateDetail(e.target.value)} className="w-full px-3 py-2 rounded-lg text-xs bg-background border border-border" />
             <input placeholder="Since (e.g. Nov 25, 2026)" value={gateSince} onChange={(e) => setGateSince(e.target.value)} className="w-full px-3 py-2 rounded-lg text-xs bg-background border border-border" />
-            <button type="submit" disabled={busy} className="px-3.5 py-2 rounded-lg text-xs font-semibold bg-accent text-accent-foreground">
+            <button type="submit" disabled={busy} className="px-3.5 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground">
               Save Gate
             </button>
           </form>
@@ -3534,7 +3573,7 @@ function OpsAdminPanel({
             );
           }}
         >
-          <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
+          <h2 className="text-xs font-medium uppercase tracking-wider font-mono text-foreground">
             Manual Metrics &amp; Showroom Status
           </h2>
           <div className="grid grid-cols-2 gap-2">
@@ -3546,7 +3585,7 @@ function OpsAdminPanel({
           <input required placeholder="As of date (YYYY-MM-DD)" value={asOf} onChange={(e) => setAsOf(e.target.value)} className="w-full px-3 py-2 rounded-lg text-xs bg-background border border-border" />
           <input placeholder="Showroom phase" value={showroomPhase} onChange={(e) => setShowroomPhase(e.target.value)} className="w-full px-3 py-2 rounded-lg text-xs bg-background border border-border" />
           <input placeholder="Showroom note" value={showroomNote} onChange={(e) => setShowroomNote(e.target.value)} className="w-full px-3 py-2 rounded-lg text-xs bg-background border border-border" />
-          <button type="submit" disabled={busy} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-accent text-accent-foreground">
+          <button type="submit" disabled={busy} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground">
             <Send className="w-3.5 h-3.5" /> Save Metrics
           </button>
         </form>
@@ -3572,7 +3611,7 @@ function OpsAdminPanel({
               setClientEmails('');
             }}
           >
-            <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
+            <h2 className="text-xs font-medium uppercase tracking-wider font-mono text-foreground">
               Provision New Client Workspace
             </h2>
             <input required placeholder="Client Display Name" value={clientName} onChange={(e) => setClientName(e.target.value)} className="w-full px-3 py-2 rounded-lg text-xs bg-background border border-border" />
@@ -3581,7 +3620,7 @@ function OpsAdminPanel({
               <input placeholder="Domain" value={clientDomain} onChange={(e) => setClientDomain(e.target.value)} className="px-3 py-2 rounded-lg text-xs bg-background border border-border" />
             </div>
             <input placeholder="Allowed client emails (comma-separated)" value={clientEmails} onChange={(e) => setClientEmails(e.target.value)} className="w-full px-3 py-2 rounded-lg text-xs bg-background border border-border" />
-            <button type="submit" disabled={busy} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-accent text-accent-foreground">
+            <button type="submit" disabled={busy} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground">
               <Plus className="w-3.5 h-3.5" /> Create Client Board
             </button>
           </form>

@@ -225,7 +225,7 @@ export function OpsAssetThumb({
                   setConnectingDrive(false);
                 }
               }}
-              className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-accent/50 bg-accent/15 text-accent text-[11px] font-mono font-semibold hover:bg-accent/25 disabled:opacity-50"
+              className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-accent/50 bg-accent/15 text-accent text-[11px] font-mono font-medium hover:bg-accent/25 disabled:opacity-50"
             >
               <Lock className="w-3 h-3" />
               {connectingDrive

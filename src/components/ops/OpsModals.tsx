@@ -153,7 +153,7 @@ export function OpsModalHost({
     >
       <div className="w-full max-w-2xl bg-card border border-border rounded-xl shadow-2xl overflow-hidden my-auto">
         <div className="px-4 sm:px-5 py-3.5 border-b border-border flex items-center justify-between gap-3">
-          <h2 className="text-sm font-bold tracking-tight text-foreground truncate">
+          <h2 className="text-sm font-medium tracking-tight text-foreground truncate">
             {state.type === 'card'
               ? state.card.title
               : state.type === 'crew'
@@ -382,7 +382,7 @@ function CardEditorForm({
     <div className="space-y-4">
       {livePublishedLinks.length > 0 && (
         <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
-          <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+          <span className="text-[11px] font-mono font-normal uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
             Live Published Post
           </span>
           <div className="flex flex-wrap items-center gap-1.5">
@@ -392,7 +392,7 @@ function CardEditorForm({
                 href={l.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-normal bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
               >
                 Preview {l.label} <ExternalLink className="w-3 h-3" />
               </a>
@@ -403,7 +403,7 @@ function CardEditorForm({
 
       {(card.discrepancies?.length || card.unverifiedClaims?.length || card.artifactsNeeded?.length || card.flaggedNotes?.length) ? (
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs space-y-1">
-          <div className="font-semibold text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
+          <div className="font-medium text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
             Flags &amp; Requirements
           </div>
@@ -426,7 +426,7 @@ function CardEditorForm({
         <div className="px-3 py-1.5 border-b border-border/70 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
           <div className="flex flex-wrap items-center gap-1.5 min-w-0">
             <ImageIcon className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
-            <span className="font-semibold text-foreground">
+            <span className="font-medium text-foreground">
               Assets ({assets.length})
             </span>
             <span
@@ -549,7 +549,7 @@ function CardEditorForm({
                             rejectionReason: undefined,
                           })
                         }
-                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded border border-emerald-500/45 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-[11px] font-mono font-semibold"
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded border border-emerald-500/45 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-[11px] font-mono font-normal"
                       >
                         <Check className="w-3 h-3" /> Approve
                       </button>
@@ -671,7 +671,7 @@ function CardEditorForm({
       {activeAsset && (
         <div className="rounded-lg border border-border bg-background/60 p-3 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-foreground font-semibold">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-foreground font-normal">
               Editing Asset #{assets.findIndex((a) => a.id === activeAsset.id) + 1} · {activeAsset.id}
             </span>
             <label className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-border bg-card hover:border-accent text-xs font-mono cursor-pointer">
@@ -891,7 +891,7 @@ function CardEditorForm({
                 onClick={() => togglePlatform(p.id)}
                 className={`px-2.5 py-1 rounded-md text-xs font-mono border transition-colors ${
                   active
-                    ? 'border-accent bg-accent/15 text-foreground font-semibold'
+                    ? 'border-accent bg-accent/15 text-foreground font-medium'
                     : 'border-border bg-background text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -1011,7 +1011,7 @@ function CardEditorForm({
                   type="button"
                   disabled={busy}
                   onClick={onPostIt}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50"
                 >
                   <Send className="w-3.5 h-3.5" />
                   Post it
@@ -1028,7 +1028,7 @@ function CardEditorForm({
                       : 'Undo Post it trigger before a bot claims it'
                   }
                   onClick={onCancelPostIt}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-amber-500/45 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-amber-500/45 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 disabled:opacity-50"
                 >
                   {card.claimedBy ? `Claimed (${card.claimedBy})` : 'Cancel Post it'}
                 </button>
@@ -1039,7 +1039,7 @@ function CardEditorForm({
               type="button"
               disabled={busy}
               onClick={() => onSave(buildPayload('approved', false))}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300 hover:bg-violet-500/20 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300 hover:bg-violet-500/20 disabled:opacity-50"
             >
               <Check className="w-3.5 h-3.5" />
               Approve
@@ -1051,7 +1051,7 @@ function CardEditorForm({
                 type="button"
                 disabled={busy}
                 onClick={() => onSave(buildPayload('approved', true))}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20 disabled:opacity-50"
               >
                 <Check className="w-3.5 h-3.5" />
                 Mark Ready for Rotty
@@ -1061,7 +1061,7 @@ function CardEditorForm({
                 type="button"
                 disabled
                 title={completeness.detail || 'Complete copy and assets before Mark Ready'}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-amber-500/45 bg-amber-500/10 text-amber-700 dark:text-amber-300 opacity-85 cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-amber-500/45 bg-amber-500/10 text-amber-700 dark:text-amber-300 opacity-85 cursor-not-allowed"
               >
                 <Lock className="w-3.5 h-3.5" />
                 Mark Ready · {completeness.buttonReason}
@@ -1072,7 +1072,7 @@ function CardEditorForm({
             type="button"
             disabled={busy}
             onClick={() => onSave(buildPayload('posted', false))}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50"
           >
             <Send className="w-3.5 h-3.5" />
             Mark Posted
@@ -1081,7 +1081,7 @@ function CardEditorForm({
             type="button"
             disabled={busy}
             onClick={() => onSave(buildPayload())}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
           >
             Save
           </button>
@@ -1142,7 +1142,7 @@ function CrewEditorForm({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="relative w-11 h-11 rounded-full border border-border bg-accent/15 text-accent font-mono text-xs font-bold flex items-center justify-center shrink-0 overflow-hidden">
+        <div className="relative w-11 h-11 rounded-full border border-border bg-accent/15 text-accent font-mono text-xs font-medium flex items-center justify-center shrink-0 overflow-hidden">
           <span>{initials}</span>
           {previewAvatarSrc && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -1296,7 +1296,7 @@ function CrewEditorForm({
                 type="button"
                 disabled={busy}
                 onClick={onDelete}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Confirm Remove
@@ -1343,7 +1343,7 @@ function CrewEditorForm({
               resetNote,
             })
           }
-          className="px-4 py-2 rounded-lg text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
+          className="px-4 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
         >
           {isCreate ? 'Add Crew Member' : 'Save Crew Changes'}
         </button>
@@ -1396,7 +1396,7 @@ function DeskPasteForm({
           type="button"
           disabled={busy || !raw.trim()}
           onClick={() => onSubmit(raw, defaultLane)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
         >
           <Sparkles className="w-3.5 h-3.5" />
           Parse &amp; Land on Board

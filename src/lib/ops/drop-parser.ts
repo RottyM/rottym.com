@@ -2124,7 +2124,7 @@ export function getUpdateAlertMeta(kind?: UpdateAlertKind): UpdateAlertMeta | nu
       tabBorderCls:
         'border-emerald-500/80 dark:border-emerald-400/80 bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 shadow-[0_0_12px_rgba(16,185,129,0.28)]',
       badgeCls:
-        'border-emerald-500/50 bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 font-semibold',
+        'border-emerald-500/50 bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 font-medium',
       dotCls: 'bg-emerald-400 animate-pulse',
     };
   }
@@ -2136,7 +2136,7 @@ export function getUpdateAlertMeta(kind?: UpdateAlertKind): UpdateAlertMeta | nu
     tabBorderCls:
       'border-amber-500/80 dark:border-amber-400/80 bg-amber-500/15 text-amber-900 dark:text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.28)]',
     badgeCls:
-      'border-amber-500/50 bg-amber-500/20 text-amber-800 dark:text-amber-200 font-semibold',
+      'border-amber-500/50 bg-amber-500/20 text-amber-800 dark:text-amber-200 font-medium',
     dotCls: 'bg-amber-400 animate-pulse',
   };
 }

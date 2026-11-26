@@ -247,3 +247,19 @@ body {
   width: 0;
   height: 0;
 }
+
+.ops-shell {
+  font-family: var(--font-ops-sans), system-ui, sans-serif;
+  font-weight: 400;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ops-shell .font-mono {
+  font-family: var(--font-ops-mono), ui-monospace, monospace;
+}
+
+.ops-shell .font-bold,
+.ops-shell .font-semibold {
+  font-weight: 500;
+}
