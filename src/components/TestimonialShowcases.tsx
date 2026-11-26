@@ -12,12 +12,15 @@ import {
   Star,
 } from 'lucide-react';
 import { clientTestimonials } from '@/lib/testimonials';
+import { useLang } from './ThemeProvider';
 
 /**
  * Compact above-the-fold quote switcher for the homepage hero.
  * Starts on Isabelle Deeme so it never duplicates the lower spotlight's default client.
  */
 export function HeroQuoteDeck() {
+  const { lang } = useLang();
+  const isEs = lang === 'es';
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [userControlled, setUserControlled] = useState(false);
@@ -55,21 +58,22 @@ export function HeroQuoteDeck() {
         <div className="flex items-center gap-2">
           <Quote className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
           <span className="font-mono text-[10px] font-bold tracking-wider uppercase text-slate-600 dark:text-slate-300">
-            Client Note · {String(activeIndex + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+            {isEs ? 'Cliente' : 'Client Note'} · {String(activeIndex + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
           </span>
         </div>
 
         <div className="flex items-center gap-1">
           <a
             href="#testimonials"
-            className="font-mono text-[10px] font-bold uppercase tracking-wider text-accent hover:underline inline-flex items-center min-h-[28px] px-2 py-1 rounded-lg mr-1"
+            className="font-mono text-[10px] font-bold uppercase tracking-wider text-accent hover:underline inline-flex items-center gap-1 min-h-[28px] px-2 py-1 rounded-lg mr-1 whitespace-nowrap"
           >
-            All {total}<span className="sr-only"> client testimonials</span> <span aria-hidden="true">↓</span>
+            <span>{isEs ? `Ver ${total} testimonios` : `All ${total} reviews`}</span>
+            <span aria-hidden="true">↓</span>
           </a>
           <button
             type="button"
             onClick={() => handleSelect(activeIndex - 1)}
-            aria-label="Previous client quote"
+            aria-label={isEs ? 'Testimonio anterior' : 'Previous client quote'}
             className="w-7 h-7 rounded-lg border border-slate-500 dark:border-slate-500 bg-white dark:bg-slate-900/90 hover:border-accent/60 hover:text-accent text-slate-700 dark:text-slate-300 flex items-center justify-center transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" />
@@ -77,7 +81,7 @@ export function HeroQuoteDeck() {
           <button
             type="button"
             onClick={() => handleSelect(activeIndex + 1)}
-            aria-label="Next client quote"
+            aria-label={isEs ? 'Siguiente testimonio' : 'Next client quote'}
             className="w-7 h-7 rounded-lg border border-slate-500 dark:border-slate-500 bg-white dark:bg-slate-900/90 hover:border-accent/60 hover:text-accent text-slate-700 dark:text-slate-300 flex items-center justify-center transition-colors"
           >
             <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -94,10 +98,10 @@ export function HeroQuoteDeck() {
             className="col-start-1 row-start-1 invisible pointer-events-none select-none space-y-2.5"
           >
             <p className="text-sm sm:text-[15px] font-normal italic leading-snug">
-              &ldquo;{item.heroQuote}&rdquo;
+              &ldquo;{isEs ? item.heroQuoteEs : item.heroQuote}&rdquo;
             </p>
             <p className="text-xs font-medium">
-              — {item.author}, {item.role}
+              — {item.author}, {isEs ? item.roleEs : item.role}
             </p>
           </div>
         ))}
@@ -113,10 +117,10 @@ export function HeroQuoteDeck() {
               className="space-y-2.5 w-full"
             >
               <p className="text-sm sm:text-[15px] font-normal text-slate-800 dark:text-slate-100 italic leading-snug">
-                &ldquo;{active.heroQuote}&rdquo;
+                &ldquo;{isEs ? active.heroQuoteEs : active.heroQuote}&rdquo;
               </p>
               <p className="text-xs text-slate-600 dark:text-muted-foreground font-medium">
-                — {active.author}, {active.role}
+                — {active.author}, {isEs ? active.roleEs : active.role}
               </p>
             </motion.div>
           </AnimatePresence>
@@ -131,6 +135,8 @@ export function HeroQuoteDeck() {
  * immediately see multiple verified organizations and can switch full quotes cleanly.
  */
 export function ClientProofSpotlight() {
+  const { lang } = useLang();
+  const isEs = lang === 'es';
   // Default to index 1 (John F. Crownover) so initial view pairs with Isabelle in the Hero without repetition.
   const [activeIndex, setActiveIndex] = useState(clientTestimonials.length > 1 ? 1 : 0);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -150,14 +156,14 @@ export function ClientProofSpotlight() {
   return (
     <section
       id="testimonials"
-      aria-label="Client Feedback"
+      aria-label={isEs ? 'Opiniones de Clientes' : 'Client Feedback'}
       className="pt-4 sm:pt-6 pb-12 sm:pb-16 relative overflow-hidden scroll-mt-24"
     >
       <div className="max-w-5xl mx-auto px-6 space-y-4">
         {/* Interactive Client Switcher Tabs */}
         <div
           role="tablist"
-          aria-label="Select a client review"
+          aria-label={isEs ? 'Seleccionar testimonio de cliente' : 'Select a client review'}
           className={`grid ${tabGridClass} gap-2.5 p-1.5 rounded-lg border border-border/80 bg-slate-100/80 dark:bg-slate-900/70 backdrop-blur-sm`}
         >
           {clientTestimonials.map((item, index) => {
@@ -221,7 +227,7 @@ export function ClientProofSpotlight() {
                     {item.author}
                   </div>
                   <div className="text-[11px] text-muted-foreground leading-snug">
-                    {item.role}
+                    {isEs ? item.roleEs : item.role}
                   </div>
                 </div>
               </button>
@@ -257,7 +263,7 @@ export function ClientProofSpotlight() {
                 />
               ))}
               <span className="ml-2 font-mono text-[10px] sm:text-xs font-black tracking-wider text-slate-700 dark:text-slate-300 uppercase">
-                5.0 · Client review
+                5.0 · {isEs ? 'Reseña de cliente' : 'Client review'}
               </span>
             </div>
 
@@ -269,7 +275,7 @@ export function ClientProofSpotlight() {
                   aria-hidden="true"
                   className="col-start-1 row-start-1 invisible pointer-events-none select-none text-base sm:text-lg md:text-xl font-normal leading-relaxed"
                 >
-                  &ldquo;{item.quote}&rdquo;
+                  &ldquo;{isEs ? item.quoteEs : item.quote}&rdquo;
                 </p>
               ))}
 
@@ -283,7 +289,7 @@ export function ClientProofSpotlight() {
                     transition={{ duration: 0.22 }}
                     className="text-base sm:text-lg md:text-xl font-normal leading-relaxed text-slate-800 dark:text-slate-100"
                   >
-                    &ldquo;{active.quote}&rdquo;
+                    &ldquo;{isEs ? active.quoteEs : active.quote}&rdquo;
                   </motion.blockquote>
                 </AnimatePresence>
               </div>
@@ -300,7 +306,7 @@ export function ClientProofSpotlight() {
                     {active.author}
                   </div>
                   <div className="text-xs sm:text-sm font-medium text-muted-foreground">
-                    {active.role}
+                    {isEs ? active.roleEs : active.role}
                   </div>
                 </div>
               </div>
@@ -308,14 +314,18 @@ export function ClientProofSpotlight() {
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-mono font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                   <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
-                  {active.category}
+                  {isEs ? active.categoryEs : active.category}
                 </span>
                 {active.caseStudyHref && (
                   <Link
                     href={active.caseStudyHref}
                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-mono font-bold tracking-wide uppercase bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20 transition-colors"
                   >
-                    <span>{active.caseStudyLabel ?? 'View case study'}</span>
+                    <span>
+                      {isEs
+                        ? active.caseStudyLabelEs ?? 'Ver caso de éxito'
+                        : active.caseStudyLabel ?? 'View case study'}
+                    </span>
                     <ArrowRight className="w-3 h-3" aria-hidden="true" />
                   </Link>
                 )}

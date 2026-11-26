@@ -38,6 +38,10 @@
   --color-border: var(--border);
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 html,
 body {
   overflow-x: clip;

@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     agentId: 'marley',
     name: 'Marley',
     set: 'new',
-    model: 'Llama 3.3',
+    model: 'Meta Muse',
     engine: 'llama',
     role: 'Clearance & social review',
     status: 'active',

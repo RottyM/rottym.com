@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { trackEvent } from '@/lib/analytics';
+import { useLang } from '@/components/ThemeProvider';
 
 interface UseLeadFormOptions {
   formId: string;
@@ -14,8 +15,13 @@ export function useLeadForm({
   formId,
   serviceLabel,
   gaCategory,
-  successMessage = 'Request received! Expect your 3-minute breakdown within 1 business day.',
+  successMessage,
 }: UseLeadFormOptions) {
+  const { lang } = useLang();
+  const isEs = lang === 'es';
+  const defaultSuccess = isEs
+    ? '¡Solicitud recibida! Espera tu análisis en video en 1 día hábil.'
+    : 'Request received! Expect your 3-minute breakdown within 1 business day.';
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -37,7 +43,7 @@ export function useLeadForm({
     if (params.get('ref')) sessionStorage.setItem('ref', params.get('ref')!);
 
     if (utmSource || utmCampaign || ref) {
-      setAttribution({ source: utmSource, campaign: utmCampaign, ref });
+      queueMicrotask(() => setAttribution({ source: utmSource, campaign: utmCampaign, ref }));
     }
   }, []);
 
@@ -54,7 +60,7 @@ export function useLeadForm({
   }) => {
     setIsSubmitting(true);
     setIsSuccess(false);
-    setStatus('Submitting request...');
+    setStatus(isEs ? 'Enviando solicitud...' : 'Submitting request...');
 
     const pagePath = typeof window !== 'undefined' ? window.location.pathname : '';
     const messageLines = [`Website URL: ${websiteUrl}`, `Submitted From: ${pagePath || formId}`];
@@ -91,14 +97,22 @@ export function useLeadForm({
           },
         });
         setIsSuccess(true);
-        setStatus(successMessage);
+        setStatus(successMessage || defaultSuccess);
         return true;
       }
 
-      setStatus(`Error — ${result.message || 'Unable to send request.'}`);
+      setStatus(
+        isEs
+          ? `Error — ${result.message || 'No se pudo enviar la solicitud.'}`
+          : `Error — ${result.message || 'Unable to send request.'}`
+      );
       return false;
     } catch {
-      setStatus('Error — connection failed. Email rmendez@rottym.com');
+      setStatus(
+        isEs
+          ? 'Error — falló la conexión. Escribe a rmendez@rottym.com'
+          : 'Error — connection failed. Email rmendez@rottym.com'
+      );
       return false;
     } finally {
       setIsSubmitting(false);

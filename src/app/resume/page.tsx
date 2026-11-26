@@ -310,12 +310,12 @@ export default function Resume() {
         {/* Recruiter & Strategic Partnership CTA Banner */}
         <div className="p-10 rounded-lg glass border border-accent/20 text-center space-y-6 relative overflow-hidden shadow-xl">
           <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-accent/15 rounded-full blur-3xl" />
-          <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-md backdrop-blur-md border border-border relative z-10 max-w-full">
+          <div className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-md backdrop-blur-md border border-border relative z-10 max-w-full">
             <Compass className="w-3.5 h-3.5 text-accent shrink-0" />
-            <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">CAREER OPPORTUNITIES</span>
-            <span className="text-border" aria-hidden="true">|</span>
+            <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold">CAREER OPPORTUNITIES</span>
+            <span className="text-border hidden sm:inline" aria-hidden="true">|</span>
             <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">TECHNICAL ROLES &amp; PARTNERSHIPS</span>
-            <span className="font-mono text-[10px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">ROLES &amp; COLLABS</span>
+            <span className="font-mono text-[10px] text-muted-foreground uppercase sm:hidden">ROLES &amp; COLLABS</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-black text-foreground">
             Looking for a Full-Stack &amp; AI Software Engineer or Technical Partner?

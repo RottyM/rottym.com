@@ -3,12 +3,15 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Send, Mail, MapPin, Sparkles, Phone, ArrowRight, Radio } from 'lucide-react';
+import { Send, Mail, MapPin, Sparkles, Phone, Radio } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
-
+import { useLang } from '@/components/ThemeProvider';
 
 export default function Contact() {
+  const { lang } = useLang();
+  const isEs = lang === 'es';
   const [status, setStatus] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedService, setSelectedService] = useState('Local Launchpad ($2,500 – $3,500)');
   const [attribution, setAttribution] = useState<{ source?: string; campaign?: string; ref?: string }>({});
@@ -19,7 +22,7 @@ export default function Contact() {
       const utmSource = params.get('utm_source') || sessionStorage.getItem('utm_source') || '';
       const utmCampaign = params.get('utm_campaign') || sessionStorage.getItem('utm_campaign') || '';
       const ref = params.get('ref') || sessionStorage.getItem('ref') || '';
-      
+
       if (params.get('utm_source')) sessionStorage.setItem('utm_source', params.get('utm_source')!);
       if (params.get('utm_campaign')) sessionStorage.setItem('utm_campaign', params.get('utm_campaign')!);
       if (params.get('ref')) sessionStorage.setItem('ref', params.get('ref')!);
@@ -46,7 +49,8 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setStatus('Transmitting credentials...');
+    setIsSuccess(false);
+    setStatus(isEs ? 'Enviando solicitud...' : 'Transmitting credentials...');
 
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     const data = {
@@ -71,20 +75,28 @@ export default function Contact() {
           category: 'contact_form',
           label: String(data.service || 'general'),
         });
-        setStatus('Message received! Expect a reply within 24h.');
+        setIsSuccess(true);
+        setStatus(
+          isEs
+            ? '¡Mensaje recibido! Te responderé en menos de 24 horas.'
+            : 'Message received! Expect a reply within 24h.'
+        );
         (e.target as HTMLFormElement).reset();
       } else {
         setStatus(`Error — ${result.message}`);
       }
-    } catch (error) {
-      setStatus('Error — connection failed. Email rmendez@rottym.com');
+    } catch {
+      setStatus(
+        isEs
+          ? 'Error — falló la conexión. Escribe a rmendez@rottym.com'
+          : 'Error — connection failed. Email rmendez@rottym.com'
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Custom success state handling if needed, or stick with the inline logic
-  if (status.includes('Message received!')) {
+  if (isSuccess) {
     return (
       <section className="py-24 px-6 min-h-screen flex items-center justify-center">
         <motion.div
@@ -95,9 +107,17 @@ export default function Contact() {
           <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-lg flex items-center justify-center mx-auto mb-6">
             <Sparkles className="w-10 h-10" />
           </div>
-          <h2 className="text-4xl font-black tracking-tight">Message Received!</h2>
-          <p className="text-xl text-muted-foreground">Thanks for reaching out. I&apos;ll review your project requirements and get back to you within 24 hours.</p>
-          <Link href="/" className="inline-block mt-8 text-accent font-bold hover:underline">Return to Home</Link>
+          <h2 className="text-4xl font-black tracking-tight">
+            {isEs ? '¡Mensaje Recibido!' : 'Message Received!'}
+          </h2>
+          <p className="text-xl text-muted-foreground">
+            {isEs
+              ? 'Gracias por escribirme. Revisaré los detalles de tu proyecto y te responderé en menos de 24 horas.'
+              : "Thanks for reaching out. I'll review your project requirements and get back to you within 24 hours."}
+          </p>
+          <Link href="/" className="inline-block mt-8 text-accent font-bold hover:underline">
+            {isEs ? 'Volver al inicio' : 'Return to Home'}
+          </Link>
         </motion.div>
       </section>
     );
@@ -121,24 +141,40 @@ export default function Contact() {
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 glass px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg shadow-md backdrop-blur-md border border-border max-w-full">
               <Radio className="w-3.5 h-3.5 text-accent shrink-0" />
-              <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">DIRECT ENGAGEMENT</span>
+              <span className="font-mono text-[10px] sm:text-xs text-accent tracking-wider sm:tracking-widest uppercase font-bold whitespace-nowrap">
+                {isEs ? 'CONTACTO DIRECTO' : 'DIRECT ENGAGEMENT'}
+              </span>
               <span className="text-border" aria-hidden="true">|</span>
-              <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">START A PROJECT</span>
+              <span className="font-mono text-[10px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap">
+                {isEs ? 'INICIAR UN PROYECTO' : 'START A PROJECT'}
+              </span>
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">Let&apos;s Build Something <span className="tech-gradient-text">Exceptional</span>.</h1>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
+              {isEs ? 'Construyamos Algo ' : "Let's Build Something "}
+              <span className="tech-gradient-text">
+                {isEs ? 'Excepcional' : 'Exceptional'}
+              </span>
+              .
+            </h1>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-md font-medium leading-relaxed">
-              Accepting new projects. Whether it&apos;s a modern website, client portal, or full-stack cloud application, let&apos;s build a reliable system together.
+              {isEs
+                ? 'Aceptando nuevos proyectos. Ya sea un sitio moderno, un portal para clientes o una aplicación web completa, construyamos juntos un sistema confiable.'
+                : "Accepting new projects. Whether it's a modern website, client portal, or full-stack cloud application, let's build a reliable system together."}
             </p>
           </div>
 
-          <h2 className="sr-only">Direct contact options and project inquiry form</h2>
+          <h2 className="sr-only">
+            {isEs ? 'Opciones de contacto directo y formulario de proyecto' : 'Direct contact options and project inquiry form'}
+          </h2>
           <div className="space-y-6">
             <div className="flex items-center gap-4 group">
               <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-all">
                 <Mail className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">Direct Access</p>
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">
+                  {isEs ? 'Correo Directo' : 'Direct Access'}
+                </p>
                 <p className="text-lg font-bold">rmendez@rottym.com</p>
               </div>
             </div>
@@ -147,13 +183,17 @@ export default function Contact() {
               <a
                 href="tel:2028540954"
                 className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-foreground group-hover:bg-accent group-hover:text-accent-foreground transition-all cursor-pointer"
-                aria-label="Call (202) 854-0954"
+                aria-label={isEs ? 'Llamar al (202) 854-0954' : 'Call (202) 854-0954'}
               >
                 <Phone className="w-5 h-5" />
               </a>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">Direct Line</p>
-                <a href="tel:2028540954" className="inline-flex items-center min-h-[26px] py-0.5 text-lg font-bold hover:text-accent transition-colors font-mono">(202) 854-0954</a>
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">
+                  {isEs ? 'Línea Directa' : 'Direct Line'}
+                </p>
+                <a href="tel:2028540954" className="inline-flex items-center min-h-[26px] py-0.5 text-lg font-bold hover:text-accent transition-colors font-mono">
+                  (202) 854-0954
+                </a>
               </div>
             </div>
 
@@ -162,8 +202,12 @@ export default function Contact() {
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">HQ Location</p>
-                <p className="text-lg font-bold">Virginia, USA · Global Delivery</p>
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground font-mono">
+                  {isEs ? 'Ubicación Base' : 'HQ Location'}
+                </p>
+                <p className="text-lg font-bold">
+                  {isEs ? 'Virginia, EE. UU. · Entrega Global' : 'Virginia, USA · Global Delivery'}
+                </p>
               </div>
             </div>
           </div>
@@ -176,65 +220,135 @@ export default function Contact() {
           className="relative"
         >
           <div className="absolute inset-0 bg-accent/5 blur-3xl rounded-full -z-10" />
-          
+
           <div className="mb-4 flex items-center justify-between px-2">
-            <span className="text-xs text-muted-foreground font-medium">Not sure where to start?</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              {isEs ? '¿No sabes por dónde empezar?' : 'Not sure where to start?'}
+            </span>
             <Link href="/packages" className="text-xs font-bold text-accent hover:underline flex items-center gap-1">
-              See local packages &amp; pricing <span aria-hidden="true">→</span>
+              {isEs ? 'Ver paquetes y precios locales' : 'See local packages & pricing'}{' '}
+              <span aria-hidden="true">→</span>
             </Link>
           </div>
 
           <form onSubmit={handleSubmit} className="stitch-card p-5 sm:p-8 md:p-10 rounded-lg shadow-xl space-y-4 sm:space-y-6 relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-accent/40 before:to-transparent">
             <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-1.5 sm:space-y-2">
-                <label htmlFor="name" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Full Name</label>
-                <input id="name" name="name" placeholder="John Wick" required className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm" />
+                <label htmlFor="name" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">
+                  {isEs ? 'Nombre Completo' : 'Full Name'}
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  placeholder={isEs ? 'Carlos Mendoza' : 'John Wick'}
+                  required
+                  className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm"
+                />
               </div>
               <div className="space-y-1.5 sm:space-y-2">
-                <label htmlFor="email" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Email Address</label>
-                <input id="email" name="email" type="email" placeholder="john@continental.com" required className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm" />
+                <label htmlFor="email" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">
+                  {isEs ? 'Correo Electrónico' : 'Email Address'}
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder={isEs ? 'carlos@negocio.com' : 'john@continental.com'}
+                  required
+                  className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm"
+                />
               </div>
             </div>
 
             <div className="space-y-1.5 sm:space-y-2">
-              <label htmlFor="service" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Service or Package Selection</label>
-              <select 
-                id="service" 
-                name="service" 
+              <label htmlFor="service" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">
+                {isEs ? 'Servicio o Paquete de Interés' : 'Service or Package Selection'}
+              </label>
+              <select
+                id="service"
+                name="service"
                 value={selectedService}
                 onChange={(e) => setSelectedService(e.target.value)}
                 className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all font-medium text-sm"
               >
-                <optgroup label="Fixed-Scope Local Packages">
-                  <option value="Local Launchpad ($2,500 – $3,500)">Local Launchpad ($2,500 – $3,500)</option>
-                  <option value="Booking & Intake ($4,200 – $5,800)">Booking &amp; Intake ($4,200 – $5,800)</option>
-                  <option value="Performance Rebuild ($3,800 – $6,500)">Performance Rebuild ($3,800 – $6,500)</option>
-                  <option value="Ongoing Care ($99 – $250/mo)">Ongoing Care ($99 – $250/mo)</option>
+                <optgroup label={isEs ? 'Paquetes Locales de Alcance Fijo' : 'Fixed-Scope Local Packages'}>
+                  <option value="Local Launchpad ($2,500 – $3,500)">
+                    {isEs ? 'Lanzamiento Local ($2,500 – $3,500)' : 'Local Launchpad ($2,500 – $3,500)'}
+                  </option>
+                  <option value="Booking & Intake ($4,200 – $5,800)">
+                    {isEs ? 'Agenda y Registro ($4,200 – $5,800)' : 'Booking & Intake ($4,200 – $5,800)'}
+                  </option>
+                  <option value="Performance Rebuild ($3,800 – $6,500)">
+                    {isEs ? 'Migración de Alto Rendimiento ($3,800 – $6,500)' : 'Performance Rebuild ($3,800 – $6,500)'}
+                  </option>
+                  <option value="Ongoing Care ($99 – $250/mo)">
+                    {isEs ? 'Mantenimiento Continuo ($99 – $250/mes)' : 'Ongoing Care ($99 – $250/mo)'}
+                  </option>
                 </optgroup>
-                <optgroup label="Custom & Full-Stack Capabilities">
-                  <option value="Websites & Digital Platforms">Websites &amp; Digital Platforms</option>
-                  <option value="Client Portals, Membership Systems & Internal Tools">Client Portals, Membership Systems &amp; Internal Tools</option>
-                  <option value="Full-Stack Development">Full-Stack Development</option>
-                  <option value="Cloud & Deployment">Cloud &amp; Deployment</option>
-                  <option value="Custom / Something Else">Custom / Something Else</option>
+                <optgroup label={isEs ? 'Soluciones a la Medida y Full-Stack' : 'Custom & Full-Stack Capabilities'}>
+                  <option value="Websites & Digital Platforms">
+                    {isEs ? 'Sitios Web y Plataformas Digitales' : 'Websites & Digital Platforms'}
+                  </option>
+                  <option value="Client Portals, Membership Systems & Internal Tools">
+                    {isEs ? 'Portales de Clientes, Membresías y Herramientas Internas' : 'Client Portals, Membership Systems & Internal Tools'}
+                  </option>
+                  <option value="Full-Stack Development">
+                    {isEs ? 'Desarrollo Full-Stack' : 'Full-Stack Development'}
+                  </option>
+                  <option value="Cloud & Deployment">
+                    {isEs ? 'Nube e Infraestructura' : 'Cloud & Deployment'}
+                  </option>
+                  <option value="Custom / Something Else">
+                    {isEs ? 'Proyecto a la Medida / Otro' : 'Custom / Something Else'}
+                  </option>
                 </optgroup>
               </select>
             </div>
 
             <div className="space-y-1.5 sm:space-y-2">
-              <label htmlFor="message" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">Project Details</label>
-              <textarea id="message" name="message" rows={4} placeholder="Tell me about your project, goals, and timeline..." required className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm resize-none" />
+              <label htmlFor="message" className="text-[11px] sm:text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground font-mono">
+                {isEs ? 'Detalles del Proyecto' : 'Project Details'}
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                rows={4}
+                placeholder={
+                  isEs
+                    ? 'Cuéntame sobre tu negocio, qué necesitas mejorar y cuándo te gustaría lanzar...'
+                    : 'Tell me about your project, goals, and timeline...'
+                }
+                required
+                className="w-full p-3.5 sm:p-4 bg-white dark:bg-[#0B111E] border border-slate-500 dark:border-slate-500 rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400 font-medium text-sm resize-none"
+              />
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="group w-full flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground py-3 sm:py-4 rounded-lg font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent disabled:opacity-50 disabled:hover:scale-100">
-              <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span> <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="group w-full flex items-center justify-center gap-2 bg-[#090D16] hover:bg-[#151D2F] text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground py-3 sm:py-4 rounded-lg font-bold font-mono text-xs sm:text-sm hover:scale-[1.02] transition-all shadow-md shadow-black/10 dark:shadow-accent/20 border border-[#090D16] dark:border-transparent disabled:opacity-50 disabled:hover:scale-100"
+            >
+              <span>
+                {isSubmitting
+                  ? isEs
+                    ? 'Enviando...'
+                    : 'Sending...'
+                  : isEs
+                  ? 'Enviar Mensaje'
+                  : 'Send Message'}
+              </span>{' '}
+              <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D8F6] dark:text-current group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </button>
 
             {status && (
               <div
                 role="status"
                 aria-live="polite"
-                className={`p-4 rounded-lg border text-center space-y-2 ${status.includes('Error') ? 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300'}`}
+                className={`p-4 rounded-lg border text-center space-y-2 ${
+                  status.includes('Error')
+                    ? 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400'
+                    : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300'
+                }`}
               >
                 <p className="font-bold text-sm sm:text-base">{status}</p>
                 {status.includes('Error') && (
@@ -243,7 +357,8 @@ export default function Contact() {
                       href="mailto:rmendez@rottym.com?subject=Project%20Inquiry%20via%20RottyM.com"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity"
                     >
-                      Email rmendez@rottym.com Directly <span aria-hidden="true">→</span>
+                      {isEs ? 'Escribir directo a rmendez@rottym.com' : 'Email rmendez@rottym.com Directly'}{' '}
+                      <span aria-hidden="true">→</span>
                     </a>
                   </div>
                 )}
