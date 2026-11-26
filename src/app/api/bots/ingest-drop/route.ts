@@ -7,9 +7,11 @@ import {
   unauthorizedResponse,
 } from '@/lib/ops/auth';
 import {
+  inferAgentId,
   isClearanceFilename,
   parseBatchClearanceMarkdown,
   parseDropMarkdown,
+  resolveEffectivePhotoStatus,
 } from '@/lib/ops/drop-parser';
 import {
   appendOpsActivity,
@@ -88,7 +90,7 @@ export async function POST(request: Request) {
           channel: v.channel,
           contentType: v.lane === 'article' ? 'article' : 'post',
           stage: v.verdict === 'approved' ? 'clearance' : 'pulled',
-          agentId: 'marley',
+          agentId: inferAgentId(v.clearsFile || filename),
           source: v.clearsFile || filename,
           sourceUrl: v.sourceUrl,
           note: `${v.tag} · ${v.notes}`.slice(0, 300),
@@ -134,6 +136,15 @@ export async function POST(request: Request) {
       c.title.toLowerCase() === parsed.title.toLowerCase()
   );
 
+  const nextAssetFile = body.assetFile || parsed.assetFile || duplicate?.assetFile;
+  const nextAssetSpec = parsed.assetSpec || duplicate?.assetSpec;
+  const nextPhotoStatus = resolveEffectivePhotoStatus({
+    existing: duplicate?.photoStatus,
+    assetFile: nextAssetFile,
+    assetUrl: duplicate?.assetUrl,
+    assetSpec: nextAssetSpec,
+  });
+
   const card: PipelineCard = duplicate
     ? {
         ...duplicate,
@@ -142,8 +153,9 @@ export async function POST(request: Request) {
         sourceUrl: parsed.sourceUrl || duplicate.sourceUrl,
         draftCopy: parsed.draftCopy || duplicate.draftCopy,
         flaggedNotes: parsed.flaggedNotes.length > 0 ? parsed.flaggedNotes : duplicate.flaggedNotes,
-        assetFile: body.assetFile || parsed.assetFile || duplicate.assetFile,
-        assetSpec: parsed.assetSpec || duplicate.assetSpec,
+        assetFile: nextAssetFile,
+        assetSpec: nextAssetSpec,
+        photoStatus: nextPhotoStatus,
         updatedAt: now,
       }
     : {
@@ -163,8 +175,9 @@ export async function POST(request: Request) {
         readyForRotty: false,
         jobDate: parsed.jobDate,
         sourceFile: relSourceFile,
-        assetFile: body.assetFile || parsed.assetFile,
-        assetSpec: parsed.assetSpec,
+        assetFile: nextAssetFile,
+        assetSpec: nextAssetSpec,
+        photoStatus: nextPhotoStatus,
         createdAt: now,
         updatedAt: now,
       };

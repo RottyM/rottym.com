@@ -1,4 +1,5 @@
 import { GoogleAuth } from 'google-auth-library';
+import { ensureCardAssetsMigrated } from './drop-parser';
 import {
   SEED_ACTIVITY,
   SEED_CLIENTS,
@@ -14,6 +15,7 @@ import type {
   CrewMember,
   GateItem,
   MetricsSnapshot,
+  OpsRequest,
   PipelineCard,
 } from './types';
 
@@ -249,28 +251,33 @@ export async function ensureOpsSeeded(): Promise<void> {
 export async function loadClientBoardSnapshot(clientId: string): Promise<{
   crew: CrewMember[];
   pipeline: PipelineCard[];
+  requests: OpsRequest[];
   gates: GateItem[];
   metrics: MetricsSnapshot | null;
   activity: ActivityEntry[];
   chat: ChatMessage[];
 }> {
   await ensureOpsSeeded();
-  const [crew, pipeline, gates, metrics, activity, chat] = await Promise.all([
+  const [crew, pipeline, requests, gates, metrics, activity, chat] = await Promise.all([
     opsQueryByClient<CrewMember>('ops_crew', clientId),
     opsQueryByClient<PipelineCard>('ops_pipeline', clientId),
+    opsQueryByClient<OpsRequest>('ops_requests', clientId),
     opsQueryByClient<GateItem>('ops_gates', clientId),
     opsGetDoc<MetricsSnapshot>('ops_metrics', clientId),
     opsQueryByClient<ActivityEntry>('ops_activity', clientId),
     opsQueryByClient<ChatMessage>('ops_chat', clientId),
   ]);
 
-  pipeline.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+  const migratedPipeline = pipeline.map(ensureCardAssetsMigrated);
+  migratedPipeline.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+  requests.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
   activity.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
   chat.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
 
   return {
     crew,
-    pipeline,
+    pipeline: migratedPipeline,
+    requests,
     gates,
     metrics,
     activity: activity.slice(0, 30),

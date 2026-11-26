@@ -6,12 +6,28 @@ import {
   unauthorizedResponse,
 } from '@/lib/ops/auth';
 import {
+  applyJobAssetPatch,
+  cleanBotStringList,
   extractChatMentions,
+  FIELD_MAX_LENGTHS,
+  getCardAssets,
+  getCardCompleteness,
   laneToChannel,
+  normalizeAssignedTo,
   normalizeLane,
+  normalizePhotoStatus,
+  normalizePlatformList,
   parseAdminPasteBlock,
+  parseConnectorAlert,
   parseMultiItemDeskList,
+  parseNewJobAssetInput,
+  refreshStaleCardNote,
+  resolveEffectivePhotoStatus,
   sanitizeAvatarUrl,
+  sanitizeWebOrBlobUrl,
+  syncCardWithAssets,
+  syncVisualArtifactsNeeded,
+  validateStringLength,
 } from '@/lib/ops/drop-parser';
 import {
   appendOpsActivity,
@@ -32,6 +48,7 @@ import type {
   GateItem,
   GateState,
   MetricsSnapshot,
+  OpsRequest,
   PipelineCard,
   PipelineLane,
   PipelineLinks,
@@ -133,6 +150,14 @@ export async function POST(request: Request) {
         : existing.avatarUrl;
     const nextBio =
       typeof body.bio === 'string' ? body.bio.trim().slice(0, 160) || undefined : existing.bio;
+    let nextConnectorAlert = existing.connectorAlert;
+    if (body.connectorAlert !== undefined) {
+      const alertCheck = parseConnectorAlert(body.connectorAlert, now);
+      if (!alertCheck.ok) {
+        return NextResponse.json({ error: alertCheck.error }, { status: 400 });
+      }
+      nextConnectorAlert = alertCheck.value;
+    }
 
     const updated: CrewMember = {
       ...existing,
@@ -148,6 +173,7 @@ export async function POST(request: Request) {
         typeof body.statusNote === 'string'
           ? body.statusNote.trim().slice(0, 180) || undefined
           : existing.statusNote,
+      connectorAlert: nextConnectorAlert,
       usagePct:
         body.usagePct === null
           ? undefined
@@ -245,8 +271,14 @@ export async function POST(request: Request) {
   }
 
   if (action === 'create_card') {
-    const title = typeof body.title === 'string' ? body.title.trim().slice(0, 120) : '';
-    if (!title) return NextResponse.json({ error: 'title is required' }, { status: 400 });
+    const titleCheck = validateStringLength('title', body.title, FIELD_MAX_LENGTHS.title);
+    if (!titleCheck.ok || !titleCheck.value) {
+      return NextResponse.json(
+        { error: !titleCheck.ok ? titleCheck.error : 'title is required' },
+        { status: 400 }
+      );
+    }
+    const title = titleCheck.value;
     const lane: PipelineLane = VALID_LANES.has(body.lane as PipelineLane) ? (body.lane as PipelineLane) : 'x';
     const stage: PipelineStage = VALID_STAGES.has(body.stage as PipelineStage) ? (body.stage as PipelineStage) : 'pulled';
     const contentType: ContentKind =
@@ -255,6 +287,88 @@ export async function POST(request: Request) {
         : lane === 'article'
           ? 'article'
           : 'post';
+
+    let assetFile: string | undefined;
+    if (body.assetFile !== undefined && body.assetFile !== null) {
+      const check = validateStringLength('assetFile', body.assetFile, FIELD_MAX_LENGTHS.assetFile);
+      if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+      assetFile = check.value || undefined;
+    }
+    const assetUrlCheck = sanitizeWebOrBlobUrl(body.assetUrl, FIELD_MAX_LENGTHS.assetUrl);
+    if (!assetUrlCheck.ok) return NextResponse.json({ error: `assetUrl: ${assetUrlCheck.error}` }, { status: 400 });
+    const assetUrl = assetUrlCheck.value;
+
+    let assetSpec: string | undefined;
+    if (body.assetSpec !== undefined && body.assetSpec !== null) {
+      const check = validateStringLength('assetSpec', body.assetSpec, FIELD_MAX_LENGTHS.assetSpec);
+      if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+      assetSpec = check.value || undefined;
+    }
+
+    const sourceUrlCheck = sanitizeWebOrBlobUrl(body.sourceUrl, FIELD_MAX_LENGTHS.sourceUrl);
+    if (!sourceUrlCheck.ok) return NextResponse.json({ error: `sourceUrl: ${sourceUrlCheck.error}` }, { status: 400 });
+
+    let note: string | undefined;
+    if (body.note !== undefined && body.note !== null) {
+      const check = validateStringLength('note', body.note, FIELD_MAX_LENGTHS.note);
+      if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+      note = check.value || undefined;
+    }
+
+    let draftCopy = '';
+    if (body.draftCopy !== undefined && body.draftCopy !== null) {
+      const check = validateStringLength('draftCopy', body.draftCopy, FIELD_MAX_LENGTHS.draftCopy);
+      if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+      draftCopy = typeof body.draftCopy === 'string' ? body.draftCopy : '';
+    }
+
+    if (typeof body.photoStatus === 'string' && body.photoStatus.trim() && !normalizePhotoStatus(body.photoStatus)) {
+      return NextResponse.json({ error: 'Invalid photoStatus' }, { status: 400 });
+    }
+    const photoStatus = resolveEffectivePhotoStatus({
+      explicit: body.photoStatus,
+      assetFile,
+      assetUrl,
+      assetSpec,
+    });
+
+    const initialAssets =
+      assetFile || assetUrl || assetSpec
+        ? [
+            {
+              id: `ast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+              url: assetUrl,
+              file: assetFile,
+              kind: 'image' as const,
+              platform: 'all' as const,
+              order: 0,
+              spec: assetSpec,
+              status: (assetUrl || assetFile ? 'delivered' : 'needed') as 'delivered' | 'needed',
+              addedBy: user.name,
+              createdAt: now,
+              updatedAt: now,
+            },
+          ]
+        : [];
+    const syncedCreate = syncCardWithAssets({}, initialAssets);
+
+    const wantsReady = stage === 'approved' && body.readyForRotty === true;
+    const completeness = getCardCompleteness({
+      draftCopy,
+      assets: syncedCreate.assets,
+      assetFile: syncedCreate.assetFile,
+      assetUrl: syncedCreate.assetUrl,
+      photoStatus,
+    });
+    if (wantsReady && !completeness.canApproveReady) {
+      return NextResponse.json(
+        {
+          error: `Cannot Mark Ready for Rotty: ${completeness.detail}`,
+          reason: completeness.lockReason,
+        },
+        { status: 400 }
+      );
+    }
 
     const card: PipelineCard = {
       id: `${clientId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -265,12 +379,21 @@ export async function POST(request: Request) {
       contentType,
       stage,
       agentId: (typeof body.agentId === 'string' && body.agentId.trim().slice(0, 40)) || 'marley',
-      source: (typeof body.source === 'string' && body.source.trim().slice(0, 80)) || 'Manual entry',
-      sourceUrl: sanitizeUrl(body.sourceUrl),
-      note: typeof body.note === 'string' ? body.note.trim().slice(0, 300) || undefined : undefined,
-      draftCopy: typeof body.draftCopy === 'string' ? body.draftCopy.slice(0, 2400) : '',
+      assignedTo: normalizeAssignedTo(body.assignedTo),
+      targetPlatforms: normalizePlatformList(body.targetPlatforms),
+      source: (typeof body.source === 'string' && body.source.trim().slice(0, 120)) || 'Manual entry',
+      sourceUrl: sourceUrlCheck.value,
+      assets: syncedCreate.assets,
+      assetFile: syncedCreate.assetFile,
+      assetUrl: syncedCreate.assetUrl,
+      assetSpec: syncedCreate.assetSpec,
+      photoStatus,
+      noImageNeededBy: photoStatus === 'not_needed' && !assetFile && !assetUrl ? user.name : undefined,
+      noImageNeededAt: photoStatus === 'not_needed' && !assetFile && !assetUrl ? now : undefined,
+      note,
+      draftCopy,
       marleyStatus: stage === 'approved' || stage === 'posted' ? 'approved' : 'pending',
-      readyForRotty: stage === 'approved',
+      readyForRotty: wantsReady,
       approvedBy: stage === 'approved' || stage === 'posted' ? user.name : undefined,
       jobDate: now.slice(0, 10),
       createdAt: now,
@@ -296,15 +419,224 @@ export async function POST(request: Request) {
       ? (body.stage as PipelineStage)
       : existing.stage;
 
-    // Sovereign & Pixel rule: Approving queues as Ready for Rotty; only explicit "posted" moves out of readyForRotty
-    const readyForRotty =
+    let nextTitle = existing.title;
+    if (body.title !== undefined) {
+      const check = validateStringLength('title', body.title, FIELD_MAX_LENGTHS.title);
+      if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+      if (!check.value) return NextResponse.json({ error: 'title cannot be empty' }, { status: 400 });
+      nextTitle = check.value;
+    }
+
+    let nextSource = existing.source;
+    if (body.source !== undefined && body.source !== null) {
+      const check = validateStringLength('source', body.source, FIELD_MAX_LENGTHS.source);
+      if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+      if (check.value) nextSource = check.value;
+    }
+
+    let nextSourceUrl = existing.sourceUrl;
+    if (body.sourceUrl !== undefined) {
+      const check = sanitizeWebOrBlobUrl(body.sourceUrl, FIELD_MAX_LENGTHS.sourceUrl);
+      if (!check.ok) return NextResponse.json({ error: `sourceUrl: ${check.error}` }, { status: 400 });
+      nextSourceUrl = check.value;
+    }
+
+    let nextNote = existing.note;
+    if (body.note !== undefined) {
+      if (body.note === null || body.note === '') {
+        nextNote = undefined;
+      } else {
+        const check = validateStringLength('note', body.note, FIELD_MAX_LENGTHS.note);
+        if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+        nextNote = check.value || undefined;
+      }
+    }
+
+    let nextDraftCopy = existing.draftCopy;
+    if (body.draftCopy !== undefined) {
+      const check = validateStringLength('draftCopy', body.draftCopy, FIELD_MAX_LENGTHS.draftCopy);
+      if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+      nextDraftCopy = typeof body.draftCopy === 'string' ? body.draftCopy : '';
+    }
+
+    let nextAssetFile = existing.assetFile;
+    if (body.assetFile !== undefined) {
+      if (body.assetFile === null || body.assetFile === '') {
+        nextAssetFile = undefined;
+      } else {
+        const check = validateStringLength('assetFile', body.assetFile, FIELD_MAX_LENGTHS.assetFile);
+        if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+        nextAssetFile = check.value || undefined;
+      }
+    }
+
+    let nextAssetUrl = existing.assetUrl;
+    if (body.assetUrl !== undefined) {
+      const check = sanitizeWebOrBlobUrl(body.assetUrl, FIELD_MAX_LENGTHS.assetUrl);
+      if (!check.ok) return NextResponse.json({ error: `assetUrl: ${check.error}` }, { status: 400 });
+      nextAssetUrl = check.value;
+    }
+
+    let nextAssetSpec = existing.assetSpec;
+    if (body.assetSpec !== undefined) {
+      if (body.assetSpec === null || body.assetSpec === '') {
+        nextAssetSpec = undefined;
+      } else {
+        const check = validateStringLength('assetSpec', body.assetSpec, FIELD_MAX_LENGTHS.assetSpec);
+        if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+        nextAssetSpec = check.value || undefined;
+      }
+    }
+
+    let nextAssets = getCardAssets(existing);
+    if (body.assets !== undefined) {
+      if (!Array.isArray(body.assets)) {
+        return NextResponse.json({ error: 'assets must be an array' }, { status: 400 });
+      }
+      const existingMap = new Map(nextAssets.map((a) => [a.id, a]));
+      const rebuilt: typeof nextAssets = [];
+      for (let i = 0; i < body.assets.length; i++) {
+        const rawA = body.assets[i];
+        if (!rawA || typeof rawA !== 'object' || Array.isArray(rawA)) {
+          return NextResponse.json({ error: 'Each asset must be an object' }, { status: 400 });
+        }
+        const aObj = rawA as Record<string, unknown>;
+        const prevAsset = typeof aObj.id === 'string' ? existingMap.get(aObj.id) : undefined;
+        if (prevAsset) {
+          const pCopy = { ...aObj };
+          delete pCopy.id;
+          delete pCopy.addedBy;
+          delete pCopy.createdAt;
+          delete pCopy.updatedAt;
+          delete pCopy.reviewedBy;
+          delete pCopy.reviewedAt;
+          const patched = applyJobAssetPatch(prevAsset, pCopy, {
+            actorName: user.name,
+            canReviewAsset: true,
+            now,
+          });
+          if (!patched.ok) {
+            return NextResponse.json({ error: patched.error }, { status: patched.status });
+          }
+          rebuilt.push(patched.asset);
+        } else {
+          const parsed = parseNewJobAssetInput(aObj, {
+            addedBy: user.name,
+            defaultOrder: i,
+            canReviewAsset: true,
+            now,
+          });
+          if (!parsed.ok) {
+            return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+          }
+          rebuilt.push(parsed.asset);
+        }
+      }
+      nextAssets = rebuilt;
+    } else if (body.assetUrl !== undefined || body.assetFile !== undefined || body.assetSpec !== undefined) {
+      if (nextAssets.length > 0) {
+        nextAssets = nextAssets.map((a, idx) =>
+          idx === 0
+            ? {
+                ...a,
+                url: body.assetUrl !== undefined ? nextAssetUrl : a.url,
+                file: body.assetFile !== undefined ? nextAssetFile : a.file,
+                spec: body.assetSpec !== undefined ? nextAssetSpec : a.spec,
+                status:
+                  (nextAssetUrl || nextAssetFile) && (a.status === 'needed' || a.status === 'in_progress')
+                    ? 'delivered'
+                    : a.status,
+                updatedAt: now,
+              }
+            : a
+        );
+      } else if (nextAssetUrl || nextAssetFile || nextAssetSpec) {
+        nextAssets = [
+          {
+            id: `ast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            url: nextAssetUrl,
+            file: nextAssetFile,
+            kind: 'image',
+            platform: 'all',
+            order: 0,
+            spec: nextAssetSpec,
+            status: nextAssetUrl || nextAssetFile ? 'delivered' : 'needed',
+            addedBy: user.name,
+            createdAt: now,
+            updatedAt: now,
+          },
+        ];
+      }
+    }
+
+    const syncedUpdateAssets = syncCardWithAssets({}, nextAssets);
+    const effectiveAssetFile = syncedUpdateAssets.assetFile;
+    const effectiveAssetUrl = syncedUpdateAssets.assetUrl;
+    const effectiveAssetSpec = syncedUpdateAssets.assetSpec;
+
+    if (
+      typeof body.photoStatus === 'string' &&
+      body.photoStatus.trim() &&
+      !normalizePhotoStatus(body.photoStatus)
+    ) {
+      return NextResponse.json({ error: 'Invalid photoStatus' }, { status: 400 });
+    }
+
+    const explicitPhotoInput =
+      body.photoStatus === null || body.photoStatus === ''
+        ? 'missing'
+        : body.photoStatus;
+    const nextPhotoStatus = resolveEffectivePhotoStatus({
+      explicit: explicitPhotoInput,
+      existing: existing.photoStatus,
+      assetFile: effectiveAssetFile,
+      assetUrl: effectiveAssetUrl,
+      assetSpec: effectiveAssetSpec,
+    });
+
+    const completeness = getCardCompleteness({
+      ...existing,
+      draftCopy: nextDraftCopy,
+      assets: syncedUpdateAssets.assets,
+      assetFile: effectiveAssetFile,
+      assetUrl: effectiveAssetUrl,
+      assetSpec: effectiveAssetSpec,
+      photoStatus: nextPhotoStatus,
+    });
+
+    const explicitlyRequestedReady = body.readyForRotty === true;
+    if (explicitlyRequestedReady && nextStage !== 'approved') {
+      return NextResponse.json(
+        { error: 'Job must be Approved first before marking Ready for Rotty.' },
+        { status: 409 }
+      );
+    }
+    if (explicitlyRequestedReady && !completeness.canApproveReady) {
+      return NextResponse.json(
+        {
+          error: `Cannot Mark Ready for Rotty: ${completeness.detail}`,
+          reason: completeness.lockReason,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Separate Rotty approval (stage: 'approved') from crew completion (readyForRotty: true).
+    let readyForRotty =
       typeof body.readyForRotty === 'boolean'
         ? body.readyForRotty
-        : nextStage === 'approved'
-          ? true
-          : nextStage === 'posted'
-            ? false
-            : existing.readyForRotty;
+        : nextStage === 'posted' || nextStage === 'archived' || nextStage !== 'approved'
+          ? false
+          : existing.readyForRotty;
+
+    // Completeness invariant: Ready for Rotty may never hold a card missing copy or approved asset (unless explicit not_needed).
+    let demotedReady = false;
+    if (readyForRotty && nextStage !== 'posted' && nextStage !== 'archived') {
+      if (!completeness.canApproveReady || nextStage !== 'approved') {
+        readyForRotty = false;
+        demotedReady = true;
+      }
+    }
 
     const linksInput = (body.links && typeof body.links === 'object' ? body.links : {}) as PipelineLinks;
     const mergedLinks: PipelineLinks = {
@@ -315,31 +647,41 @@ export async function POST(request: Request) {
       ...(linksInput.x !== undefined ? { x: sanitizeUrl(linksInput.x) } : {}),
     };
 
+    const isNoImageException =
+      nextPhotoStatus === 'not_needed' && syncedUpdateAssets.assets.length === 0 && !effectiveAssetFile && !effectiveAssetUrl;
+
+    const explicitArtifacts =
+      body.artifactsNeeded !== undefined ? cleanBotStringList(body.artifactsNeeded) : undefined;
+
     const updated: PipelineCard = {
       ...existing,
-      title:
-        typeof body.title === 'string' && body.title.trim()
-          ? body.title.trim().slice(0, 120)
-          : existing.title,
+      title: nextTitle,
       lane: nextLane,
       channel: laneToChannel(nextLane),
       stage: nextStage,
-      source:
-        typeof body.source === 'string' && body.source.trim()
-          ? body.source.trim().slice(0, 80)
-          : existing.source,
-      sourceUrl: body.sourceUrl !== undefined ? sanitizeUrl(body.sourceUrl) : existing.sourceUrl,
-      assetFile:
-        typeof body.assetFile === 'string'
-          ? body.assetFile.trim().slice(0, 160) || undefined
-          : existing.assetFile,
-      assetUrl: body.assetUrl !== undefined ? sanitizeUrl(body.assetUrl) : existing.assetUrl,
-      assetSpec:
-        typeof body.assetSpec === 'string'
-          ? body.assetSpec.trim().slice(0, 60) || undefined
-          : existing.assetSpec,
-      note: typeof body.note === 'string' ? body.note.trim().slice(0, 300) || undefined : existing.note,
-      draftCopy: typeof body.draftCopy === 'string' ? body.draftCopy.slice(0, 2400) : existing.draftCopy,
+      assignedTo:
+        body.assignedTo !== undefined ? normalizeAssignedTo(body.assignedTo) : existing.assignedTo,
+      targetPlatforms:
+        body.targetPlatforms !== undefined
+          ? normalizePlatformList(body.targetPlatforms)
+          : existing.targetPlatforms,
+      source: nextSource,
+      sourceUrl: nextSourceUrl,
+      assets: syncedUpdateAssets.assets,
+      assetFile: effectiveAssetFile,
+      assetUrl: effectiveAssetUrl,
+      assetSpec: effectiveAssetSpec,
+      photoStatus: nextPhotoStatus,
+      noImageNeededBy: isNoImageException ? existing.noImageNeededBy || user.name : undefined,
+      noImageNeededAt: isNoImageException ? existing.noImageNeededAt || now : undefined,
+      artifactsNeeded: syncVisualArtifactsNeeded(
+        existing.artifactsNeeded,
+        explicitArtifacts,
+        effectiveAssetSpec,
+        Boolean(effectiveAssetFile || effectiveAssetUrl || isNoImageException)
+      ),
+      note: refreshStaleCardNote(nextNote, nextStage),
+      draftCopy: nextDraftCopy,
       marleyStatus:
         body.marleyStatus === 'pending' ||
         body.marleyStatus === 'approved' ||
@@ -349,6 +691,18 @@ export async function POST(request: Request) {
             ? 'approved'
             : existing.marleyStatus,
       readyForRotty,
+      postIt:
+        nextStage === 'posted' || nextStage === 'archived' || (!readyForRotty && nextStage !== 'approved')
+          ? false
+          : existing.postIt,
+      postItAt:
+        nextStage === 'archived' || (!readyForRotty && nextStage !== 'approved' && nextStage !== 'posted')
+          ? undefined
+          : existing.postItAt,
+      postItBy:
+        nextStage === 'archived' || (!readyForRotty && nextStage !== 'approved' && nextStage !== 'posted')
+          ? undefined
+          : existing.postItBy,
       approvedBy:
         nextStage === 'approved' || readyForRotty
           ? existing.approvedBy || user.name
@@ -358,12 +712,17 @@ export async function POST(request: Request) {
     };
 
     await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
-    const logAction =
-      nextStage === 'approved' && existing.stage !== 'approved'
+    const logAction = demotedReady
+      ? `returned to Approved crew queue (${completeness.buttonReason || 'incomplete'})`
+      : readyForRotty && !existing.readyForRotty
         ? 'marked Ready for Rotty'
-        : nextStage === 'posted' && existing.stage !== 'posted'
-          ? 'marked posted'
-          : `updated card (${updated.stage})`;
+        : nextStage === 'approved' && existing.stage !== 'approved'
+          ? 'approved (sent to crew queue)'
+          : nextStage === 'posted' && existing.stage !== 'posted'
+            ? 'marked posted'
+            : isNoImageException && existing.photoStatus !== 'not_needed'
+              ? 'marked no image needed'
+              : `updated card (${updated.stage})`;
     await appendOpsActivity(clientId, user.name, logAction, updated.title);
     return NextResponse.json({ ok: true, card: updated }, { status: 200 });
   }
@@ -588,6 +947,7 @@ export async function POST(request: Request) {
           draftCopy: d.draftCopy,
           flaggedNotes: d.flaggedNotes,
           marleyStatus: 'pending',
+          photoStatus: 'missing',
           readyForRotty: false,
           jobDate: d.jobDate,
           sourceFile: d.sourceFile,
@@ -611,6 +971,8 @@ export async function POST(request: Request) {
 
     if (parsed.drop) {
       const d = parsed.drop;
+      const safeDropStage: PipelineStage =
+        d.stage === 'approved' || d.stage === 'posted' ? 'drafted' : d.stage;
       const card: PipelineCard = {
         id: `${clientId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         clientId,
@@ -618,7 +980,7 @@ export async function POST(request: Request) {
         lane: d.lane,
         channel: d.channel,
         contentType: d.contentType,
-        stage: d.stage,
+        stage: safeDropStage,
         agentId: d.agentId,
         source: d.source,
         sourceUrl: d.sourceUrl,
@@ -628,6 +990,10 @@ export async function POST(request: Request) {
         readyForRotty: false,
         assetFile: d.assetFile,
         assetSpec: d.assetSpec,
+        photoStatus: resolveEffectivePhotoStatus({
+          assetFile: d.assetFile,
+          assetSpec: d.assetSpec,
+        }),
         jobDate: d.jobDate,
         sourceFile: d.sourceFile,
         createdAt: now,
@@ -679,6 +1045,365 @@ export async function POST(request: Request) {
     }
     await opsDeleteDoc('ops_chat', id);
     return NextResponse.json({ ok: true, deletedId: id }, { status: 200 });
+  }
+
+  if (action === 'post_it' || action === 'cancel_post_it') {
+    const id = typeof body.id === 'string' ? body.id.trim() : '';
+    const existing = id ? await opsGetDoc<PipelineCard>('ops_pipeline', id) : null;
+    if (!existing || existing.clientId !== clientId) {
+      return NextResponse.json({ error: 'Pipeline card not found' }, { status: 404 });
+    }
+
+    const assigned = normalizeAssignedTo(existing.assignedTo);
+    const ownerAgentId = assigned || (existing.lane === 'x' ? 'sovereign' : 'marley');
+    const handleMap: Record<string, string> = {
+      sovereign: '@Sovereign',
+      marley: '@Marley',
+      pixel: '@Pixel',
+      'cheat-code': '@CheatCode',
+      bastion: '@Bastion',
+      cortex: '@Cortex',
+      glitch: '@Glitch',
+      splicer: '@Splicer',
+      gemini: '@Gemini',
+      antigravity: '@Antigravity',
+    };
+    const ownerHandle = handleMap[ownerAgentId] || `@${ownerAgentId}`;
+
+    if (action === 'post_it') {
+      if (existing.stage === 'posted' || existing.stage === 'archived') {
+        return NextResponse.json(
+          { error: 'Card is already posted or archived.' },
+          { status: 400 }
+        );
+      }
+      if (existing.stage !== 'approved' || !existing.readyForRotty) {
+        return NextResponse.json(
+          { error: 'Post it is only available on Ready for Rotty cards (crew must Mark Ready first).' },
+          { status: 400 }
+        );
+      }
+      const postCompleteness = getCardCompleteness(existing);
+      if (!postCompleteness.canApproveReady) {
+        return NextResponse.json(
+          {
+            error: `Cannot Post it — card is incomplete: ${postCompleteness.detail}`,
+            reason: postCompleteness.lockReason,
+          },
+          { status: 400 }
+        );
+      }
+      if (existing.postIt) {
+        return NextResponse.json({ ok: true, card: existing, alreadyTriggered: true }, { status: 200 });
+      }
+
+      const updated: PipelineCard = {
+        ...existing,
+        stage: 'approved',
+        readyForRotty: true,
+        postIt: true,
+        postItAt: now,
+        postItBy: user.name,
+        updatedAt: now,
+      };
+      await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
+
+      const chatMsg: ChatMessage = {
+        id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        clientId,
+        senderId: 'rotty',
+        senderName: 'Rotty',
+        senderKind: 'operator',
+        text: `${ownerHandle} Post it: "${existing.title}" (${existing.lane}) — cleared to publish. File POST /api/bots/jobs/${existing.id}/post-result with the live URL.`,
+        mentions: [ownerAgentId],
+        jobId: existing.id,
+        jobTitle: existing.title,
+        createdAt: now,
+      };
+      await opsSetDoc('ops_chat', chatMsg.id, chatMsg as unknown as Record<string, unknown>);
+      await appendOpsActivity(clientId, user.name, `triggered Post it (${ownerHandle})`, existing.title);
+      return NextResponse.json({ ok: true, card: updated, chatMessage: chatMsg }, { status: 200 });
+    }
+
+    // cancel_post_it
+    if (existing.stage === 'posted') {
+      return NextResponse.json({ error: 'Already posted — cannot cancel Post it.' }, { status: 409 });
+    }
+    const nowMs = Date.now();
+    const hasActiveClaim = Boolean(
+      existing.claimedBy &&
+      (!existing.leaseExpiresAt || new Date(existing.leaseExpiresAt).getTime() > nowMs)
+    );
+    if (hasActiveClaim) {
+      return NextResponse.json(
+        { error: `Already claimed by ${existing.claimedBy} — cannot cancel Post it.` },
+        { status: 409 }
+      );
+    }
+    if (!existing.postIt) {
+      return NextResponse.json({ ok: true, card: existing }, { status: 200 });
+    }
+
+    const updated: PipelineCard = {
+      ...existing,
+      postIt: false,
+      postItAt: undefined,
+      postItBy: undefined,
+      updatedAt: now,
+    };
+    await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
+
+    const cancelMsg: ChatMessage = {
+      id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      clientId,
+      senderId: 'rotty',
+      senderName: 'Rotty',
+      senderKind: 'operator',
+      text: `${ownerHandle} Cancel Post it: "${existing.title}" — misclick cancelled, hold on publishing.`,
+      mentions: [ownerAgentId],
+      jobId: existing.id,
+      jobTitle: existing.title,
+      createdAt: now,
+    };
+    await opsSetDoc('ops_chat', cancelMsg.id, cancelMsg as unknown as Record<string, unknown>);
+    await appendOpsActivity(clientId, user.name, 'cancelled Post it', existing.title);
+    return NextResponse.json({ ok: true, card: updated, chatMessage: cancelMsg }, { status: 200 });
+  }
+
+  if (action === 'decide_request') {
+    const id = typeof body.id === 'string' ? body.id.trim() : '';
+    const decision = typeof body.decision === 'string' ? body.decision.trim() : '';
+    const existing = id ? await opsGetDoc<OpsRequest>('ops_requests', id) : null;
+    if (!existing || existing.clientId !== clientId) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+    }
+    if (!decision) {
+      return NextResponse.json({ error: 'decision is required' }, { status: 400 });
+    }
+    if (existing.status === 'done' || existing.status === 'dismissed') {
+      return NextResponse.json(
+        { error: `Request is already ${existing.status}.` },
+        { status: 409 }
+      );
+    }
+
+    const isBuiltInClose = decision === 'already_handled' || decision === 'dismiss';
+    const matchedAction = (existing.actions || []).find((a) => a.id === decision);
+    if (!isBuiltInClose && !matchedAction) {
+      return NextResponse.json(
+        { error: `Unknown decision '${decision}' for this request.` },
+        { status: 400 }
+      );
+    }
+    if (!isBuiltInClose && existing.status !== 'pending') {
+      return NextResponse.json(
+        { error: `Request already decided (${existing.decisionLabel || existing.decision}).` },
+        { status: 409 }
+      );
+    }
+
+    const handleMap: Record<string, string> = {
+      sovereign: '@Sovereign',
+      marley: '@Marley',
+      pixel: '@Pixel',
+      'cheat-code': '@CheatCode',
+      bastion: '@Bastion',
+      cortex: '@Cortex',
+      glitch: '@Glitch',
+      splicer: '@Splicer',
+      gemini: '@Gemini',
+      antigravity: '@Antigravity',
+    };
+    const ownerId = normalizeAssignedTo(existing.raisedBy) || existing.raisedBy;
+    const ownerHandle = handleMap[ownerId] || `@${existing.raisedByName || ownerId}`;
+
+    const decisionLabel =
+      decision === 'already_handled'
+        ? 'Already handled'
+        : decision === 'dismiss'
+          ? 'Dismissed'
+          : matchedAction!.label;
+
+    const updated: OpsRequest =
+      decision === 'already_handled'
+        ? {
+            ...existing,
+            status: 'done',
+            decision,
+            decisionLabel,
+            decidedBy: user.name,
+            decidedAt: existing.decidedAt || now,
+            outcomeNote: 'Marked already handled by Rotty.',
+            completedBy: user.name,
+            completedAt: now,
+            updatedAt: now,
+          }
+        : decision === 'dismiss'
+          ? {
+              ...existing,
+              status: 'dismissed',
+              decision,
+              decisionLabel,
+              decidedBy: user.name,
+              decidedAt: existing.decidedAt || now,
+              updatedAt: now,
+            }
+          : {
+              ...existing,
+              status: 'decided',
+              decision,
+              decisionLabel,
+              decidedBy: user.name,
+              decidedAt: now,
+              updatedAt: now,
+            };
+
+    await opsSetDoc('ops_requests', id, updated as unknown as Record<string, unknown>);
+
+    let chatMessage: ChatMessage | undefined;
+    if (decision !== 'dismiss') {
+      chatMessage = {
+        id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        clientId,
+        senderId: 'rotty',
+        senderName: 'Rotty',
+        senderKind: 'operator',
+        text:
+          decision === 'already_handled'
+            ? `${ownerHandle} Request "${existing.title}" marked Already handled — no action needed.`
+            : `${ownerHandle} Decision on "${existing.title}": ${decisionLabel}. Execute and file POST /api/bots/requests/${existing.id}/outcome with the result.`,
+        mentions: [ownerId],
+        jobId: existing.jobId,
+        jobTitle: existing.jobTitle || existing.title,
+        createdAt: now,
+      };
+      await opsSetDoc('ops_chat', chatMessage.id, chatMessage as unknown as Record<string, unknown>);
+    }
+
+    await appendOpsActivity(
+      clientId,
+      user.name,
+      `decided request (${decisionLabel})`,
+      existing.title
+    );
+
+    return NextResponse.json({ ok: true, request: updated, chatMessage }, { status: 200 });
+  }
+
+  if (action === 'delete_request') {
+    const id = typeof body.id === 'string' ? body.id.trim() : '';
+    const existing = id ? await opsGetDoc<OpsRequest>('ops_requests', id) : null;
+    if (!existing || existing.clientId !== clientId) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+    }
+    await opsDeleteDoc('ops_requests', id);
+    await appendOpsActivity(clientId, user.name, 'removed request', existing.title);
+    return NextResponse.json({ ok: true, id }, { status: 200 });
+  }
+
+  if (action === 'asset_update' || action === 'asset_delete' || action === 'asset_reorder' || action === 'asset_add') {
+    const id = typeof body.id === 'string' ? body.id.trim() : '';
+    const existing = id ? await opsGetDoc<PipelineCard>('ops_pipeline', id) : null;
+    if (!existing || existing.clientId !== clientId) {
+      return NextResponse.json({ error: 'Pipeline card not found' }, { status: 404 });
+    }
+
+    let assets = getCardAssets(existing);
+    let activityAction = 'updated assets';
+
+    if (action === 'asset_add') {
+      const assetObj = (body.asset && typeof body.asset === 'object' ? body.asset : {}) as Record<string, unknown>;
+      const parsed = parseNewJobAssetInput(assetObj, {
+        addedBy: user.name,
+        defaultOrder: assets.length,
+        canReviewAsset: true,
+        now,
+      });
+      if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+      assets = [...assets, parsed.asset];
+      activityAction = `added asset (${parsed.asset.kind})`;
+    } else if (action === 'asset_update') {
+      const assetId = typeof body.assetId === 'string' ? body.assetId.trim() : '';
+      const idx = assets.findIndex((a) => a.id === assetId);
+      if (idx === -1) return NextResponse.json({ error: 'Asset not found' }, { status: 404 });
+      const patch = (body.patch && typeof body.patch === 'object' ? body.patch : {}) as Record<string, unknown>;
+      const patched = applyJobAssetPatch(assets[idx], patch, {
+        actorName: user.name,
+        canReviewAsset: true,
+        now,
+      });
+      if (!patched.ok) return NextResponse.json({ error: patched.error }, { status: patched.status });
+      assets = assets.map((a, i) => (i === idx ? patched.asset : a));
+      activityAction =
+        patched.asset.status !== assets[idx].status &&
+        (patched.asset.status === 'approved' || patched.asset.status === 'rejected')
+          ? `${patched.asset.status} asset (${patched.asset.kind})`
+          : `updated asset (${patched.asset.kind})`;
+    } else if (action === 'asset_delete') {
+      const assetId = typeof body.assetId === 'string' ? body.assetId.trim() : '';
+      if (!assets.some((a) => a.id === assetId)) {
+        return NextResponse.json({ error: 'Asset not found' }, { status: 404 });
+      }
+      assets = assets.filter((a) => a.id !== assetId);
+      activityAction = 'removed asset';
+    } else if (action === 'asset_reorder') {
+      const assetIds = Array.isArray(body.assetIds) ? (body.assetIds as string[]) : [];
+      const byId = new Map(assets.map((a) => [a.id, a]));
+      const seen = new Set<string>();
+      const reordered: typeof assets = [];
+      for (const aid of assetIds) {
+        const a = byId.get(aid);
+        if (a && !seen.has(aid)) {
+          seen.add(aid);
+          reordered.push({ ...a, order: reordered.length, updatedAt: now });
+        }
+      }
+      for (const a of assets) {
+        if (!seen.has(a.id)) reordered.push({ ...a, order: reordered.length });
+      }
+      assets = reordered;
+      activityAction = 'reordered assets';
+    }
+
+    const synced = syncCardWithAssets(existing, assets);
+    const nextPhotoStatus = resolveEffectivePhotoStatus({
+      existing: existing.photoStatus,
+      assetFile: synced.assetFile,
+      assetUrl: synced.assetUrl,
+      assetSpec: synced.assetSpec,
+    });
+
+    const nextStage = existing.stage;
+    let nextReady = existing.readyForRotty;
+    let nextPostIt = Boolean(existing.postIt);
+    let nextPostItAt = existing.postItAt;
+    let nextPostItBy = existing.postItBy;
+    if (nextReady && nextStage !== 'posted' && nextStage !== 'archived') {
+      const comp = getCardCompleteness({ ...synced, photoStatus: nextPhotoStatus });
+      if (!comp.canApproveReady) {
+        nextReady = false;
+        nextPostIt = false;
+        nextPostItAt = undefined;
+        nextPostItBy = undefined;
+      }
+    }
+
+    const updated: PipelineCard = {
+      ...synced,
+      stage: nextStage,
+      readyForRotty: nextReady,
+      postIt: nextPostIt,
+      postItAt: nextPostItAt,
+      postItBy: nextPostItBy,
+      photoStatus: nextPhotoStatus,
+      noImageNeededBy: assets.length > 0 ? undefined : existing.noImageNeededBy,
+      noImageNeededAt: assets.length > 0 ? undefined : existing.noImageNeededAt,
+      updatedAt: now,
+    };
+
+    await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
+    await appendOpsActivity(clientId, user.name, activityAction, updated.title);
+    return NextResponse.json({ ok: true, card: updated }, { status: 200 });
   }
 
   return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });

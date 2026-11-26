@@ -9,14 +9,29 @@ import {
 } from '@/lib/ops/auth';
 import {
   applyEventDatePastFlag,
+  applyJobAssetPatch,
   cleanBotStringList,
+  ensureCardAssetsMigrated,
+  FIELD_MAX_LENGTHS,
   findUnknownFields,
+  getCardAssets,
+  getCardCompleteness,
+  inferAgentId,
   laneToChannel,
+  normalizeAssignedTo,
   normalizeEventDate,
   normalizeLane,
+  normalizePhotoStatus,
+  normalizePlatformList,
   normalizeVerdictTag,
+  parseNewJobAssetInput,
+  refreshStaleCardNote,
   resolveEffectivePhotoStatus,
+  sanitizeWebOrBlobUrl,
+  syncCardWithAssets,
   syncVisualArtifactsNeeded,
+  validateBotNoImageOverride,
+  validateStringLength,
 } from '@/lib/ops/drop-parser';
 import { appendOpsActivity, opsDeleteDoc, opsGetDoc, opsSetDoc } from '@/lib/ops/firestore-rest';
 import type { PipelineCard, PipelineStage } from '@/lib/ops/types';
@@ -32,7 +47,11 @@ const ALLOWED_JOB_PATCH_FIELDS = new Set([
   'channel',
   'stage',
   'readyForRotty',
+  'assignedTo',
+  'targetPlatforms',
+  'platforms',
   'sourceUrl',
+  'url',
   'note',
   'draftCopy',
   'assetFile',
@@ -41,10 +60,12 @@ const ALLOWED_JOB_PATCH_FIELDS = new Set([
   'assetLink',
   'imageUrl',
   'assetSpec',
+  'assets',
   'artifactsNeeded',
   'discrepancies',
   'unverifiedClaims',
   'photoStatus',
+  'textOnly',
   'eventDate',
   'verdictTag',
 ]);
@@ -73,17 +94,6 @@ function normalizeRequestedStage(raw: unknown): PipelineStage | undefined {
   return undefined;
 }
 
-function sanitizeUrl(raw: unknown): string | undefined {
-  if (typeof raw !== 'string' || !raw.trim()) return undefined;
-  try {
-    const u = new URL(raw.trim());
-    if (u.protocol === 'https:' || u.protocol === 'http:') return u.toString().slice(0, 400);
-  } catch {
-    return undefined;
-  }
-  return undefined;
-}
-
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> }
@@ -104,7 +114,7 @@ export async function GET(
   }
 
   return NextResponse.json(
-    { ok: true, job: { ...existing, autoPostAllowed: false } },
+    { ok: true, job: { ...ensureCardAssetsMigrated(existing), autoPostAllowed: false } },
     { status: 200, headers: NO_STORE_HEADERS }
   );
 }
@@ -165,11 +175,17 @@ async function handleUpsertJobById(
     );
   }
 
-  const wantsReadyForRotty = body.readyForRotty === true || requestedStage === 'approved';
-  if (wantsReadyForRotty && existing.marleyStatus !== 'approved') {
+  const wantsMarkReady = body.readyForRotty === true;
+  if (requestedStage === 'approved' && existing.stage !== 'approved' && !actor.user && existing.marleyStatus !== 'approved') {
     return NextResponse.json(
-      { error: 'readyForRotty requires Marley approval first (marleyStatus must be approved).' },
+      { error: 'Moving a draft to approved requires Rotty or Marley approval first.' },
       { status: 403, headers: NO_STORE_HEADERS }
+    );
+  }
+  if (wantsMarkReady && existing.stage !== 'approved' && requestedStage !== 'approved') {
+    return NextResponse.json(
+      { error: 'Job must be Approved by Rotty before marking Ready for Rotty.' },
+      { status: 409, headers: NO_STORE_HEADERS }
     );
   }
 
@@ -177,30 +193,63 @@ async function handleUpsertJobById(
     typeof body.lane === 'string' || typeof body.channel === 'string'
       ? normalizeLane(typeof body.lane === 'string' ? body.lane : (body.channel as string))
       : existing.lane;
+  const nextAssignedTo =
+    body.assignedTo !== undefined ? normalizeAssignedTo(body.assignedTo) : existing.assignedTo;
+  const nextTargetPlatforms =
+    body.targetPlatforms !== undefined
+      ? normalizePlatformList(body.targetPlatforms)
+      : existing.targetPlatforms;
 
-  let nextStage: PipelineStage = existing.stage;
-  let nextReady = existing.readyForRotty;
+  const now = new Date().toISOString();
+  const canReviewAsset = Boolean(actor.user || inferAgentId(actor.actorName) === 'marley');
 
-  if (existing.stage === 'posted') {
-    nextStage = 'posted';
-  } else if (wantsReadyForRotty && existing.marleyStatus === 'approved') {
-    nextStage = 'approved';
-    nextReady = true;
-  } else if (requestedStage && VALID_BOT_EDIT_STAGES.has(requestedStage)) {
-    nextStage = requestedStage;
-    if (requestedStage === 'archived') {
-      nextReady = false;
+  let nextTitle = existing.title;
+  if (body.title !== undefined) {
+    const check = validateStringLength('title', body.title, FIELD_MAX_LENGTHS.title);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: 400, headers: NO_STORE_HEADERS });
+    }
+    if (!check.value) {
+      return NextResponse.json({ error: 'title cannot be empty.' }, { status: 400, headers: NO_STORE_HEADERS });
+    }
+    nextTitle = check.value;
+  }
+
+  let nextNote = existing.note;
+  if (body.note !== undefined) {
+    if (body.note === null || body.note === '') {
+      nextNote = undefined;
+    } else {
+      const check = validateStringLength('note', body.note, FIELD_MAX_LENGTHS.note);
+      if (!check.ok) {
+        return NextResponse.json({ error: check.error }, { status: 400, headers: NO_STORE_HEADERS });
+      }
+      nextNote = check.value || undefined;
     }
   }
 
-  if (body.readyForRotty === false) {
-    nextReady = false;
+  let nextDraftCopy = existing.draftCopy;
+  if (body.draftCopy !== undefined) {
+    const check = validateStringLength('draftCopy', body.draftCopy, FIELD_MAX_LENGTHS.draftCopy);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: 400, headers: NO_STORE_HEADERS });
+    }
+    nextDraftCopy = typeof body.draftCopy === 'string' ? body.draftCopy : '';
   }
 
-  const nextAssetFile =
-    typeof body.assetFile === 'string'
-      ? body.assetFile.trim().slice(0, 160) || undefined
-      : existing.assetFile;
+  let nextAssetFile = existing.assetFile;
+  if (body.assetFile !== undefined) {
+    if (body.assetFile === null || body.assetFile === '') {
+      nextAssetFile = undefined;
+    } else {
+      const check = validateStringLength('assetFile', body.assetFile, FIELD_MAX_LENGTHS.assetFile);
+      if (!check.ok) {
+        return NextResponse.json({ error: check.error }, { status: 400, headers: NO_STORE_HEADERS });
+      }
+      nextAssetFile = check.value || undefined;
+    }
+  }
+
   const rawAssetUrlInput =
     body.assetUrl !== undefined
       ? body.assetUrl
@@ -209,11 +258,232 @@ async function handleUpsertJobById(
         : body.assetLink !== undefined
           ? body.assetLink
           : body.imageUrl;
-  const nextAssetUrl = rawAssetUrlInput !== undefined ? sanitizeUrl(rawAssetUrlInput) : existing.assetUrl;
-  const nextAssetSpec =
-    typeof body.assetSpec === 'string'
-      ? body.assetSpec.trim().slice(0, 60) || undefined
-      : existing.assetSpec;
+  let nextAssetUrl = existing.assetUrl;
+  if (rawAssetUrlInput !== undefined) {
+    const urlCheck = sanitizeWebOrBlobUrl(rawAssetUrlInput, FIELD_MAX_LENGTHS.assetUrl);
+    if (!urlCheck.ok) {
+      return NextResponse.json(
+        { error: `assetUrl: ${urlCheck.error}` },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+    nextAssetUrl = urlCheck.value;
+  }
+
+  let nextAssetSpec = existing.assetSpec;
+  if (body.assetSpec !== undefined) {
+    if (body.assetSpec === null || body.assetSpec === '') {
+      nextAssetSpec = undefined;
+    } else {
+      const check = validateStringLength('assetSpec', body.assetSpec, FIELD_MAX_LENGTHS.assetSpec);
+      if (!check.ok) {
+        return NextResponse.json({ error: check.error }, { status: 400, headers: NO_STORE_HEADERS });
+      }
+      nextAssetSpec = check.value || undefined;
+    }
+  }
+
+  const rawSourceUrlInput = body.sourceUrl !== undefined ? body.sourceUrl : body.url;
+  let nextSourceUrl = existing.sourceUrl;
+  if (rawSourceUrlInput !== undefined) {
+    const srcCheck = sanitizeWebOrBlobUrl(rawSourceUrlInput, FIELD_MAX_LENGTHS.sourceUrl);
+    if (!srcCheck.ok) {
+      return NextResponse.json(
+        { error: `sourceUrl: ${srcCheck.error}` },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+    nextSourceUrl = srcCheck.value;
+  }
+
+  let nextAssets = getCardAssets(existing);
+  const existingAssetMap = new Map(nextAssets.map((a) => [a.id, a]));
+  if (body.assets !== undefined) {
+    if (!Array.isArray(body.assets)) {
+      return NextResponse.json(
+        { error: 'assets must be an array.' },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+    const rebuilt: typeof nextAssets = [];
+    for (let i = 0; i < body.assets.length; i++) {
+      const rawItem = body.assets[i];
+      if (!rawItem || typeof rawItem !== 'object' || Array.isArray(rawItem)) {
+        return NextResponse.json(
+          { error: 'Each asset in assets must be a JSON object.' },
+          { status: 400, headers: NO_STORE_HEADERS }
+        );
+      }
+      const itemObj = rawItem as Record<string, unknown>;
+      const existingAsset =
+        typeof itemObj.id === 'string' ? existingAssetMap.get(itemObj.id) : undefined;
+      if (existingAsset) {
+        const patchCopy = { ...itemObj };
+        delete patchCopy.id;
+        delete patchCopy.addedBy;
+        delete patchCopy.createdAt;
+        delete patchCopy.updatedAt;
+        delete patchCopy.reviewedBy;
+        delete patchCopy.reviewedAt;
+        const patched = applyJobAssetPatch(existingAsset, patchCopy, {
+          actorName: actor.actorName,
+          canReviewAsset,
+          now,
+        });
+        if (!patched.ok) {
+          return NextResponse.json(
+            { error: patched.error },
+            { status: patched.status, headers: NO_STORE_HEADERS }
+          );
+        }
+        rebuilt.push(patched.asset);
+      } else {
+        const parsed = parseNewJobAssetInput(itemObj, {
+          addedBy: actor.actorName,
+          defaultOrder: i,
+          canReviewAsset,
+          now,
+        });
+        if (!parsed.ok) {
+          return NextResponse.json(
+            { error: parsed.error },
+            { status: parsed.status, headers: NO_STORE_HEADERS }
+          );
+        }
+        rebuilt.push(parsed.asset);
+      }
+    }
+    nextAssets = rebuilt;
+  } else if (rawAssetUrlInput !== undefined || body.assetFile !== undefined || body.assetSpec !== undefined) {
+    if (nextAssets.length > 0) {
+      nextAssets = nextAssets.map((a, idx) =>
+        idx === 0
+          ? {
+              ...a,
+              url: rawAssetUrlInput !== undefined ? nextAssetUrl : a.url,
+              file: body.assetFile !== undefined ? nextAssetFile : a.file,
+              spec: body.assetSpec !== undefined ? nextAssetSpec : a.spec,
+              status:
+                (nextAssetUrl || nextAssetFile) && (a.status === 'needed' || a.status === 'in_progress')
+                  ? 'delivered'
+                  : a.status,
+              updatedAt: now,
+            }
+          : a
+      );
+    } else if (nextAssetUrl || nextAssetFile || nextAssetSpec) {
+      nextAssets = [
+        {
+          id: `ast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          url: nextAssetUrl,
+          file: nextAssetFile,
+          kind: 'image',
+          platform: 'all',
+          order: 0,
+          spec: nextAssetSpec,
+          status: nextAssetUrl || nextAssetFile ? 'delivered' : 'needed',
+          addedBy: actor.actorName,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ];
+    }
+  }
+
+  const syncedAssetsPartial = syncCardWithAssets({}, nextAssets);
+  const effectiveAssetFile = syncedAssetsPartial.assetFile;
+  const effectiveAssetUrl = syncedAssetsPartial.assetUrl;
+  const effectiveAssetSpec = syncedAssetsPartial.assetSpec;
+
+  const explicitPhotoInput =
+    body.textOnly === true ? 'not_needed' : body.photoStatus;
+  const requestedNotNeeded =
+    body.textOnly === true || normalizePhotoStatus(body.photoStatus) === 'not_needed';
+  const overrideCheck = validateBotNoImageOverride({
+    isUser: Boolean(actor.user),
+    lane: nextLane,
+    requestedNotNeeded,
+    hasAssetsOrSpecs: Boolean(
+      syncedAssetsPartial.assets.length > 0 ||
+        effectiveAssetUrl ||
+        effectiveAssetFile ||
+        effectiveAssetSpec ||
+        (body.artifactsNeeded !== undefined
+          ? cleanBotStringList(body.artifactsNeeded)?.length
+          : existing.artifactsNeeded?.length)
+    ),
+  });
+  if (!overrideCheck.ok) {
+    return NextResponse.json(
+      { error: overrideCheck.error },
+      { status: overrideCheck.status, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  const nextPhotoStatus = resolveEffectivePhotoStatus({
+    explicit: explicitPhotoInput,
+    existing: existing.photoStatus,
+    assetFile: effectiveAssetFile,
+    assetUrl: effectiveAssetUrl,
+    assetSpec: effectiveAssetSpec,
+  });
+  const completeness = getCardCompleteness({
+    ...existing,
+    draftCopy: nextDraftCopy,
+    assets: syncedAssetsPartial.assets,
+    assetFile: effectiveAssetFile,
+    assetUrl: effectiveAssetUrl,
+    assetSpec: effectiveAssetSpec,
+    photoStatus: nextPhotoStatus,
+  });
+
+  if (wantsMarkReady && !completeness.canApproveReady) {
+    return NextResponse.json(
+      {
+        error: `Cannot Mark Ready for Rotty: ${completeness.detail}`,
+        reason: completeness.lockReason,
+      },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  let nextStage: PipelineStage = existing.stage;
+  let nextReady = existing.readyForRotty;
+  let nextPostIt = Boolean(existing.postIt);
+  let nextPostItAt = existing.postItAt;
+  let nextPostItBy = existing.postItBy;
+
+  if (existing.stage === 'posted') {
+    nextStage = 'posted';
+  } else if (requestedStage && VALID_BOT_EDIT_STAGES.has(requestedStage)) {
+    nextStage = requestedStage;
+    if (requestedStage === 'archived' || requestedStage !== 'approved') {
+      nextReady = false;
+      nextPostIt = false;
+      nextPostItAt = undefined;
+      nextPostItBy = undefined;
+    }
+  }
+
+  if (wantsMarkReady && nextStage === 'approved' && completeness.canApproveReady) {
+    nextReady = true;
+  }
+
+  if (body.readyForRotty === false) {
+    nextReady = false;
+    nextPostIt = false;
+    nextPostItAt = undefined;
+    nextPostItBy = undefined;
+  }
+
+  if (nextReady && nextStage !== 'posted' && nextStage !== 'archived') {
+    if (!completeness.canApproveReady || nextStage !== 'approved') {
+      nextReady = false;
+      nextPostIt = false;
+      nextPostItAt = undefined;
+      nextPostItBy = undefined;
+    }
+  }
 
   const nextEventDate =
     body.eventDate !== undefined ? normalizeEventDate(body.eventDate) : existing.eventDate;
@@ -232,40 +502,44 @@ async function handleUpsertJobById(
     );
   }
 
-  const nextSourceUrl = body.sourceUrl !== undefined ? sanitizeUrl(body.sourceUrl) : existing.sourceUrl;
   const baseFlags = (existing.flaggedNotes || []).filter(
     (flag) => !(nextSourceUrl || nextStage === 'posted') || !flag.startsWith('FLAG: Missing verified source URL')
   );
 
   const updated: PipelineCard = {
     ...existing,
-    title:
-      typeof body.title === 'string' && body.title.trim()
-        ? body.title.trim().slice(0, 120)
-        : existing.title,
+    title: nextTitle,
     lane: nextLane,
     channel: laneToChannel(nextLane),
     stage: nextStage,
     readyForRotty: nextReady,
+    postIt: nextPostIt,
+    postItAt: nextPostItAt,
+    postItBy: nextPostItBy,
+    assignedTo: nextAssignedTo,
+    targetPlatforms: nextTargetPlatforms,
     sourceUrl: nextSourceUrl,
-    note:
-      typeof body.note === 'string'
-        ? body.note.trim().slice(0, 300) || undefined
-        : existing.note,
-    draftCopy:
-      typeof body.draftCopy === 'string' ? body.draftCopy.slice(0, 2400) : existing.draftCopy,
-    assetFile: nextAssetFile,
-    assetUrl: nextAssetUrl,
-    assetSpec: nextAssetSpec,
+    note: refreshStaleCardNote(nextNote, nextStage),
+    draftCopy: nextDraftCopy,
+    assets: syncedAssetsPartial.assets,
+    assetFile: effectiveAssetFile,
+    assetUrl: effectiveAssetUrl,
+    assetSpec: effectiveAssetSpec,
     verdictTag: nextVerdictTag,
     eventDate: nextEventDate,
-    photoStatus: resolveEffectivePhotoStatus({
-      explicit: body.photoStatus,
-      existing: existing.photoStatus,
-      assetFile: nextAssetFile,
-      assetUrl: nextAssetUrl,
-      assetSpec: nextAssetSpec,
-    }),
+    photoStatus: nextPhotoStatus,
+    noImageNeededBy:
+      nextPhotoStatus === 'not_needed' && !effectiveAssetFile && !effectiveAssetUrl
+        ? requestedNotNeeded
+          ? actor.actorName
+          : existing.noImageNeededBy || actor.actorName
+        : undefined,
+    noImageNeededAt:
+      nextPhotoStatus === 'not_needed' && !effectiveAssetFile && !effectiveAssetUrl
+        ? requestedNotNeeded
+          ? now
+          : existing.noImageNeededAt || now
+        : undefined,
     unverifiedClaims:
       body.unverifiedClaims !== undefined
         ? cleanBotStringList(body.unverifiedClaims)
@@ -274,12 +548,12 @@ async function handleUpsertJobById(
     artifactsNeeded: syncVisualArtifactsNeeded(
       existing.artifactsNeeded,
       body.artifactsNeeded !== undefined ? cleanBotStringList(body.artifactsNeeded) : undefined,
-      nextAssetSpec,
-      Boolean(nextAssetFile || nextAssetUrl)
+      effectiveAssetSpec,
+      Boolean(effectiveAssetFile || effectiveAssetUrl || nextPhotoStatus === 'not_needed')
     ),
     discrepancies:
       body.discrepancies !== undefined ? cleanBotStringList(body.discrepancies) : existing.discrepancies,
-    updatedAt: new Date().toISOString(),
+    updatedAt: now,
   };
 
   await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
@@ -288,9 +562,11 @@ async function handleUpsertJobById(
     actor.actorName,
     nextStage === 'archived'
       ? 'archived job'
-      : wantsReadyForRotty && nextReady
-        ? 'queued Ready for Rotty'
-        : 'updated job details',
+      : wantsMarkReady && nextReady
+        ? 'marked Ready for Rotty'
+        : nextAssignedTo && nextAssignedTo !== existing.assignedTo
+          ? `assigned to ${nextAssignedTo}`
+          : 'updated job details',
     updated.title
   );
 

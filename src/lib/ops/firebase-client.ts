@@ -52,11 +52,35 @@ export function getOpsFirestore(): Firestore {
   return cachedDb;
 }
 
+const DRIVE_TOKEN_KEY = 'ops_google_drive_token';
+
+export function getGoogleDriveAccessToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return sessionStorage.getItem(DRIVE_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export const DRIVE_TOKEN_EVENT = 'ops-drive-token-updated';
+
 export async function signInOpsWithGoogle() {
   const auth = getOpsAuth();
   const provider = new GoogleAuthProvider();
+  provider.addScope('https://www.googleapis.com/auth/drive.readonly');
   provider.setCustomParameters({ prompt: 'select_account' });
-  return signInWithPopup(auth, provider);
+  const cred = await signInWithPopup(auth, provider);
+  const oauth = GoogleAuthProvider.credentialFromResult(cred);
+  if (oauth?.accessToken && typeof window !== 'undefined') {
+    try {
+      sessionStorage.setItem(DRIVE_TOKEN_KEY, oauth.accessToken);
+      window.dispatchEvent(new Event(DRIVE_TOKEN_EVENT));
+    } catch {
+      // ignore storage failure
+    }
+  }
+  return cred;
 }
 
 export async function signInOpsWithEmail(email: string, password: string) {
@@ -66,5 +90,12 @@ export async function signInOpsWithEmail(email: string, password: string) {
 
 export async function signOutOps() {
   const auth = getOpsAuth();
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.removeItem(DRIVE_TOKEN_KEY);
+    } catch {
+      // ignore
+    }
+  }
   return signOut(auth);
 }

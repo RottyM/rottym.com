@@ -6,7 +6,7 @@ import {
   resolveBotTargetClientId,
   unauthorizedResponse,
 } from '@/lib/ops/auth';
-import { findUnknownFields, inferAgentId, sanitizeAvatarUrl } from '@/lib/ops/drop-parser';
+import { findUnknownFields, inferAgentId, parseConnectorAlert, sanitizeAvatarUrl } from '@/lib/ops/drop-parser';
 import {
   appendOpsActivity,
   ensureOpsSeeded,
@@ -33,6 +33,7 @@ const ALLOWED_CREW_FIELDS = new Set([
   'avatar',
   'status',
   'statusNote',
+  'connectorAlert',
   'usagePct',
   'resetNote',
 ]);
@@ -76,6 +77,7 @@ async function handleCrewUpdate(request: Request) {
     avatar?: string;
     status?: AgentStatus;
     statusNote?: string;
+    connectorAlert?: unknown;
     usagePct?: number | null;
     resetNote?: string;
   };
@@ -161,6 +163,16 @@ async function handleCrewUpdate(request: Request) {
     }
   }
 
+  const now = new Date().toISOString();
+  let nextConnectorAlert = existing.connectorAlert;
+  if (body.connectorAlert !== undefined) {
+    const alertCheck = parseConnectorAlert(body.connectorAlert, now);
+    if (!alertCheck.ok) {
+      return NextResponse.json({ error: alertCheck.error }, { status: 400, headers: NO_STORE_HEADERS });
+    }
+    nextConnectorAlert = alertCheck.value;
+  }
+
   const updated: CrewMember = {
     ...existing,
     name:
@@ -185,6 +197,7 @@ async function handleCrewUpdate(request: Request) {
       typeof body.statusNote === 'string'
         ? body.statusNote.trim().slice(0, 180) || undefined
         : existing.statusNote,
+    connectorAlert: nextConnectorAlert,
     usagePct:
       body.usagePct === null
         ? undefined
@@ -195,7 +208,7 @@ async function handleCrewUpdate(request: Request) {
       typeof body.resetNote === 'string'
         ? body.resetNote.trim().slice(0, 80) || undefined
         : existing.resetNote,
-    updatedAt: new Date().toISOString(),
+    updatedAt: now,
     updatedBy: actor.actorName,
   };
 
@@ -203,8 +216,14 @@ async function handleCrewUpdate(request: Request) {
   await appendOpsActivity(
     clientId,
     actor.actorName,
-    editsProfileFields ? `updated profile -> ${updated.name}` : `updated status -> ${updated.status}`,
-    updated.statusNote || updated.bio || updated.name
+    body.connectorAlert !== undefined
+      ? updated.connectorAlert
+        ? `connector alert (${updated.connectorAlert.platform || 'connector'}) -> ${updated.connectorAlert.status}`
+        : 'cleared connector alert'
+      : editsProfileFields
+        ? `updated profile -> ${updated.name}`
+        : `updated status -> ${updated.status}`,
+    updated.connectorAlert?.message || updated.statusNote || updated.bio || updated.name
   );
 
   return NextResponse.json({ ok: true, crew: updated }, { status: 200, headers: NO_STORE_HEADERS });

@@ -9,12 +9,20 @@ import {
 import {
   applyEventDatePastFlag,
   cleanBotStringList,
+  FIELD_MAX_LENGTHS,
   findUnknownFields,
+  getCardAssets,
   laneToChannel,
+  normalizeAssignedTo,
   normalizeEventDate,
+  normalizeJobAssetStatus,
   normalizeLane,
+  normalizePhotoStatus,
+  normalizePlatformList,
   normalizeVerdictTag,
   resolveEffectivePhotoStatus,
+  syncCardWithAssets,
+  validateStringLength,
 } from '@/lib/ops/drop-parser';
 import { appendOpsActivity, opsGetDoc, opsSetDoc } from '@/lib/ops/firestore-rest';
 import type { PipelineCard } from '@/lib/ops/types';
@@ -32,10 +40,14 @@ const ALLOWED_REVIEW_FIELDS = new Set([
   'revisedCopy',
   'lane',
   'channel',
+  'assignedTo',
+  'targetPlatforms',
+  'platforms',
   'discrepancies',
   'artifactsNeeded',
   'unverifiedClaims',
   'photoStatus',
+  'assetReviews',
   'eventDate',
   'verdictTag',
   'verdict',
@@ -70,6 +82,16 @@ export async function POST(
 
   const existing = await opsGetDoc<PipelineCard>('ops_pipeline', id);
   if (!existing) return NextResponse.json({ error: 'Job not found' }, { status: 404, headers: NO_STORE_HEADERS });
+
+  if (!actor.user && normalizePhotoStatus(body.photoStatus) === 'not_needed') {
+    return NextResponse.json(
+      {
+        error:
+          'Only Rotty (authenticated /ops operator) can set "no image needed" (photoStatus: not_needed).',
+      },
+      { status: 403, headers: NO_STORE_HEADERS }
+    );
+  }
 
   const scopedClientId = resolveBotTargetClientId(
     actor,
@@ -142,40 +164,132 @@ export async function POST(
   const finalVerdict: PipelineCard['verdictTag'] =
     verdictTag || (isValidated ? existing.verdictTag || 'NEW' : 'REJECTED');
 
+  if (body.assignedTo !== undefined && body.assignedTo !== null && typeof body.assignedTo !== 'string') {
+    return NextResponse.json(
+      { error: 'assignedTo must be a string or null.' },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+  const nextAssignedTo =
+    body.assignedTo !== undefined ? normalizeAssignedTo(body.assignedTo) : existing.assignedTo;
+  const nextTargetPlatforms =
+    body.targetPlatforms !== undefined || body.platforms !== undefined
+      ? normalizePlatformList(body.targetPlatforms ?? body.platforms)
+      : existing.targetPlatforms;
+
+  let nextRevisedCopy = existing.draftCopy;
+  if (typeof body.revisedCopy === 'string' && body.revisedCopy.trim()) {
+    const check = validateStringLength('revisedCopy', body.revisedCopy, FIELD_MAX_LENGTHS.draftCopy);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: 400, headers: NO_STORE_HEADERS });
+    }
+    nextRevisedCopy = check.value;
+  }
+
+  let explicitMarleyNote: string | undefined;
+  if (typeof body.notes === 'string' && body.notes.trim()) {
+    const check = validateStringLength('notes', body.notes, FIELD_MAX_LENGTHS.note);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: 400, headers: NO_STORE_HEADERS });
+    }
+    explicitMarleyNote = check.value;
+  }
+
+  const now = new Date().toISOString();
+  let nextAssets = getCardAssets(existing);
+  if (body.assetReviews !== undefined) {
+    if (!Array.isArray(body.assetReviews)) {
+      return NextResponse.json(
+        { error: 'assetReviews must be an array.' },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+    const reviewMap = new Map<string, { status: 'approved' | 'rejected'; reason?: string }>();
+    for (const r of body.assetReviews) {
+      if (!r || typeof r !== 'object' || Array.isArray(r)) {
+        return NextResponse.json(
+          { error: 'Each assetReview must be an object { assetId, status, reason? }.' },
+          { status: 400, headers: NO_STORE_HEADERS }
+        );
+      }
+      const rev = r as Record<string, unknown>;
+      const assetId = typeof rev.assetId === 'string' ? rev.assetId.trim() : '';
+      const status = normalizeJobAssetStatus(rev.status);
+      if (!assetId || (status !== 'approved' && status !== 'rejected')) {
+        return NextResponse.json(
+          { error: 'Each assetReview requires assetId and status ("approved" or "rejected").' },
+          { status: 400, headers: NO_STORE_HEADERS }
+        );
+      }
+      let reason: string | undefined;
+      if (typeof rev.reason === 'string' && rev.reason.trim()) {
+        const rc = validateStringLength('reason', rev.reason, FIELD_MAX_LENGTHS.rejectionReason);
+        if (!rc.ok) return NextResponse.json({ error: rc.error }, { status: 400, headers: NO_STORE_HEADERS });
+        reason = rc.value;
+      }
+      reviewMap.set(assetId, { status, reason });
+    }
+    nextAssets = nextAssets.map((a) => {
+      const rv = reviewMap.get(a.id);
+      if (!rv) return a;
+      return {
+        ...a,
+        status: rv.status,
+        rejectionReason: rv.status === 'rejected' ? rv.reason : undefined,
+        reviewedBy: reviewer,
+        reviewedAt: now,
+        updatedAt: now,
+      };
+    });
+  }
+
+  const syncedAssets = syncCardWithAssets({}, nextAssets);
+
   const updated: PipelineCard = {
     ...existing,
     stage: nextStage,
     lane: nextLane,
     channel: laneToChannel(nextLane),
+    assignedTo: nextAssignedTo,
+    targetPlatforms: nextTargetPlatforms,
     marleyReviewedBy: reviewer,
     verdictTag: finalVerdict,
-    draftCopy:
-      typeof body.revisedCopy === 'string' && body.revisedCopy.trim()
-        ? body.revisedCopy.trim().slice(0, 2400)
-        : existing.draftCopy,
+    draftCopy: nextRevisedCopy,
+    assets: syncedAssets.assets,
+    assetFile: syncedAssets.assetFile,
+    assetUrl: syncedAssets.assetUrl,
+    assetSpec: syncedAssets.assetSpec,
     marleyStatus: isValidated ? 'approved' : 'rejected',
     marleyNote:
-      typeof body.notes === 'string' && body.notes.trim()
-        ? body.notes.trim().slice(0, 300)
-        : isValidated && !hasBlockers
-          ? `Cleared (${finalVerdict}) by ${reviewer} — awaiting Rotty approval`
-          : `Flagged (${finalVerdict}) by ${reviewer} for crew resolution`,
+      explicitMarleyNote ||
+      (isValidated && !hasBlockers
+        ? `Cleared (${finalVerdict}) by ${reviewer} — awaiting Rotty approval`
+        : `Flagged (${finalVerdict}) by ${reviewer} for crew resolution`),
     discrepancies,
-    unverifiedClaims: unverifiedClaims && unverifiedClaims.length > 0 ? unverifiedClaims : undefined,
-    artifactsNeeded,
+    unverifiedClaims:
+      body.unverifiedClaims !== undefined
+        ? unverifiedClaims || []
+        : existing.unverifiedClaims,
+    artifactsNeeded:
+      body.artifactsNeeded !== undefined
+        ? artifactsNeeded
+        : existing.artifactsNeeded,
     photoStatus: resolveEffectivePhotoStatus({
       explicit: body.photoStatus,
       existing: existing.photoStatus,
-      assetFile: existing.assetFile,
-      assetUrl: existing.assetUrl,
-      assetSpec: existing.assetSpec,
+      assetFile: syncedAssets.assetFile,
+      assetUrl: syncedAssets.assetUrl,
+      assetSpec: syncedAssets.assetSpec,
     }),
     eventDate: nextEventDate,
     flaggedNotes: applyEventDatePastFlag(existing.flaggedNotes, nextEventDate, nextStage),
     readyForRotty: false, // Bot clearance NEVER marks readyForRotty or triggers publish
+    postIt: false,
+    postItAt: undefined,
+    postItBy: undefined,
     claimedBy: undefined,
     leaseExpiresAt: undefined,
-    updatedAt: new Date().toISOString(),
+    updatedAt: now,
   };
 
   await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);

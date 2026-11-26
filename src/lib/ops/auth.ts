@@ -147,14 +147,37 @@ export interface BotActor {
   user?: VerifiedOpsUser;
 }
 
+const CANONICAL_CREW_NAMES: Record<string, string> = {
+  antigravity: 'Antigravity',
+  bastion: 'Bastion',
+  cheatcode: 'Cheat Code',
+  cheatcodes: 'Cheat Code',
+  cortex: 'Cortex',
+  gemini: 'Gemini',
+  glitch: 'Glitch',
+  marley: 'Marley',
+  pixel: 'Pixel',
+  sovereign: 'Sovereign',
+  splicer: 'Splicer',
+};
+
+export function canonicalCrewDisplayName(raw: string): string {
+  const clean = raw.trim().replace(/[^\w\s.-]/g, '').slice(0, 32);
+  if (!clean) return '';
+  const compact = clean.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  if (CANONICAL_CREW_NAMES[compact]) {
+    return CANONICAL_CREW_NAMES[compact];
+  }
+  return clean;
+}
+
 function formatBotKeyName(rawKey: string): string {
-  const norm = rawKey.toUpperCase();
-  if (norm === 'CHEAT_CODE' || norm === 'CHEATCODE') return 'Cheat Code';
-  return rawKey
+  const formatted = rawKey
     .split('_')
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(' ');
+  return canonicalCrewDisplayName(formatted) || formatted;
 }
 
 /**
@@ -172,10 +195,9 @@ export async function authorizeBotOrOpsUser(
   const provided = authHeader.slice(7).trim();
   if (!provided) return null;
 
-  const botName = (request.headers.get('x-bot-name') || fallbackBotName)
-    .trim()
-    .replace(/[^\w\s.-]/g, '')
-    .slice(0, 32) || fallbackBotName;
+  const botName =
+    canonicalCrewDisplayName(request.headers.get('x-bot-name') || fallbackBotName) ||
+    fallbackBotName;
 
   for (const [key, val] of Object.entries(process.env)) {
     if (!val?.trim()) continue;

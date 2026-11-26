@@ -1,12 +1,26 @@
 import type {
   AgentStatus,
+  CardAssetState,
   ChannelId,
+  ConnectorAlert,
+  ConnectorAlertStatus,
   ContentKind,
   GateState,
+  JobAsset,
+  JobAssetKind,
+  JobAssetPlatform,
+  JobAssetStatus,
   MarleyVerdictTag,
+  OpsRequest,
   PhotoStatus,
+  PipelineCard,
   PipelineLane,
+  PipelineLinks,
   PipelineStage,
+  PlatformKey,
+  RequestActionOption,
+  RequestStatus,
+  RequestUrgency,
 } from './types';
 
 export interface ParsedDropDocument {
@@ -624,12 +638,74 @@ function parseKeyValueLines(text: string): Record<string, string> {
   return out;
 }
 
+export const FIELD_MAX_LENGTHS = {
+  title: 160,
+  note: 600,
+  draftCopy: 4000,
+  source: 120,
+  sourceUrl: 500,
+  assetUrl: 500,
+  assetFile: 240,
+  assetSpec: 80,
+  altText: 500,
+  caption: 2400,
+  credit: 200,
+  label: 80,
+  rejectionReason: 300,
+  context: 300,
+  preparedText: 4000,
+  outcomeNote: 800,
+} as const;
+
+export function validateStringLength(
+  field: string,
+  value: unknown,
+  maxLen: number
+): { ok: true; value: string } | { ok: false; error: string } {
+  if (typeof value !== 'string') {
+    return { ok: false, error: `${field} must be a string.` };
+  }
+  const trimmed = value.trim();
+  if (trimmed.length > maxLen) {
+    return {
+      ok: false,
+      error: `${field} is too long (${trimmed.length} chars; max ${maxLen}).`,
+    };
+  }
+  return { ok: true, value: trimmed };
+}
+
+export function sanitizeWebOrBlobUrl(
+  raw: unknown,
+  maxLen = 500
+): { ok: true; value: string | undefined } | { ok: false; error: string } {
+  if (raw === null || raw === undefined) return { ok: true, value: undefined };
+  if (typeof raw !== 'string') return { ok: false, error: 'URL must be a string.' };
+  const trimmed = raw.trim();
+  if (!trimmed) return { ok: true, value: undefined };
+  if (trimmed.length > maxLen) {
+    return { ok: false, error: `URL is too long (${trimmed.length} chars; max ${maxLen}).` };
+  }
+  if (trimmed.startsWith('/api/ops/asset-blob/')) {
+    return { ok: true, value: trimmed };
+  }
+  try {
+    const u = new URL(trimmed);
+    if (u.protocol === 'https:' || u.protocol === 'http:') {
+      return { ok: true, value: u.toString() };
+    }
+  } catch {
+    return { ok: false, error: `Invalid URL: ${trimmed.slice(0, 60)}` };
+  }
+  return { ok: false, error: 'URL must use http(s):// or /api/ops/asset-blob/.' };
+}
+
 export function cleanBotStringList(raw: unknown): string[] | undefined {
   if (!Array.isArray(raw)) return undefined;
   return raw
     .filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0)
     .map((entry) => entry.trim().slice(0, 140))
-    .slice(0, 8);
+    .slice(0, 12);
 }
 
 export function sanitizeAvatarUrl(raw: unknown): string | undefined {
@@ -649,18 +725,43 @@ export function sanitizeAvatarUrl(raw: unknown): string | undefined {
   return undefined;
 }
 
-export function resolveAvatarRenderUrl(raw?: string): string | undefined {
+export function extractDriveFileId(raw?: string, allowBareId = false): string | undefined {
   if (!raw) return undefined;
   const trimmed = raw.trim();
-  const driveFileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i);
-  if (driveFileMatch) {
-    return `https://drive.google.com/thumbnail?id=${driveFileMatch[1]}&sz=w256`;
+  if (!trimmed) return undefined;
+  if (/drive\.google\.com\/drive\/(?:u\/\d+\/)?folders\//i.test(trimmed)) {
+    return undefined;
   }
-  const driveOpenMatch = trimmed.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([a-zA-Z0-9_-]+)/i);
-  if (driveOpenMatch) {
-    return `https://drive.google.com/thumbnail?id=${driveOpenMatch[1]}&sz=w256`;
+  const driveFileMatch = trimmed.match(/drive\.google\.com\/file\/(?:u\/\d+\/)?d\/([a-zA-Z0-9_-]+)/i);
+  if (driveFileMatch) return driveFileMatch[1];
+  const driveOpenMatch = trimmed.match(
+    /(?:drive\.google\.com\/(?:open|uc|thumbnail)|drive\.usercontent\.google\.com\/download)\?(?:[^#]*&)?id=([a-zA-Z0-9_-]+)/i
+  );
+  if (driveOpenMatch) return driveOpenMatch[1];
+  const lh3Match = trimmed.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/i);
+  if (lh3Match) return lh3Match[1];
+  if (allowBareId && /^[a-zA-Z0-9_-]{25,64}$/.test(trimmed)) {
+    return trimmed;
+  }
+  return undefined;
+}
+
+export function resolveVisualPreviewUrl(raw?: string, maxWidth = 1200): string | undefined {
+  if (!raw) return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+  if (/drive\.google\.com\/drive\/(?:u\/\d+\/)?folders\//i.test(trimmed)) {
+    return undefined;
+  }
+  const fileId = extractDriveFileId(trimmed);
+  if (fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${maxWidth}`;
   }
   return trimmed;
+}
+
+export function resolveAvatarRenderUrl(raw?: string): string | undefined {
+  return resolveVisualPreviewUrl(raw, 256);
 }
 
 export function extractChatMentions(text: string, explicit?: unknown): string[] | undefined {
@@ -691,29 +792,62 @@ export function extractChatMentions(text: string, explicit?: unknown): string[] 
 export function syncVisualArtifactsNeeded(
   baseArtifacts: string[] | undefined,
   explicitArtifacts: string[] | undefined,
-  assetSpec: string | undefined,
+  _assetSpec: string | undefined,
   hasVisualAsset: boolean
 ): string[] | undefined {
   if (explicitArtifacts !== undefined) {
-    return explicitArtifacts.length > 0 ? explicitArtifacts : undefined;
+    return explicitArtifacts;
   }
-  const current = baseArtifacts || [];
+  if (baseArtifacts === undefined) {
+    return undefined;
+  }
   if (hasVisualAsset) {
-    const cleaned = current.filter(
+    return baseArtifacts.filter(
       (entry) => !/^Visual needed\b/i.test(entry) && !/^Awaiting Pixel\b/i.test(entry)
     );
-    return cleaned.length > 0 ? cleaned : undefined;
   }
-  if (!assetSpec) {
-    return current.length > 0 ? current : undefined;
+  return baseArtifacts;
+}
+
+export function refreshStaleCardNote(
+  note: string | undefined,
+  nextStage: PipelineStage
+): string | undefined {
+  if (!note) return undefined;
+  if (nextStage !== 'approved' && nextStage !== 'posted') return note;
+  let cleaned = note
+    .replace(/\bNot posted,\s*not Ready\.?/gi, '')
+    .replace(/\bNot posted\.?/gi, '')
+    .replace(/\bnot Ready\.?/gi, '');
+  if (nextStage === 'posted') {
+    cleaned = cleaned.replace(/\bNeeds Marley review\.?/gi, '');
   }
-  const alreadyListed = current.some(
-    (entry) =>
-      entry.toLowerCase().includes(assetSpec.toLowerCase()) ||
-      /\b(visual|cover|image|graphic)\b/i.test(entry)
-  );
-  if (alreadyListed) return current;
-  return [...current, `Visual needed (${assetSpec})`];
+  cleaned = cleaned.replace(/\s{2,}/g, ' ').replace(/^[·.\s-]+|[·\s-]+$/g, '').trim();
+  return cleaned || undefined;
+}
+
+export function validateBotNoImageOverride(opts: {
+  isUser: boolean;
+  lane: PipelineLane;
+  requestedNotNeeded: boolean;
+  hasAssetsOrSpecs: boolean;
+}): { ok: true } | { ok: false; status: number; error: string } {
+  if (!opts.requestedNotNeeded) return { ok: true };
+  if (opts.hasAssetsOrSpecs) {
+    return {
+      ok: false,
+      status: 400,
+      error: 'Cannot mark text-only ("No image needed") when assets, assetSpec, or artifactsNeeded are present.',
+    };
+  }
+  if (!opts.isUser && opts.lane !== 'x' && opts.lane !== 'linkedin') {
+    return {
+      ok: false,
+      status: 403,
+      error: 'Only Rotty (authenticated /ops operator) can set "no image needed" on photo lanes (FB/IG, Articles).',
+    };
+  }
+  return { ok: true };
 }
 
 const VALID_VERDICT_TAGS = new Set<MarleyVerdictTag>([
@@ -749,6 +883,70 @@ export function normalizeVerdictTag(raw: unknown): MarleyVerdictTag | undefined 
     : undefined;
 }
 
+export function normalizeAssignedTo(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const clean = raw
+    .trim()
+    .replace(/^@+/, '')
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9_-]+/g, '')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+  if (!clean || clean === 'none' || clean === 'unassigned' || clean === 'null') {
+    return undefined;
+  }
+  if (clean === 'cheatcode' || clean === 'cheatcodes' || clean === 'cheat_code') {
+    return 'cheat-code';
+  }
+  return clean;
+}
+
+export function normalizePlatformKey(raw: unknown): PlatformKey | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const clean = raw.trim().toLowerCase();
+  if (clean === 'fb' || clean === 'facebook') return 'fb';
+  if (clean === 'ig' || clean === 'instagram') return 'ig';
+  if (clean === 'linkedin' || clean === 'li') return 'linkedin';
+  if (clean === 'x' || clean === 'twitter') return 'x';
+  return undefined;
+}
+
+export function normalizePlatformList(raw: unknown): PlatformKey[] | undefined {
+  const parts: string[] = [];
+  if (typeof raw === 'string') {
+    parts.push(...raw.split(/[,/+\s]+/));
+  } else if (Array.isArray(raw)) {
+    for (const item of raw) {
+      if (typeof item === 'string') parts.push(...item.split(/[,/+\s]+/));
+    }
+  } else {
+    return undefined;
+  }
+
+  const found = new Set<PlatformKey>();
+  for (const part of parts) {
+    const clean = part.trim().toLowerCase();
+    if (!clean) continue;
+    if (clean === 'fb-ig' || clean === 'meta') {
+      found.add('fb');
+      found.add('ig');
+      continue;
+    }
+    const key = normalizePlatformKey(clean);
+    if (key) found.add(key);
+  }
+  return found.size > 0 ? Array.from(found) : undefined;
+}
+
+export function getPendingPlatforms(
+  targetPlatforms: PlatformKey[] | undefined,
+  links: PipelineLinks | undefined
+): PlatformKey[] {
+  if (!targetPlatforms || targetPlatforms.length === 0) return [];
+  return targetPlatforms.filter((p) => !links?.[p]);
+}
+
 export function normalizePhotoStatus(raw: unknown): PhotoStatus | undefined {
   if (typeof raw !== 'string' || !raw.trim()) return undefined;
   const clean = raw.trim().toLowerCase().replace(/[\s-]+/g, '_');
@@ -764,12 +962,97 @@ export function normalizeEventDate(raw: unknown): string | undefined {
   return m ? m[1] : undefined;
 }
 
-export function todayEasternYmd(): string {
+export function todayEasternYmd(nowMs = Date.now()): string {
   try {
-    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date(nowMs));
   } catch {
-    return new Date().toISOString().slice(0, 10);
+    return new Date(nowMs).toISOString().slice(0, 10);
   }
+}
+
+export function normalizeRelevantUntil(raw: unknown): string | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const trimmed = raw.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  const ms = Date.parse(trimmed);
+  if (!Number.isFinite(ms)) return undefined;
+  return new Date(ms).toISOString();
+}
+
+export function isRequestExpired(
+  req: Pick<OpsRequest, 'status' | 'relevantUntil'>,
+  nowMs = Date.now()
+): boolean {
+  if (req.status === 'expired') return true;
+  if (req.status !== 'pending') return false;
+  if (!req.relevantUntil) return false;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(req.relevantUntil)) {
+    return todayEasternYmd(nowMs) > req.relevantUntil;
+  }
+  const ms = Date.parse(req.relevantUntil);
+  return Number.isFinite(ms) ? nowMs > ms : false;
+}
+
+export function getEffectiveRequestStatus(
+  req: Pick<OpsRequest, 'status' | 'relevantUntil'>,
+  nowMs = Date.now()
+): RequestStatus {
+  if (isRequestExpired(req, nowMs)) return 'expired';
+  return req.status;
+}
+
+export function normalizeRequestUrgency(raw: unknown): RequestUrgency | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const clean = raw.trim().toLowerCase();
+  if (clean === 'urgent' || clean === 'high' || clean === 'normal') return clean;
+  return undefined;
+}
+
+export function normalizeRequestActions(raw: unknown): RequestActionOption[] {
+  if (!Array.isArray(raw)) return [];
+  const seenIds = new Set<string>();
+  const out: RequestActionOption[] = [];
+
+  for (const entry of raw) {
+    if (out.length >= 6) break;
+    let label = '';
+    let rawId = '';
+    let tone: RequestActionOption['tone'];
+
+    if (typeof entry === 'string') {
+      label = entry.trim().slice(0, 48);
+    } else if (entry && typeof entry === 'object') {
+      const obj = entry as Record<string, unknown>;
+      if (typeof obj.label === 'string') label = obj.label.trim().slice(0, 48);
+      if (typeof obj.id === 'string') rawId = obj.id.trim();
+      if (obj.tone === 'primary' || obj.tone === 'secondary' || obj.tone === 'danger') {
+        tone = obj.tone;
+      }
+    }
+
+    if (!label) continue;
+    const baseId = (rawId || label)
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 40) || `action_${out.length + 1}`;
+    if (baseId === 'already_handled' || baseId === 'dismiss') continue;
+
+    let uniqueId = baseId;
+    let suffix = 2;
+    while (seenIds.has(uniqueId)) {
+      uniqueId = `${baseId.slice(0, 35)}_${suffix++}`;
+    }
+    seenIds.add(uniqueId);
+
+    out.push({
+      id: uniqueId,
+      label,
+      tone: tone || (out.length === 0 ? 'primary' : 'secondary'),
+    });
+  }
+
+  return out;
 }
 
 export function resolveEffectivePhotoStatus(opts: {
@@ -778,15 +1061,749 @@ export function resolveEffectivePhotoStatus(opts: {
   assetFile?: string;
   assetUrl?: string;
   assetSpec?: string;
-}): PhotoStatus | undefined {
+}): PhotoStatus {
+  const hasAsset = Boolean(opts.assetFile?.trim() || opts.assetUrl?.trim());
   const parsed = normalizePhotoStatus(opts.explicit);
-  if (parsed) return parsed;
-  if (opts.assetFile || opts.assetUrl) {
+  if (hasAsset) {
+    if (parsed === 'verified') return 'verified';
+    if (parsed === 'attached') return 'attached';
     return opts.existing === 'verified' ? 'verified' : 'attached';
   }
+  if (parsed) {
+    return parsed === 'attached' || parsed === 'verified' ? 'missing' : parsed;
+  }
+  if (opts.existing === 'attached' || opts.existing === 'verified') {
+    return 'missing';
+  }
   if (opts.existing) return opts.existing;
-  if (opts.assetSpec) return 'needed';
+  if (opts.assetSpec?.trim()) return 'needed';
+  return 'missing';
+}
+
+export function normalizeJobAssetKind(raw: unknown): JobAssetKind | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const clean = raw.trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if (clean === 'image' || clean === 'photo') return 'image';
+  if (clean === 'video') return 'video';
+  if (clean === 'carousel_slide' || clean === 'slide' || clean === 'carousel') return 'carousel_slide';
+  if (clean === 'flyer') return 'flyer';
+  if (clean === 'video_frame' || clean === 'frame') return 'video_frame';
+  if (clean === 'meme') return 'meme';
   return undefined;
+}
+
+export function normalizeJobAssetPlatform(raw: unknown): JobAssetPlatform | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const clean = raw.trim().toLowerCase();
+  if (clean === 'all') return 'all';
+  return normalizePlatformKey(clean);
+}
+
+export function normalizeJobAssetStatus(raw: unknown): JobAssetStatus | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const clean = raw.trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if (
+    clean === 'needed' ||
+    clean === 'in_progress' ||
+    clean === 'delivered' ||
+    clean === 'approved' ||
+    clean === 'rejected'
+  ) {
+    return clean;
+  }
+  return undefined;
+}
+
+export function getCardAssets(
+  card: Partial<
+    Pick<
+      PipelineCard,
+      'id' | 'assets' | 'assetUrl' | 'assetFile' | 'assetSpec' | 'photoStatus' | 'agentId' | 'createdAt' | 'updatedAt'
+    >
+  >
+): JobAsset[] {
+  if (Array.isArray(card.assets)) {
+    return [...card.assets].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }
+  if (card.assetUrl?.trim() || card.assetFile?.trim() || card.assetSpec?.trim()) {
+    const hasMedia = Boolean(card.assetUrl?.trim() || card.assetFile?.trim());
+    const status: JobAssetStatus =
+      card.photoStatus === 'verified'
+        ? 'approved'
+        : hasMedia
+          ? 'delivered'
+          : 'needed';
+    const nowFallback = card.updatedAt || card.createdAt || new Date().toISOString();
+    return [
+      {
+        id: `ast-legacy-${card.id || '0'}`,
+        url: card.assetUrl?.trim() || undefined,
+        file: card.assetFile?.trim() || undefined,
+        kind: 'image',
+        platform: 'all',
+        order: 0,
+        spec: card.assetSpec?.trim() || undefined,
+        status,
+        addedBy: card.agentId || 'marley',
+        createdAt: card.createdAt || nowFallback,
+        updatedAt: nowFallback,
+      },
+    ];
+  }
+  return [];
+}
+
+export function syncCardWithAssets<T extends Partial<PipelineCard>>(
+  card: T,
+  assets: JobAsset[]
+): T & { assets: JobAsset[]; assetUrl?: string; assetFile?: string; assetSpec?: string } {
+  const normalized = [...assets]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((a, idx) => ({ ...a, order: idx }));
+  const firstWithUrl = normalized.find((a) => Boolean(a.url?.trim()));
+  const firstWithFile = normalized.find((a) => Boolean(a.file?.trim()));
+  const first = normalized[0];
+  return {
+    ...card,
+    assets: normalized,
+    assetUrl: first?.url?.trim() || firstWithUrl?.url?.trim() || undefined,
+    assetFile: first?.file?.trim() || firstWithFile?.file?.trim() || undefined,
+    assetSpec: first?.spec?.trim() || undefined,
+  };
+}
+
+export function ensureCardAssetsMigrated(card: PipelineCard): PipelineCard {
+  const assets = getCardAssets(card);
+  return syncCardWithAssets(card, assets);
+}
+
+export function hasCardAsset(
+  card: Partial<
+    Pick<PipelineCard, 'id' | 'assets' | 'assetUrl' | 'assetFile' | 'assetSpec' | 'photoStatus' | 'agentId' | 'createdAt' | 'updatedAt'>
+  >
+): boolean {
+  const assets = getCardAssets(card);
+  if (assets.some((a) => Boolean(a.url?.trim() || a.file?.trim()))) return true;
+  return Boolean(card.assetUrl?.trim() || card.assetFile?.trim());
+}
+
+export function getCardAssetState(
+  card: Partial<
+    Pick<PipelineCard, 'id' | 'assets' | 'assetUrl' | 'assetFile' | 'assetSpec' | 'photoStatus' | 'agentId' | 'createdAt' | 'updatedAt'>
+  >
+): CardAssetState {
+  if (hasCardAsset(card)) return 'attached';
+  if (card.photoStatus === 'not_needed') return 'not_needed';
+  return 'missing';
+}
+
+export function isPhotoRequiredLane(lane: PipelineLane): boolean {
+  return lane === 'fb-ig' || lane === 'article';
+}
+
+export function resolveCardAssetPreviewSource(
+  card: Pick<PipelineCard, 'id' | 'assets' | 'assetUrl' | 'assetFile' | 'assetSpec' | 'photoStatus' | 'agentId' | 'createdAt' | 'updatedAt'>
+): string | undefined {
+  const assets = getCardAssets(card);
+  const firstUrl = assets.find((a) => a.url?.trim())?.url?.trim() || card.assetUrl?.trim();
+  if (firstUrl) return firstUrl;
+  const file = assets.find((a) => a.file?.trim())?.file?.trim() || card.assetFile?.trim();
+  if (file && (/^https?:\/\//i.test(file) || file.startsWith('/'))) {
+    return file;
+  }
+  return undefined;
+}
+
+export interface LivePostLink {
+  platform: PlatformKey | 'post';
+  label: string;
+  shortLabel: string;
+  href: string;
+}
+
+function inferPlatformFromUrl(url: string): PlatformKey | 'post' {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    if (host.includes('facebook.com') || host.includes('fb.watch')) return 'fb';
+    if (host.includes('instagram.com')) return 'ig';
+    if (host.includes('linkedin.com')) return 'linkedin';
+    if (host.includes('x.com') || host.includes('twitter.com')) return 'x';
+  } catch {
+    return 'post';
+  }
+  return 'post';
+}
+
+const PLATFORM_LINK_META: Record<PlatformKey | 'post', { label: string; shortLabel: string }> = {
+  fb: { label: 'Facebook', shortLabel: 'FB' },
+  ig: { label: 'Instagram', shortLabel: 'IG' },
+  linkedin: { label: 'LinkedIn', shortLabel: 'LI' },
+  x: { label: 'X', shortLabel: 'X' },
+  post: { label: 'Live Post', shortLabel: 'Post' },
+};
+
+export function splitTextWithUrls(
+  text: string
+): Array<{ type: 'text' | 'url'; value: string; trailing?: string }> {
+  if (!text) return [];
+  const out: Array<{ type: 'text' | 'url'; value: string; trailing?: string }> = [];
+  const regex = /https?:\/\/[^\s<>"'`]+/gi;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      out.push({ type: 'text', value: text.slice(lastIndex, match.index) });
+    }
+    let rawUrl = match[0];
+    let trailing = '';
+    while (rawUrl.length > 0 && /[.,;:!?)'"\]]$/.test(rawUrl)) {
+      const lastChar = rawUrl[rawUrl.length - 1];
+      if (lastChar === ')') {
+        const opens = (rawUrl.match(/\(/g) || []).length;
+        const closes = (rawUrl.match(/\)/g) || []).length;
+        if (closes <= opens) break;
+      }
+      trailing = lastChar + trailing;
+      rawUrl = rawUrl.slice(0, -1);
+    }
+    if (rawUrl) {
+      out.push({ type: 'url', value: rawUrl });
+    }
+    if (trailing) {
+      out.push({ type: 'text', value: trailing });
+    }
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    out.push({ type: 'text', value: text.slice(lastIndex) });
+  }
+  return out;
+}
+
+export function getCardPublishedLinks(
+  card: Pick<PipelineCard, 'links' | 'note' | 'stage'>
+): LivePostLink[] {
+  const results: LivePostLink[] = [];
+  const seen = new Set<string>();
+  const addLink = (platform: PlatformKey | 'post', href?: string) => {
+    const clean = href?.trim();
+    if (!clean || seen.has(clean)) return;
+    seen.add(clean);
+    const meta = PLATFORM_LINK_META[platform];
+    results.push({ platform, label: meta.label, shortLabel: meta.shortLabel, href: clean });
+  };
+
+  addLink('fb', card.links?.fb);
+  addLink('ig', card.links?.ig);
+  addLink('linkedin', card.links?.linkedin);
+  addLink('x', card.links?.x);
+
+  if (results.length === 0 && card.stage === 'posted' && card.note) {
+    for (const part of splitTextWithUrls(card.note)) {
+      if (part.type === 'url') {
+        addLink(inferPlatformFromUrl(part.value), part.value);
+      }
+    }
+  }
+
+  return results;
+}
+
+export interface CardCompletenessResult {
+  assetState: CardAssetState;
+  hasAsset: boolean;
+  hasCopy: boolean;
+  noImageNeeded: boolean;
+  canApproveReady: boolean;
+  assetCount: number;
+  lockReason:
+    | 'needs_photo'
+    | 'needs_copy'
+    | 'needs_copy_and_photo'
+    | 'asset_rejected'
+    | 'needs_asset_approval'
+    | 'needs_alt_text'
+    | 'needs_credit'
+    | null;
+  buttonReason: string | null;
+  detail: string | null;
+}
+
+/**
+ * Evaluates whether a pipeline card satisfies the completeness gate to enter Ready for Rotty.
+ * Requires final copy AND either:
+ * - Rotty's explicit "No image needed" exception (photoStatus === 'not_needed' with 0 assets), OR
+ * - At least one asset where EVERY asset is delivered+approved and has altText and credit.
+ */
+export function getCardCompleteness(
+  card: Partial<
+    Pick<
+      PipelineCard,
+      'id' | 'draftCopy' | 'assets' | 'assetUrl' | 'assetFile' | 'assetSpec' | 'photoStatus' | 'agentId' | 'createdAt' | 'updatedAt'
+    >
+  >
+): CardCompletenessResult {
+  const assets = getCardAssets(card);
+  const hasAsset = hasCardAsset(card);
+  const noImageNeeded = assets.length === 0 && !hasAsset && card.photoStatus === 'not_needed';
+  const assetState: CardAssetState = hasAsset ? 'attached' : noImageNeeded ? 'not_needed' : 'missing';
+  const hasCopy = Boolean(card.draftCopy?.trim());
+
+  if (!hasCopy && assets.length === 0 && !noImageNeeded) {
+    return {
+      assetState,
+      hasAsset,
+      hasCopy,
+      noImageNeeded,
+      canApproveReady: false,
+      assetCount: 0,
+      lockReason: 'needs_copy_and_photo',
+      buttonReason: 'Needs copy & photo',
+      detail: 'Final draft copy and an approved asset with alt text + credit (or explicit "No image needed") are required.',
+    };
+  }
+
+  if (assets.length === 0 && !noImageNeeded) {
+    return {
+      assetState,
+      hasAsset,
+      hasCopy,
+      noImageNeeded,
+      canApproveReady: false,
+      assetCount: 0,
+      lockReason: 'needs_photo',
+      buttonReason: 'Needs photo',
+      detail: 'Attach and approve at least one asset (with alt text + credit) or explicitly set "No image needed".',
+    };
+  }
+
+  if (assets.length > 0) {
+    const rejected = assets.filter((a) => a.status === 'rejected');
+    if (rejected.length > 0) {
+      return {
+        assetState,
+        hasAsset,
+        hasCopy,
+        noImageNeeded,
+        canApproveReady: false,
+        assetCount: assets.length,
+        lockReason: 'asset_rejected',
+        buttonReason: 'Asset rejected',
+        detail: `${rejected.length} asset${rejected.length === 1 ? ' is' : 's are'} rejected — replace or remove before Ready for Rotty.`,
+      };
+    }
+
+    const undelivered = assets.filter(
+      (a) => a.status === 'needed' || a.status === 'in_progress' || (!a.url?.trim() && !a.file?.trim())
+    );
+    if (undelivered.length > 0) {
+      return {
+        assetState,
+        hasAsset,
+        hasCopy,
+        noImageNeeded,
+        canApproveReady: false,
+        assetCount: assets.length,
+        lockReason: 'needs_photo',
+        buttonReason: 'Needs photo',
+        detail: `${undelivered.length} asset${undelivered.length === 1 ? ' is' : 's are'} still pending delivery.`,
+      };
+    }
+
+    const unapproved = assets.filter((a) => a.status !== 'approved');
+    if (unapproved.length > 0) {
+      return {
+        assetState,
+        hasAsset,
+        hasCopy,
+        noImageNeeded,
+        canApproveReady: false,
+        assetCount: assets.length,
+        lockReason: 'needs_asset_approval',
+        buttonReason: 'Needs asset approval',
+        detail: `${unapproved.length} asset${unapproved.length === 1 ? '' : 's'} awaiting Marley/Rotty approval.`,
+      };
+    }
+
+    const missingAlt = assets.filter((a) => !a.altText?.trim());
+    if (missingAlt.length > 0) {
+      return {
+        assetState,
+        hasAsset,
+        hasCopy,
+        noImageNeeded,
+        canApproveReady: false,
+        assetCount: assets.length,
+        lockReason: 'needs_alt_text',
+        buttonReason: 'Needs alt text',
+        detail: `${missingAlt.length} asset${missingAlt.length === 1 ? '' : 's'} missing required alt text.`,
+      };
+    }
+
+    const missingCredit = assets.filter((a) => !a.credit?.trim());
+    if (missingCredit.length > 0) {
+      return {
+        assetState,
+        hasAsset,
+        hasCopy,
+        noImageNeeded,
+        canApproveReady: false,
+        assetCount: assets.length,
+        lockReason: 'needs_credit',
+        buttonReason: 'Needs credit',
+        detail: `${missingCredit.length} asset${missingCredit.length === 1 ? '' : 's'} missing required credit.`,
+      };
+    }
+  }
+
+  if (!hasCopy) {
+    return {
+      assetState,
+      hasAsset,
+      hasCopy,
+      noImageNeeded,
+      canApproveReady: false,
+      assetCount: assets.length,
+      lockReason: 'needs_copy',
+      buttonReason: 'Needs copy',
+      detail: 'Final draft copy is required before marking Ready for Rotty.',
+    };
+  }
+
+  return {
+    assetState,
+    hasAsset,
+    hasCopy,
+    noImageNeeded,
+    canApproveReady: true,
+    assetCount: assets.length,
+    lockReason: null,
+    buttonReason: null,
+    detail: null,
+  };
+}
+
+export const ALLOWED_ASSET_FIELDS = new Set([
+  'id',
+  'url',
+  'driveUrl',
+  'assetLink',
+  'imageUrl',
+  'file',
+  'kind',
+  'platform',
+  'order',
+  'spec',
+  'altText',
+  'caption',
+  'credit',
+  'sourceUrl',
+  'label',
+  'status',
+  'rejectionReason',
+]);
+
+export function parseNewJobAssetInput(
+  input: Record<string, unknown>,
+  opts: {
+    addedBy: string;
+    defaultOrder: number;
+    canReviewAsset: boolean;
+    now?: string;
+  }
+): { ok: true; asset: JobAsset } | { ok: false; status: number; error: string } {
+  const unknown = findUnknownFields(input, ALLOWED_ASSET_FIELDS);
+  if (unknown.length > 0) {
+    return {
+      ok: false,
+      status: 400,
+      error: `Unknown asset field(s): ${unknown.join(', ')}`,
+    };
+  }
+
+  const now = opts.now || new Date().toISOString();
+  const rawUrl = input.url ?? input.driveUrl ?? input.assetLink ?? input.imageUrl;
+  const urlCheck = sanitizeWebOrBlobUrl(rawUrl, FIELD_MAX_LENGTHS.assetUrl);
+  if (!urlCheck.ok) return { ok: false, status: 400, error: `url: ${urlCheck.error}` };
+
+  const sourceUrlCheck = sanitizeWebOrBlobUrl(input.sourceUrl, FIELD_MAX_LENGTHS.sourceUrl);
+  if (!sourceUrlCheck.ok) {
+    return { ok: false, status: 400, error: `sourceUrl: ${sourceUrlCheck.error}` };
+  }
+
+  let file: string | undefined;
+  if (input.file !== undefined && input.file !== null) {
+    const check = validateStringLength('file', input.file, FIELD_MAX_LENGTHS.assetFile);
+    if (!check.ok) return { ok: false, status: 400, error: check.error };
+    file = check.value || undefined;
+  }
+
+  let spec: string | undefined;
+  if (input.spec !== undefined && input.spec !== null) {
+    const check = validateStringLength('spec', input.spec, FIELD_MAX_LENGTHS.assetSpec);
+    if (!check.ok) return { ok: false, status: 400, error: check.error };
+    spec = check.value || undefined;
+  }
+
+  let altText: string | undefined;
+  if (input.altText !== undefined && input.altText !== null) {
+    const check = validateStringLength('altText', input.altText, FIELD_MAX_LENGTHS.altText);
+    if (!check.ok) return { ok: false, status: 400, error: check.error };
+    altText = check.value || undefined;
+  }
+
+  let caption: string | undefined;
+  if (input.caption !== undefined && input.caption !== null) {
+    const check = validateStringLength('caption', input.caption, FIELD_MAX_LENGTHS.caption);
+    if (!check.ok) return { ok: false, status: 400, error: check.error };
+    caption = check.value || undefined;
+  }
+
+  let credit: string | undefined;
+  if (input.credit !== undefined && input.credit !== null) {
+    const check = validateStringLength('credit', input.credit, FIELD_MAX_LENGTHS.credit);
+    if (!check.ok) return { ok: false, status: 400, error: check.error };
+    credit = check.value || undefined;
+  }
+
+  let label: string | undefined;
+  if (input.label !== undefined && input.label !== null) {
+    const check = validateStringLength('label', input.label, FIELD_MAX_LENGTHS.label);
+    if (!check.ok) return { ok: false, status: 400, error: check.error };
+    label = check.value || undefined;
+  }
+
+  let rejectionReason: string | undefined;
+  if (input.rejectionReason !== undefined && input.rejectionReason !== null) {
+    const check = validateStringLength(
+      'rejectionReason',
+      input.rejectionReason,
+      FIELD_MAX_LENGTHS.rejectionReason
+    );
+    if (!check.ok) return { ok: false, status: 400, error: check.error };
+    rejectionReason = check.value || undefined;
+  }
+
+  let kind: JobAssetKind = 'image';
+  if (input.kind !== undefined && input.kind !== null && String(input.kind).trim() !== '') {
+    const parsedKind = normalizeJobAssetKind(input.kind);
+    if (!parsedKind) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'Invalid kind. Allowed: image, video, carousel_slide, flyer, video_frame, meme.',
+      };
+    }
+    kind = parsedKind;
+  }
+
+  let platform: JobAssetPlatform = 'all';
+  if (
+    input.platform !== undefined &&
+    input.platform !== null &&
+    String(input.platform).trim() !== ''
+  ) {
+    const parsedPlatform = normalizeJobAssetPlatform(input.platform);
+    if (!parsedPlatform) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'Invalid platform. Allowed: x, linkedin, fb, ig, all.',
+      };
+    }
+    platform = parsedPlatform;
+  }
+
+  const hasMedia = Boolean(urlCheck.value || file);
+  let status: JobAssetStatus = hasMedia ? 'delivered' : 'needed';
+  if (input.status !== undefined && input.status !== null && String(input.status).trim() !== '') {
+    const parsedStatus = normalizeJobAssetStatus(input.status);
+    if (!parsedStatus) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'Invalid status. Allowed: needed, in_progress, delivered, approved, rejected.',
+      };
+    }
+    if ((parsedStatus === 'approved' || parsedStatus === 'rejected') && !opts.canReviewAsset) {
+      return {
+        ok: false,
+        status: 403,
+        error: 'Only Marley or an authenticated /ops operator can approve or reject assets.',
+      };
+    }
+    status = parsedStatus;
+  }
+
+  let id = `ast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  if (input.id !== undefined && input.id !== null && String(input.id).trim() !== '') {
+    const idCheck = validateStringLength('id', input.id, 120);
+    if (!idCheck.ok) return { ok: false, status: 400, error: idCheck.error };
+    id = idCheck.value.replace(/[^a-zA-Z0-9_-]/g, '-');
+  }
+
+  const order =
+    typeof input.order === 'number' && Number.isFinite(input.order) && input.order >= 0
+      ? Math.round(input.order)
+      : opts.defaultOrder;
+
+  const isReviewed = status === 'approved' || status === 'rejected';
+  return {
+    ok: true,
+    asset: {
+      id,
+      url: urlCheck.value,
+      file,
+      kind,
+      platform,
+      order,
+      spec,
+      altText,
+      caption,
+      credit,
+      sourceUrl: sourceUrlCheck.value,
+      label,
+      status,
+      rejectionReason: status === 'rejected' ? rejectionReason : undefined,
+      reviewedBy: isReviewed ? opts.addedBy : undefined,
+      reviewedAt: isReviewed ? now : undefined,
+      addedBy: opts.addedBy,
+      createdAt: now,
+      updatedAt: now,
+    },
+  };
+}
+
+export function applyJobAssetPatch(
+  existing: JobAsset,
+  patch: Record<string, unknown>,
+  opts: {
+    actorName: string;
+    canReviewAsset: boolean;
+    now?: string;
+  }
+): { ok: true; asset: JobAsset } | { ok: false; status: number; error: string } {
+  const allowedPatchFields = new Set(ALLOWED_ASSET_FIELDS);
+  allowedPatchFields.delete('id');
+  const unknown = findUnknownFields(patch, allowedPatchFields);
+  if (unknown.length > 0) {
+    return {
+      ok: false,
+      status: 400,
+      error: `Unknown asset field(s): ${unknown.join(', ')}`,
+    };
+  }
+
+  const now = opts.now || new Date().toISOString();
+  const next: JobAsset = { ...existing, updatedAt: now };
+
+  const rawUrl =
+    patch.url !== undefined
+      ? patch.url
+      : patch.driveUrl !== undefined
+        ? patch.driveUrl
+        : patch.assetLink !== undefined
+          ? patch.assetLink
+          : patch.imageUrl;
+  if (rawUrl !== undefined) {
+    const urlCheck = sanitizeWebOrBlobUrl(rawUrl, FIELD_MAX_LENGTHS.assetUrl);
+    if (!urlCheck.ok) return { ok: false, status: 400, error: `url: ${urlCheck.error}` };
+    next.url = urlCheck.value;
+  }
+
+  if (patch.sourceUrl !== undefined) {
+    const sourceCheck = sanitizeWebOrBlobUrl(patch.sourceUrl, FIELD_MAX_LENGTHS.sourceUrl);
+    if (!sourceCheck.ok) {
+      return { ok: false, status: 400, error: `sourceUrl: ${sourceCheck.error}` };
+    }
+    next.sourceUrl = sourceCheck.value;
+  }
+
+  const textFields: Array<[keyof JobAsset, keyof typeof FIELD_MAX_LENGTHS]> = [
+    ['file', 'assetFile'],
+    ['spec', 'assetSpec'],
+    ['altText', 'altText'],
+    ['caption', 'caption'],
+    ['credit', 'credit'],
+    ['label', 'label'],
+    ['rejectionReason', 'rejectionReason'],
+  ];
+
+  for (const [field, maxKey] of textFields) {
+    const val = patch[field];
+    if (val === undefined) continue;
+    if (val === null || val === '') {
+      (next as unknown as Record<string, unknown>)[field] = undefined;
+      continue;
+    }
+    const check = validateStringLength(field, val, FIELD_MAX_LENGTHS[maxKey]);
+    if (!check.ok) return { ok: false, status: 400, error: check.error };
+    (next as unknown as Record<string, unknown>)[field] = check.value || undefined;
+  }
+
+  if (patch.kind !== undefined) {
+    const parsedKind = normalizeJobAssetKind(patch.kind);
+    if (!parsedKind) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'Invalid kind. Allowed: image, video, carousel_slide, flyer, video_frame, meme.',
+      };
+    }
+    next.kind = parsedKind;
+  }
+
+  if (patch.platform !== undefined) {
+    const parsedPlatform = normalizeJobAssetPlatform(patch.platform);
+    if (!parsedPlatform) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'Invalid platform. Allowed: x, linkedin, fb, ig, all.',
+      };
+    }
+    next.platform = parsedPlatform;
+  }
+
+  if (patch.order !== undefined) {
+    if (typeof patch.order !== 'number' || !Number.isFinite(patch.order) || patch.order < 0) {
+      return { ok: false, status: 400, error: 'order must be a non-negative number.' };
+    }
+    next.order = Math.round(patch.order);
+  }
+
+  if (patch.status !== undefined) {
+    const parsedStatus = normalizeJobAssetStatus(patch.status);
+    if (!parsedStatus) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'Invalid status. Allowed: needed, in_progress, delivered, approved, rejected.',
+      };
+    }
+    if ((parsedStatus === 'approved' || parsedStatus === 'rejected') && !opts.canReviewAsset) {
+      return {
+        ok: false,
+        status: 403,
+        error: 'Only Marley or an authenticated /ops operator can approve or reject assets.',
+      };
+    }
+    next.status = parsedStatus;
+    if (parsedStatus === 'approved' || parsedStatus === 'rejected') {
+      next.reviewedBy = opts.actorName;
+      next.reviewedAt = now;
+      if (parsedStatus === 'approved') next.rejectionReason = undefined;
+    }
+  } else if ((rawUrl !== undefined || patch.file !== undefined) && (next.url || next.file)) {
+    if (existing.status === 'needed' || existing.status === 'in_progress' || existing.status === 'rejected') {
+      next.status = 'delivered';
+      next.rejectionReason = undefined;
+    }
+  }
+
+  return { ok: true, asset: next };
 }
 
 export function applyEventDatePastFlag(
@@ -801,4 +1818,97 @@ export function applyEventDatePastFlag(
     cleaned.push(`FLAG: Past event date (${eventDate}) — verify before publishing.`);
   }
   return cleaned.length > 0 ? cleaned : undefined;
+}
+
+export function parseConnectorAlert(
+  raw: unknown,
+  now: string
+): { ok: true; value: ConnectorAlert | undefined } | { ok: false; error: string } {
+  if (raw === null || raw === '' || raw === false) {
+    return { ok: true, value: undefined };
+  }
+  if (typeof raw === 'string') {
+    const msgCheck = validateStringLength('connectorAlert', raw, 300);
+    if (!msgCheck.ok) return msgCheck;
+    const msg = msgCheck.value;
+    if (!msg) return { ok: true, value: undefined };
+    const lower = msg.toLowerCase();
+    if (lower === 'ok' || lower === 'clear' || lower === 'cleared' || lower === 'connected') {
+      return { ok: true, value: undefined };
+    }
+    const status: ConnectorAlertStatus = lower.includes('wrong')
+      ? 'wrong_account'
+      : lower.includes('disconnect') || lower.includes('logged out') || lower.includes('dropped')
+        ? 'disconnected'
+        : 'error';
+    return {
+      ok: true,
+      value: { status, message: msg, updatedAt: now },
+    };
+  }
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    return {
+      ok: false,
+      error: 'connectorAlert must be null, a message string, or { status, platform?, account?, expectedAccount?, message }.',
+    };
+  }
+
+  const obj = raw as Record<string, unknown>;
+  const rawStatus = typeof obj.status === 'string' ? obj.status.trim().toLowerCase().replace(/[\s-]+/g, '_') : '';
+  if (rawStatus === 'ok' || rawStatus === 'clear' || rawStatus === 'cleared' || rawStatus === 'connected') {
+    return { ok: true, value: undefined };
+  }
+  const status: ConnectorAlertStatus =
+    rawStatus === 'wrong_account' || rawStatus === 'disconnected' || rawStatus === 'error'
+      ? rawStatus
+      : rawStatus
+        ? 'error'
+        : 'disconnected';
+
+  let platform: string | undefined;
+  if (obj.platform !== undefined && obj.platform !== null && obj.platform !== '') {
+    const pCheck = validateStringLength('connectorAlert.platform', obj.platform, 40);
+    if (!pCheck.ok) return pCheck;
+    platform = pCheck.value || undefined;
+  }
+  let account: string | undefined;
+  if (obj.account !== undefined && obj.account !== null && obj.account !== '') {
+    const aCheck = validateStringLength('connectorAlert.account', obj.account, 80);
+    if (!aCheck.ok) return aCheck;
+    account = aCheck.value || undefined;
+  }
+  let expectedAccount: string | undefined;
+  if (obj.expectedAccount !== undefined && obj.expectedAccount !== null && obj.expectedAccount !== '') {
+    const eCheck = validateStringLength('connectorAlert.expectedAccount', obj.expectedAccount, 80);
+    if (!eCheck.ok) return eCheck;
+    expectedAccount = eCheck.value || undefined;
+  }
+
+  let message = '';
+  if (obj.message !== undefined && obj.message !== null) {
+    const mCheck = validateStringLength('connectorAlert.message', obj.message, 300);
+    if (!mCheck.ok) return mCheck;
+    message = mCheck.value;
+  }
+  if (!message) {
+    const target = platform ? platform.toUpperCase() : 'Connector';
+    message =
+      status === 'wrong_account'
+        ? `${target} landed on wrong account${account ? ` (${account})` : ''}${expectedAccount ? ` — expected ${expectedAccount}` : ''}`
+        : status === 'disconnected'
+          ? `${target} disconnected — reconnect required`
+          : `${target} connection error`;
+  }
+
+  return {
+    ok: true,
+    value: {
+      status,
+      platform,
+      account,
+      expectedAccount,
+      message,
+      updatedAt: now,
+    },
+  };
 }

@@ -160,6 +160,51 @@ rules_version = '2';
 //     - replyToId: string (optional)
 //     - createdAt: string (required, ISO-8601)
 //
+// Collection: ops_requests/{docId}
+//   Document ID: request item ID
+//   Fields:
+//     - id: string (required)
+//     - clientId: string (required, references ops_clients/{clientId})
+//     - title: string (required)
+//     - context: string (required)
+//     - preparedText: string (optional)
+//     - preparedUrl: string (optional)
+//     - preparedFile: string (optional)
+//     - jobId: string (optional)
+//     - jobTitle: string (optional)
+//     - raisedBy: string (required)
+//     - raisedByName: string (required)
+//     - raisedAt: string (required, ISO-8601)
+//     - relevantUntil: string (optional, ISO-8601)
+//     - urgency: string (optional, 'normal' | 'high' | 'urgent')
+//     - actions: list<map> (required, { id, label, tone? })
+//     - status: string (required, 'pending' | 'decided' | 'done' | 'dismissed' | 'expired')
+//     - decision: string (optional)
+//     - decisionLabel: string (optional)
+//     - decidedBy: string (optional)
+//     - decidedAt: string (optional, ISO-8601)
+//     - outcomeNote: string (optional)
+//     - outcomeUrl: string (optional)
+//     - completedBy: string (optional)
+//     - completedAt: string (optional, ISO-8601)
+//     - createdAt: string (required, ISO-8601)
+//     - updatedAt: string (required, ISO-8601)
+//
+// Collection: ops_asset_blobs/{docId}
+//   Document ID: asset blob ID (small hosted image copies of Command Center job assets)
+//   Fields:
+//     - id: string (required)
+//     - clientId: string (required, references ops_clients/{clientId})
+//     - jobId: string (optional)
+//     - assetId: string (optional)
+//     - mimeType / contentType: string (optional, e.g. 'image/jpeg' | 'image/png' | 'image/webp')
+//     - data / bytes / base64: string or bytes (small hosted image payload, within Firestore 1 MiB doc limit)
+//     - width: number (optional)
+//     - height: number (optional)
+//     - sizeBytes: number (optional)
+//     - createdAt: string (required, ISO-8601)
+//     - updatedAt: string (optional, ISO-8601)
+//
 // ===============================================================
 
 service cloud.firestore {
@@ -309,6 +354,21 @@ service cloud.firestore {
     // Command Center chat messages: readable only by the owner or verified
     // members of the referenced `clientId` workspace. All client writes denied.
     match /ops_chat/{docId} {
+      allow get, list: if isOpsOwner() || isClientScopedMember(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // Operator requests / decision cards: readable only by the owner or verified
+    // members of the referenced `clientId` workspace. All client writes denied.
+    match /ops_requests/{docId} {
+      allow get, list: if isOpsOwner() || isClientScopedMember(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // Hosted image copies of Command Center job assets: readable only by the
+    // owner or verified members of the referenced `clientId` workspace.
+    // All client writes are denied.
+    match /ops_asset_blobs/{docId} {
       allow get, list: if isOpsOwner() || isClientScopedMember(resource.data);
       allow create, update, delete: if false;
     }

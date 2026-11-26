@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import {
   authorizeBotOrOpsUser,
   canUserAccessClient,
+  canonicalCrewDisplayName,
   forbiddenResponse,
   resolveBotTargetClientId,
   unauthorizedResponse,
@@ -156,6 +157,12 @@ export async function POST(request: Request) {
   }
 
   const senderId = actor.user ? 'rotty' : inferAgentId(actor.actorName);
+  const senderCrew = !actor.user
+    ? await opsGetDoc<CrewMember>('ops_crew', `${clientId}__${senderId}`)
+    : null;
+  const senderName = actor.user
+    ? 'Rotty'
+    : senderCrew?.name || canonicalCrewDisplayName(actor.actorName) || actor.actorName;
   const mentions = extractChatMentions(text, body.to ?? body.mentions);
   const replyToId =
     typeof body.replyToId === 'string' && body.replyToId.trim()
@@ -166,7 +173,7 @@ export async function POST(request: Request) {
     id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     clientId,
     senderId,
-    senderName: actor.user ? 'Rotty' : actor.actorName,
+    senderName,
     senderKind: actor.user ? 'operator' : 'bot',
     text,
     mentions,
