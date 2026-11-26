@@ -50,6 +50,7 @@ export interface CrewMember {
   statusNote?: string;
   usagePct?: number;
   resetNote?: string;
+  lastChatReadAt?: string;
   updatedAt: string;
   updatedBy: string;
 }

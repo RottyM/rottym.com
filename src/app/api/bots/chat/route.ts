@@ -14,7 +14,7 @@ import {
   opsQueryByClient,
   opsSetDoc,
 } from '@/lib/ops/firestore-rest';
-import type { ChatMessage, PipelineCard } from '@/lib/ops/types';
+import type { ChatMessage, CrewMember, PipelineCard } from '@/lib/ops/types';
 
 const NO_STORE_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
@@ -50,15 +50,25 @@ export async function GET(request: Request) {
   const since = searchParams.get('since')?.trim() || '';
   const mention = searchParams.get('mention')?.trim() || '';
   const jobId = searchParams.get('jobId')?.trim() || '';
+  const unreadOnly = searchParams.get('unread') === 'true';
+  const peekOnly = searchParams.get('peek') === 'true';
+  const includeSelf = searchParams.get('includeSelf') === 'true';
   const rawLimit = Number(searchParams.get('limit') || '50');
   const limit = Number.isFinite(rawLimit) ? Math.max(1, Math.min(100, Math.round(rawLimit))) : 50;
+
+  const readerId = inferAgentId(actor.user && mention ? mention : actor.actorName);
+  const crewDoc = unreadOnly
+    ? await opsGetDoc<CrewMember>('ops_crew', `${clientId}__${readerId}`)
+    : null;
+  const effectiveSince = since || (unreadOnly ? crewDoc?.lastChatReadAt || '' : '');
 
   const all = await opsQueryByClient<ChatMessage>('ops_chat', clientId);
   const mentionKey = mention ? normalizeMentionKey(mention) : '';
 
   const filtered = all
     .filter((msg) => {
-      if (since && msg.createdAt <= since) return false;
+      if (effectiveSince && msg.createdAt <= effectiveSince) return false;
+      if (unreadOnly && !includeSelf && msg.senderId === readerId) return false;
       if (jobId && msg.jobId !== jobId) return false;
       if (mentionKey) {
         const msgMentions = msg.mentions || [];
@@ -71,9 +81,22 @@ export async function GET(request: Request) {
     .sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
 
   const messages = filtered.slice(-limit);
+  const newestAt = messages[messages.length - 1]?.createdAt || '';
+
+  if (unreadOnly && !peekOnly && crewDoc && newestAt && newestAt > (crewDoc.lastChatReadAt || '')) {
+    await opsSetDoc('ops_crew', crewDoc.id, {
+      ...crewDoc,
+      lastChatReadAt: newestAt,
+    } as unknown as Record<string, unknown>);
+  }
 
   return NextResponse.json(
-    { clientId, count: messages.length, messages },
+    {
+      clientId,
+      count: messages.length,
+      cursor: newestAt || effectiveSince || null,
+      messages,
+    },
     { status: 200, headers: NO_STORE_HEADERS }
   );
 }
