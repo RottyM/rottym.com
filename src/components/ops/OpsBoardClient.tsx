@@ -2225,12 +2225,38 @@ function normalizeChatHandle(raw?: string): string {
   return (raw || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+const EXTRA_CHIP_ACCENTS = [
+  {
+    dotCls: 'bg-sky-400',
+    tagCls: 'text-sky-700 dark:text-sky-300',
+    accentBorderL: 'border-l-sky-500/80',
+    accentBorderR: 'border-r-sky-500/70',
+    accentText: 'text-sky-700 dark:text-sky-300',
+  },
+  {
+    dotCls: 'bg-rose-400',
+    tagCls: 'text-rose-700 dark:text-rose-300',
+    accentBorderL: 'border-l-rose-500/80',
+    accentBorderR: 'border-r-rose-500/70',
+    accentText: 'text-rose-700 dark:text-rose-300',
+  },
+  {
+    dotCls: 'bg-emerald-400',
+    tagCls: 'text-emerald-700 dark:text-emerald-300',
+    accentBorderL: 'border-l-emerald-500/80',
+    accentBorderR: 'border-r-emerald-500/70',
+    accentText: 'text-emerald-700 dark:text-emerald-300',
+  },
+];
+
 function getChatAccentByHandle(handle?: string) {
   const norm = normalizeChatHandle(handle);
-  return (
-    CHAT_TARGET_CHIPS.find((c) => c.key !== 'all' && normalizeChatHandle(c.key) === norm) ||
-    CHAT_TARGET_CHIPS[0]
-  );
+  const preset = CHAT_TARGET_CHIPS.find((c) => c.key !== 'all' && normalizeChatHandle(c.key) === norm);
+  if (preset) return preset;
+  if (!norm) return CHAT_TARGET_CHIPS[0];
+  let hash = 0;
+  for (let i = 0; i < norm.length; i++) hash = (hash * 31 + norm.charCodeAt(i)) >>> 0;
+  return { ...CHAT_TARGET_CHIPS[0], ...EXTRA_CHIP_ACCENTS[hash % EXTRA_CHIP_ACCENTS.length] };
 }
 
 const CHAT_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -2498,8 +2524,38 @@ function CrewChatPanel({
     return map;
   }, [crew]);
 
+  const chatTargetChips = useMemo(() => {
+    const base = [...CHAT_TARGET_CHIPS];
+    const seen = new Set(base.map((c) => normalizeChatHandle(c.key)));
+    const activeChatHandles = new Set<string>();
+    for (const m of messages) {
+      activeChatHandles.add(normalizeChatHandle(m.senderId));
+      for (const t of m.mentions || []) activeChatHandles.add(normalizeChatHandle(t));
+    }
+    for (const m of crew) {
+      const id = m.agentId;
+      const norm = normalizeChatHandle(id);
+      if (!norm || norm === 'rotty' || seen.has(norm)) continue;
+      if (m.status !== 'active' && m.status !== 'on_call' && !activeChatHandles.has(norm)) continue;
+      seen.add(norm);
+      const token = `@${m.name.replace(/\s+/g, '')}`;
+      const accent = getChatAccentByHandle(id);
+      base.push({
+        key: id,
+        label: token,
+        mentionToken: token,
+        dotCls: accent.dotCls,
+        tagCls: accent.tagCls,
+        accentBorderL: accent.accentBorderL,
+        accentBorderR: accent.accentBorderR,
+        accentText: accent.accentText,
+      });
+    }
+    return base;
+  }, [crew, messages]);
+
   const activeChipLabel =
-    CHAT_TARGET_CHIPS.find((c) => c.key === targetMention)?.label || '@All';
+    chatTargetChips.find((c) => c.key === targetMention)?.label || '@All';
 
   const chatAlerts = useMemo(() => {
     const channelAlert = new Map<string, UpdateAlertKind>();
@@ -2515,7 +2571,7 @@ function CrewChatPanel({
         normalizeChatHandle(m.senderName),
         ...(m.mentions || []).map((t) => normalizeChatHandle(t)),
       ]);
-      for (const chip of CHAT_TARGET_CHIPS) {
+      for (const chip of chatTargetChips) {
         if (chip.key === 'all') continue;
         if (handles.has(normalizeChatHandle(chip.key))) {
           const prev = channelAlert.get(chip.key);
@@ -2525,7 +2581,7 @@ function CrewChatPanel({
     }
     if (overallKind) channelAlert.set('all', overallKind);
     return { channelAlert, overallKind, activeCount };
-  }, [messages, highlightKinds]);
+  }, [messages, highlightKinds, chatTargetChips]);
 
   const headerAlertMeta = getUpdateAlertMeta(chatAlerts.overallKind);
 
@@ -2568,7 +2624,7 @@ function CrewChatPanel({
         </div>
 
         <nav aria-label="Crew chat filters" className="flex items-center gap-1 overflow-x-auto ops-scroll pb-0.5">
-          {CHAT_TARGET_CHIPS.map((chip) => {
+          {chatTargetChips.map((chip) => {
             const active = targetMention === chip.key;
             const chipAlert = getUpdateAlertMeta(chatAlerts.channelAlert.get(chip.key));
             return (
@@ -3048,7 +3104,7 @@ function CrewChatPanel({
       <div className="border-t border-border/80 bg-card/95 px-3 py-1.5 flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-1.5 overflow-x-auto ops-scroll">
           <span className="text-[10px] font-mono text-muted-foreground uppercase shrink-0">Tags:</span>
-          {CHAT_TARGET_CHIPS.filter((c) => c.key !== 'all').map((chip) => (
+          {chatTargetChips.filter((c) => c.key !== 'all').map((chip) => (
             <button
               key={`tag-${chip.key}`}
               type="button"

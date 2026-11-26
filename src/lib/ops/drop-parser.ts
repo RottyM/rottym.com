@@ -133,13 +133,21 @@ export function inferAgentId(raw: string | undefined, filename = ''): string {
   if (v.startsWith('marley') || v === 'marley') return 'marley';
   if (v.startsWith('cheatcode') || v.startsWith('cheat-code') || v.includes('cheat')) return 'cheat-code';
   if (v.startsWith('pixel') || v === 'pixel') return 'pixel';
+  if (v.startsWith('bassline') || v === 'bassline') return 'bassline';
+  if (v.startsWith('turbo') || v === 'turbo') return 'turbo';
   if (v.startsWith('glitch') || v === 'glitch') return 'glitch';
   if (v.startsWith('bastion') || v === 'bastion') return 'bastion';
   if (v.startsWith('cortex') || v === 'cortex') return 'cortex';
   if (v.startsWith('gemini') || v === 'gemini-watch') return 'gemini-watch';
   if (v.startsWith('splicer') || v === 'splicer') return 'splicer';
   if (v.startsWith('antigravity') || v === 'antigravity') return 'antigravity';
-  return 'cheat-code';
+  if (!v) return 'cheat-code';
+  const slug = v
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9_-]+/g, '')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+  return slug || 'cheat-code';
 }
 
 function normalizeStage(raw: string | undefined, filename: string, body: string): PipelineStage {
@@ -176,7 +184,7 @@ function extractFirstUrl(raw: string): string | undefined {
 function humanizeFilename(filename: string): string {
   const stem = filename.replace(/^.*[\\/]/, '').replace(/\.[^.]+$/, '');
   const cleaned = stem
-    .replace(/^(Sovereign|Marley|CheatCode|Cheat-Code|Glitch|Pixel|Bastion|Cortex|Gemini|Splicer|Antigravity)-/i, '')
+    .replace(/^(Sovereign|Marley|CheatCode|Cheat-Code|Bassline|Turbo|Glitch|Pixel|Bastion|Cortex|Gemini|Splicer|Antigravity)-/i, '')
     .replace(/^\d{4}-\d{2}-\d{2}-/, '')
     .replace(/[-_]+/g, ' ')
     .trim();

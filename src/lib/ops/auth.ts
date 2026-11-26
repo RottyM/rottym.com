@@ -149,6 +149,7 @@ export interface BotActor {
 
 const CANONICAL_CREW_NAMES: Record<string, string> = {
   antigravity: 'Antigravity',
+  bassline: 'Bassline',
   bastion: 'Bastion',
   cheatcode: 'Cheat Code',
   cheatcodes: 'Cheat Code',
@@ -159,6 +160,7 @@ const CANONICAL_CREW_NAMES: Record<string, string> = {
   pixel: 'Pixel',
   sovereign: 'Sovereign',
   splicer: 'Splicer',
+  turbo: 'Turbo',
 };
 
 export function canonicalCrewDisplayName(raw: string): string {
