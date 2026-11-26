@@ -44,6 +44,7 @@ import type {
   PipelineLane,
   PipelineStage,
 } from '@/lib/ops/types';
+import { resolveAvatarRenderUrl } from '@/lib/ops/drop-parser';
 import OpsBrandMark from './OpsBrandMark';
 import OpsDeskPanel from './OpsDeskPanel';
 import { OpsModalHost, type OpsModalState } from './OpsModals';
@@ -976,27 +977,55 @@ function CrewGroupCard({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {members.map((m) => {
           const badge = AGENT_BADGE[m.status] || AGENT_BADGE.active;
+          const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
+          const initials =
+            m.name
+              .split(/\s+/)
+              .slice(0, 2)
+              .map((w) => w[0]?.toUpperCase() || '')
+              .join('') || '?';
           return (
             <button
               key={m.id}
               type="button"
               onClick={() => onSelect(m)}
-              className="text-left rounded-lg border border-border bg-background/60 hover:border-accent/60 p-2.5 transition-colors space-y-1"
+              className="text-left rounded-lg border border-border bg-background/60 hover:border-accent/60 p-2.5 transition-colors space-y-1.5"
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold text-foreground truncate">{m.name}</span>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="relative w-8 h-8 rounded-full border border-border bg-accent/15 text-accent font-mono text-[11px] font-bold flex items-center justify-center shrink-0 overflow-hidden">
+                    <span>{initials}</span>
+                    {avatarSrc && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={avatarSrc}
+                        alt={m.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-foreground truncate">{m.name}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {m.role} · {m.model}
+                    </div>
+                  </div>
+                </div>
                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono border shrink-0 ${badge.cls}`}>
                   {badge.label}
                 </span>
               </div>
-              <div className="text-[11px] text-muted-foreground truncate">
-                {m.role} · {m.model}
-              </div>
+              {m.bio && (
+                <div className="text-[11px] text-muted-foreground/90 italic truncate">{m.bio}</div>
+              )}
               {m.statusNote && (
                 <div className="text-[11px] text-foreground/80 truncate">{m.statusNote}</div>
               )}
               {typeof m.usagePct === 'number' && (
-                <div className="pt-1">
+                <div className="pt-0.5">
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <div
                       className={`h-full ${m.usagePct >= 85 ? 'bg-amber-500' : 'bg-accent'}`}

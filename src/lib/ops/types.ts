@@ -40,6 +40,8 @@ export interface CrewMember {
   model: string;
   engine: Exclude<EngineFamily, 'all'>;
   role: string;
+  avatarUrl?: string;
+  bio?: string;
   status: AgentStatus;
   statusNote?: string;
   usagePct?: number;

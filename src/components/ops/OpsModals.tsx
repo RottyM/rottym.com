@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { X, Check, Trash2, Send, Sparkles, ExternalLink, AlertTriangle } from 'lucide-react';
+import { resolveAvatarRenderUrl } from '@/lib/ops/drop-parser';
 import type {
   AgentStatus,
   CrewMember,
@@ -411,19 +412,51 @@ function CrewEditorForm({
   const [model, setModel] = useState(member?.model || 'Grok');
   const [engine, setEngine] = useState<Exclude<EngineFamily, 'all'>>(member?.engine || 'grok');
   const [setGroup, setSetGroup] = useState<CrewSet>(member?.set || defaultSet);
+  const [bio, setBio] = useState(member?.bio || '');
+  const [avatarUrl, setAvatarUrl] = useState(member?.avatarUrl || '');
   const [status, setStatus] = useState<AgentStatus>(member?.status || 'active');
   const [statusNote, setStatusNote] = useState(member?.statusNote || '');
   const [usagePct, setUsagePct] = useState(member?.usagePct !== undefined ? String(member.usagePct) : '');
   const [resetNote, setResetNote] = useState(member?.resetNote || '');
   const [confirmRemove, setConfirmRemove] = useState(false);
 
+  const previewAvatarSrc = resolveAvatarRenderUrl(avatarUrl);
+  const initials =
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() || '')
+      .join('') || '?';
+
   return (
     <div className="space-y-4">
-      {member && (
-        <div className="text-[11px] font-mono text-muted-foreground">
-          Agent ID: <span className="text-foreground">{member.agentId}</span>
+      <div className="flex items-center gap-3">
+        <div className="relative w-11 h-11 rounded-full border border-border bg-accent/15 text-accent font-mono text-xs font-bold flex items-center justify-center shrink-0 overflow-hidden">
+          <span>{initials}</span>
+          {previewAvatarSrc && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={previewAvatarSrc}
+              alt={name || 'Crew avatar'}
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
         </div>
-      )}
+        <div className="text-[11px] text-muted-foreground min-w-0">
+          {member ? (
+            <div className="font-mono">
+              Agent ID: <span className="text-foreground">{member.agentId}</span>
+            </div>
+          ) : (
+            <div>New crew profile card</div>
+          )}
+          <div className="truncate">Bots can update their own photo &amp; bio via /api/bots/crew.</div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
@@ -442,6 +475,27 @@ function CrewEditorForm({
             value={role}
             onChange={(e) => setRole(e.target.value)}
             placeholder="e.g., LinkedIn drafts & research"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className={LABEL_CLS}>Bio / Tagline</label>
+          <input
+            className={INPUT_CLS}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="e.g., Clearance hawk. Zero unverified claims."
+          />
+        </div>
+        <div>
+          <label className={LABEL_CLS}>Avatar Photo URL (HTTPS or Drive link)</label>
+          <input
+            className={INPUT_CLS}
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="https://drive.google.com/file/d/..."
           />
         </div>
       </div>
@@ -568,6 +622,8 @@ function CrewEditorForm({
             onSave({
               name: name.trim(),
               role: role.trim(),
+              bio: bio.trim(),
+              avatarUrl: avatarUrl.trim(),
               model: model.trim(),
               engine,
               set: setGroup,

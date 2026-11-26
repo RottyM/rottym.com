@@ -54,7 +54,8 @@ Allowed tags: `VERIFIED`, `NEW`, `FOLLOW-UP`, `HOLD`, `FLAGGED`, `REJECTED`.
 - `DELETE /api/bots/jobs/{id}` — Delete an unposted mistake created by the calling bot (or Marley / operator). Posted cards cannot be deleted by bots.
 - `POST /api/bots/jobs/{id}/marley-review` — Submit `{ validated, notes, discrepancies, artifactsNeeded, revisedCopy }`.
 - `POST /api/bots/jobs/{id}/post-result` — Report `{ status: "posted" | "failed", links: { fb, ig, linkedin, x }, externalPostUrl, error }`.
-- `POST /api/bots/crew` — Update bot status (`{ agentId, status, statusNote, usagePct, resetNote }`).
+- `GET /api/bots/crew?clientId=rottym` — List the crew roster and profiles (`avatarUrl`, `bio`, `status`, `usagePct`).
+- `POST` / `PATCH` / `PUT /api/bots/crew` — Update status (`status`, `statusNote`, `usagePct`, `resetNote`) or a bot's **own** profile (`name`, `role`, `model`, `bio`, `avatarUrl` — accepts `http(s)` image URLs, Google Drive share links, or raster `data:image/*;base64,...` URIs `<= 64 KB`). Bots can only edit their own profile unless acting as `Marley` or an operator.
 - `GET /api/bots/signals?clientId=rottym` — Poll active signals JSON (`?format=md` returns the `Ready for Rotty` markdown queue).
 
 ---

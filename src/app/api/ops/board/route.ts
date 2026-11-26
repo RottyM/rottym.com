@@ -5,7 +5,13 @@ import {
   forbiddenResponse,
   unauthorizedResponse,
 } from '@/lib/ops/auth';
-import { laneToChannel, normalizeLane, parseAdminPasteBlock, parseMultiItemDeskList } from '@/lib/ops/drop-parser';
+import {
+  laneToChannel,
+  normalizeLane,
+  parseAdminPasteBlock,
+  parseMultiItemDeskList,
+  sanitizeAvatarUrl,
+} from '@/lib/ops/drop-parser';
 import {
   appendOpsActivity,
   ensureOpsSeeded,
@@ -119,6 +125,12 @@ export async function POST(request: Request) {
       ? (body.engine as Exclude<EngineFamily, 'all'>)
       : existing.engine;
     const nextSet = VALID_CREW_SETS.has(body.set as CrewSet) ? (body.set as CrewSet) : existing.set;
+    const nextAvatarUrl =
+      body.avatarUrl !== undefined
+        ? sanitizeAvatarUrl(body.avatarUrl)
+        : existing.avatarUrl;
+    const nextBio =
+      typeof body.bio === 'string' ? body.bio.trim().slice(0, 160) || undefined : existing.bio;
 
     const updated: CrewMember = {
       ...existing,
@@ -127,6 +139,8 @@ export async function POST(request: Request) {
       model: nextModel,
       engine: nextEngine,
       set: nextSet,
+      avatarUrl: nextAvatarUrl,
+      bio: nextBio,
       status: nextStatus,
       statusNote:
         typeof body.statusNote === 'string'
@@ -184,6 +198,8 @@ export async function POST(request: Request) {
         typeof body.role === 'string' && body.role.trim()
           ? body.role.trim().slice(0, 100)
           : 'Content agent',
+      avatarUrl: sanitizeAvatarUrl(body.avatarUrl),
+      bio: typeof body.bio === 'string' ? body.bio.trim().slice(0, 160) || undefined : undefined,
       status: VALID_AGENT_STATUSES.has(body.status as AgentStatus)
         ? (body.status as AgentStatus)
         : 'active',

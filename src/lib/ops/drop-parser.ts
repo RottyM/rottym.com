@@ -630,6 +630,37 @@ export function cleanBotStringList(raw: unknown): string[] | undefined {
     .slice(0, 8);
 }
 
+export function sanitizeAvatarUrl(raw: unknown): string | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const trimmed = raw.trim();
+  if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed)) {
+    return trimmed.length <= 65536 ? trimmed : undefined;
+  }
+  try {
+    const u = new URL(trimmed);
+    if (u.protocol === 'https:' || u.protocol === 'http:') {
+      return u.toString().slice(0, 600);
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
+export function resolveAvatarRenderUrl(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  const trimmed = raw.trim();
+  const driveFileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i);
+  if (driveFileMatch) {
+    return `https://drive.google.com/thumbnail?id=${driveFileMatch[1]}&sz=w256`;
+  }
+  const driveOpenMatch = trimmed.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([a-zA-Z0-9_-]+)/i);
+  if (driveOpenMatch) {
+    return `https://drive.google.com/thumbnail?id=${driveOpenMatch[1]}&sz=w256`;
+  }
+  return trimmed;
+}
+
 export function syncVisualArtifactsNeeded(
   baseArtifacts: string[] | undefined,
   explicitArtifacts: string[] | undefined,
