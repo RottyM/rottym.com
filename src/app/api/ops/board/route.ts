@@ -1115,7 +1115,10 @@ export async function POST(request: Request) {
         );
       }
       const postCompleteness = getCardCompleteness(existing);
-      if (!postCompleteness.canApproveReady) {
+      const operatorMetaBypass =
+        postCompleteness.lockReason === 'needs_alt_text' ||
+        postCompleteness.lockReason === 'needs_credit';
+      if (!postCompleteness.canApproveReady && !operatorMetaBypass) {
         return NextResponse.json(
           {
             error: `Cannot Post it — card is incomplete: ${postCompleteness.detail}`,

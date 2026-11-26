@@ -75,10 +75,11 @@ import { OpsModalHost, type OpsModalState } from './OpsModals';
 type BoardColumnId = PipelineStage | 'ready';
 
 function isCardReady(c: PipelineCard): boolean {
-  return (
-    c.stage === 'approved' &&
-    Boolean(c.readyForRotty) &&
-    getCardCompleteness(c).canApproveReady
+  if (c.stage !== 'approved' || !c.readyForRotty) return false;
+  const comp = getCardCompleteness(c);
+  if (comp.canApproveReady) return true;
+  return Boolean(
+    c.postIt && (comp.lockReason === 'needs_alt_text' || comp.lockReason === 'needs_credit')
   );
 }
 

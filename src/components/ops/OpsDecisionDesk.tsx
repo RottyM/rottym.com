@@ -68,10 +68,11 @@ type DeskItem =
   | { kind: 'request'; key: string; request: OpsRequest };
 
 function isReadyItem(card: PipelineCard): boolean {
-  return (
-    card.stage === 'approved' &&
-    Boolean(card.readyForRotty) &&
-    getCardCompleteness(card).canApproveReady
+  if (card.stage !== 'approved' || !card.readyForRotty) return false;
+  const comp = getCardCompleteness(card);
+  if (comp.canApproveReady) return true;
+  return Boolean(
+    card.postIt && (comp.lockReason === 'needs_alt_text' || comp.lockReason === 'needs_credit')
   );
 }
 
@@ -265,6 +266,15 @@ export default function OpsDecisionDesk({
   const [assignAssetKind, setAssignAssetKind] = useState<JobAssetKind>('image');
   const [assignAssetPlatform, setAssignAssetPlatform] = useState<JobAssetPlatform>('all');
   const [assignAssetSpec, setAssignAssetSpec] = useState('');
+  const [metaEditAssetId, setMetaEditAssetId] = useState<string | null>(null);
+  const [metaEditAlt, setMetaEditAlt] = useState('');
+  const [metaEditCredit, setMetaEditCredit] = useState('');
+  const openAssetMetaEditor = (asset: JobAsset) => {
+    setFocusedAssetId(asset.id);
+    setMetaEditAssetId(asset.id);
+    setMetaEditAlt(asset.altText || '');
+    setMetaEditCredit(asset.credit || '');
+  };
   const effectiveAssignBot =
     assignAssetBot ||
     crew.find((c) => c.agentId === 'pixel')?.agentId ||
@@ -1211,6 +1221,50 @@ export default function OpsDecisionDesk({
                               </div>
                             )}
 
+                            {metaEditAssetId === focusedAsset.id &&
+                              selectedCard.stage !== 'posted' &&
+                              selectedCard.stage !== 'archived' && (
+                                <div className="rounded-lg border border-accent/40 bg-background/85 p-2 space-y-1.5">
+                                  <input
+                                    type="text"
+                                    value={metaEditAlt}
+                                    onChange={(e) => setMetaEditAlt(e.target.value)}
+                                    placeholder="Alt text description (for accessibility / Ready gate)"
+                                    className="w-full px-2 py-1 rounded text-[11px] bg-card border border-border text-foreground focus:outline-none focus:border-accent"
+                                  />
+                                  <div className="flex flex-wrap items-center gap-1.5">
+                                    <input
+                                      type="text"
+                                      value={metaEditCredit}
+                                      onChange={(e) => setMetaEditCredit(e.target.value)}
+                                      placeholder="Credit (e.g. Photo: Coinkite)"
+                                      className="flex-1 min-w-[140px] px-2 py-1 rounded text-[11px] bg-card border border-border text-foreground focus:outline-none focus:border-accent"
+                                    />
+                                    <button
+                                      type="button"
+                                      disabled={busy}
+                                      onClick={async () => {
+                                        await onUpdateAsset(selectedCard, focusedAsset.id, {
+                                          altText: metaEditAlt.trim(),
+                                          credit: metaEditCredit.trim(),
+                                        });
+                                        setMetaEditAssetId(null);
+                                      }}
+                                      className="px-2.5 py-1 rounded text-[10px] font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
+                                    >
+                                      Save Alt/Credit
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setMetaEditAssetId(null)}
+                                      className="px-2 py-1 rounded text-[10px] border border-border text-muted-foreground hover:text-foreground"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
                             <div className="flex flex-wrap items-center gap-1.5 pt-1">
                               <button
                                 type="button"
@@ -1219,6 +1273,22 @@ export default function OpsDecisionDesk({
                               >
                                 Full size
                               </button>
+                              {selectedCard.stage !== 'posted' && selectedCard.stage !== 'archived' && (
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  onClick={() =>
+                                    metaEditAssetId === focusedAsset.id
+                                      ? setMetaEditAssetId(null)
+                                      : openAssetMetaEditor(focusedAsset)
+                                  }
+                                  className="px-2 py-0.5 rounded border border-border bg-background hover:border-accent text-[10px] font-mono text-foreground disabled:opacity-50"
+                                >
+                                  {!focusedAsset.altText || !focusedAsset.credit
+                                    ? 'Add Alt / Credit'
+                                    : 'Edit Alt / Credit'}
+                                </button>
+                              )}
                               {selectedCard.stage !== 'posted' && selectedCard.stage !== 'archived' && (
                                 <>
                                   {focusedAsset.status !== 'approved' && (
@@ -1716,6 +1786,42 @@ export default function OpsDecisionDesk({
                             setFocusedAssetId(null);
                           }}
                           title="Mark Ready and arm Post it right away"
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          Post it
+                        </button>
+                      </div>
+                    ) : (selectedCompleteness.lockReason === 'needs_alt_text' ||
+                        selectedCompleteness.lockReason === 'needs_credit') ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {(() => {
+                          const targetAsset =
+                            selectedCardAssets.find((a) => !a.altText?.trim() || !a.credit?.trim()) ||
+                            focusedAsset;
+                          return (
+                            targetAsset && (
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => openAssetMetaEditor(targetAsset)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono border border-amber-500/45 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 disabled:opacity-50"
+                              >
+                                Fix Alt / Credit
+                              </button>
+                            )
+                          );
+                        })()}
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={async () => {
+                            const nextKey = nextItemKeyAfter(`post:${selectedCard.id}`);
+                            await onPostIt(selectedCard);
+                            setSelectedKey(nextKey);
+                            setFocusedAssetId(null);
+                          }}
+                          title="Copy and approved visual are ready — fire Post it now without waiting for alt text/credit"
                           className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
                         >
                           <Send className="w-3.5 h-3.5" />
