@@ -13,6 +13,7 @@ import {
   inferAgentId,
   resolveEffectivePhotoStatus,
   syncCardWithAssets,
+  syncVisualArtifactsNeeded,
 } from '@/lib/ops/drop-parser';
 import { appendOpsActivity, opsGetDoc, opsSetDoc } from '@/lib/ops/firestore-rest';
 import type { PipelineCard } from '@/lib/ops/types';
@@ -114,6 +115,12 @@ async function handlePatchAsset(
     postItAt: nextPostItAt,
     postItBy: nextPostItBy,
     photoStatus: nextPhotoStatus,
+    artifactsNeeded: syncVisualArtifactsNeeded(
+      existing.artifactsNeeded,
+      undefined,
+      synced.assetSpec,
+      Boolean(synced.assetFile || synced.assetUrl || nextPhotoStatus === 'not_needed')
+    ),
     updatedAt: now,
   };
 
@@ -207,6 +214,12 @@ export async function DELETE(
     postItAt: nextPostItAt,
     postItBy: nextPostItBy,
     photoStatus: nextPhotoStatus,
+    artifactsNeeded: syncVisualArtifactsNeeded(
+      existing.artifactsNeeded,
+      undefined,
+      synced.assetSpec,
+      Boolean(synced.assetFile || synced.assetUrl || nextPhotoStatus === 'not_needed')
+    ),
     updatedAt: now,
   };
 

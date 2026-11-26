@@ -93,7 +93,7 @@ export async function POST(request: Request) {
           agentId: inferAgentId(v.clearsFile || filename),
           source: v.clearsFile || filename,
           sourceUrl: v.sourceUrl,
-          note: `${v.tag} · ${v.notes}`.slice(0, 300),
+          note: `${v.tag} · ${v.notes}`.slice(0, 1200),
           draftCopy: v.notes,
           marleyStatus: v.verdict,
           marleyNote: v.notes,

@@ -938,7 +938,7 @@ export async function POST(request: Request) {
             agentId: 'marley',
             source: v.clearsFile || 'Marley batch clearance',
             sourceUrl: v.sourceUrl,
-            note: `${v.tag} · ${v.notes}`.slice(0, 300),
+            note: `${v.tag} · ${v.notes}`.slice(0, 1200),
             draftCopy: v.notes,
             marleyStatus: v.verdict,
             marleyNote: v.notes,

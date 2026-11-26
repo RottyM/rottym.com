@@ -53,6 +53,7 @@ const ALLOWED_JOB_ITEM_FIELDS = new Set([
   'contentType',
   'stage',
   'assignedTo',
+  'assignee',
   'targetPlatforms',
   'platforms',
   'sourceUrl',
@@ -64,6 +65,14 @@ const ALLOWED_JOB_ITEM_FIELDS = new Set([
   'assetLink',
   'imageUrl',
   'assetSpec',
+  'altText',
+  'alt',
+  'alt_text',
+  'imageAlt',
+  'credit',
+  'sourceCredit',
+  'photoCredit',
+  'attribution',
   'assets',
   'artifactsNeeded',
   'discrepancies',
@@ -486,10 +495,12 @@ export async function POST(request: Request) {
       if (!dcCheck.ok) return NextResponse.json({ error: dcCheck.error }, { status: 400, headers: NO_STORE_HEADERS });
       draftCopy = typeof itemInput.draftCopy === 'string' ? itemInput.draftCopy : '';
     }
+    const rawAssignedInput =
+      itemInput.assignedTo !== undefined ? itemInput.assignedTo : itemInput.assignee;
     if (
-      itemInput.assignedTo !== undefined &&
-      itemInput.assignedTo !== null &&
-      typeof itemInput.assignedTo !== 'string'
+      rawAssignedInput !== undefined &&
+      rawAssignedInput !== null &&
+      typeof rawAssignedInput !== 'string'
     ) {
       return NextResponse.json(
         { error: 'assignedTo must be a string or null.' },
@@ -497,7 +508,35 @@ export async function POST(request: Request) {
       );
     }
     const incomingAssignedTo =
-      itemInput.assignedTo !== undefined ? normalizeAssignedTo(itemInput.assignedTo) : undefined;
+      rawAssignedInput !== undefined ? normalizeAssignedTo(rawAssignedInput) : undefined;
+    const rawTopAlt =
+      itemInput.altText !== undefined
+        ? itemInput.altText
+        : itemInput.alt !== undefined
+          ? itemInput.alt
+          : itemInput.alt_text !== undefined
+            ? itemInput.alt_text
+            : itemInput.imageAlt;
+    let topAltText: string | undefined;
+    if (rawTopAlt !== undefined && rawTopAlt !== null) {
+      const altCheck = validateStringLength('altText', rawTopAlt, FIELD_MAX_LENGTHS.altText);
+      if (!altCheck.ok) return NextResponse.json({ error: altCheck.error }, { status: 400, headers: NO_STORE_HEADERS });
+      topAltText = altCheck.value || undefined;
+    }
+    const rawTopCredit =
+      itemInput.credit !== undefined
+        ? itemInput.credit
+        : itemInput.sourceCredit !== undefined
+          ? itemInput.sourceCredit
+          : itemInput.photoCredit !== undefined
+            ? itemInput.photoCredit
+            : itemInput.attribution;
+    let topCredit: string | undefined;
+    if (rawTopCredit !== undefined && rawTopCredit !== null) {
+      const crCheck = validateStringLength('credit', rawTopCredit, FIELD_MAX_LENGTHS.credit);
+      if (!crCheck.ok) return NextResponse.json({ error: crCheck.error }, { status: 400, headers: NO_STORE_HEADERS });
+      topCredit = crCheck.value || undefined;
+    }
     const hasTargetPlatformsInput =
       itemInput.targetPlatforms !== undefined || itemInput.platforms !== undefined;
     const incomingTargetPlatforms = hasTargetPlatformsInput
@@ -574,7 +613,7 @@ export async function POST(request: Request) {
           }
         }
         nextAssets = rebuilt;
-      } else if (assetFile || assetUrl || assetSpec) {
+      } else if (assetFile || assetUrl || assetSpec || topAltText || topCredit) {
         if (nextAssets.length > 0) {
           nextAssets = nextAssets.map((a, idx) =>
             idx === 0
@@ -583,12 +622,14 @@ export async function POST(request: Request) {
                   url: assetUrl || a.url,
                   file: assetFile || a.file,
                   spec: assetSpec || a.spec,
+                  altText: topAltText || a.altText,
+                  credit: topCredit || a.credit,
                   status: (assetUrl || assetFile) && (a.status === 'needed' || a.status === 'in_progress') ? 'delivered' : a.status,
                   updatedAt: now,
                 }
               : a
           );
-        } else {
+        } else if (assetFile || assetUrl || assetSpec) {
           nextAssets = [
             {
               id: `ast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -598,6 +639,8 @@ export async function POST(request: Request) {
               platform: 'all',
               order: 0,
               spec: assetSpec,
+              altText: topAltText,
+              credit: topCredit,
               status: assetUrl || assetFile ? 'delivered' : 'needed',
               addedBy: actor.actorName,
               createdAt: now,
@@ -819,6 +862,8 @@ export async function POST(request: Request) {
           platform: 'all',
           order: 0,
           spec: assetSpec,
+          altText: topAltText,
+          credit: topCredit,
           status: assetUrl || assetFile ? 'delivered' : 'needed',
           addedBy: actor.actorName,
           createdAt: now,

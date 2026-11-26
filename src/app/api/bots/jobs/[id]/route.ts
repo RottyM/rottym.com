@@ -49,6 +49,7 @@ const ALLOWED_JOB_PATCH_FIELDS = new Set([
   'stage',
   'readyForRotty',
   'assignedTo',
+  'assignee',
   'targetPlatforms',
   'platforms',
   'sourceUrl',
@@ -61,6 +62,14 @@ const ALLOWED_JOB_PATCH_FIELDS = new Set([
   'assetLink',
   'imageUrl',
   'assetSpec',
+  'altText',
+  'alt',
+  'alt_text',
+  'imageAlt',
+  'credit',
+  'sourceCredit',
+  'photoCredit',
+  'attribution',
   'assets',
   'artifactsNeeded',
   'discrepancies',
@@ -196,11 +205,15 @@ async function handleUpsertJobById(
     typeof body.lane === 'string' || typeof body.channel === 'string'
       ? normalizeLane(typeof body.lane === 'string' ? body.lane : (body.channel as string))
       : existing.lane;
+  const rawAssignedInput =
+    body.assignedTo !== undefined ? body.assignedTo : body.assignee;
   const nextAssignedTo =
-    body.assignedTo !== undefined ? normalizeAssignedTo(body.assignedTo) : existing.assignedTo;
+    rawAssignedInput !== undefined ? normalizeAssignedTo(rawAssignedInput) : existing.assignedTo;
+  const rawPlatformsInput =
+    body.targetPlatforms !== undefined ? body.targetPlatforms : body.platforms;
   const nextTargetPlatforms =
-    body.targetPlatforms !== undefined
-      ? normalizePlatformList(body.targetPlatforms)
+    rawPlatformsInput !== undefined
+      ? normalizePlatformList(rawPlatformsInput)
       : existing.targetPlatforms;
 
   const now = new Date().toISOString();
@@ -299,6 +312,48 @@ async function handleUpsertJobById(
     nextSourceUrl = srcCheck.value;
   }
 
+  const rawTopAlt =
+    body.altText !== undefined
+      ? body.altText
+      : body.alt !== undefined
+        ? body.alt
+        : body.alt_text !== undefined
+          ? body.alt_text
+          : body.imageAlt;
+  let nextTopAltText: string | null | undefined;
+  if (rawTopAlt !== undefined) {
+    if (rawTopAlt === null || rawTopAlt === '') {
+      nextTopAltText = null;
+    } else {
+      const check = validateStringLength('altText', rawTopAlt, FIELD_MAX_LENGTHS.altText);
+      if (!check.ok) {
+        return NextResponse.json({ error: check.error }, { status: 400, headers: NO_STORE_HEADERS });
+      }
+      nextTopAltText = check.value || undefined;
+    }
+  }
+
+  const rawTopCredit =
+    body.credit !== undefined
+      ? body.credit
+      : body.sourceCredit !== undefined
+        ? body.sourceCredit
+        : body.photoCredit !== undefined
+          ? body.photoCredit
+          : body.attribution;
+  let nextTopCredit: string | null | undefined;
+  if (rawTopCredit !== undefined) {
+    if (rawTopCredit === null || rawTopCredit === '') {
+      nextTopCredit = null;
+    } else {
+      const check = validateStringLength('credit', rawTopCredit, FIELD_MAX_LENGTHS.credit);
+      if (!check.ok) {
+        return NextResponse.json({ error: check.error }, { status: 400, headers: NO_STORE_HEADERS });
+      }
+      nextTopCredit = check.value || undefined;
+    }
+  }
+
   let nextAssets = getCardAssets(existing);
   const existingAssetMap = new Map(nextAssets.map((a) => [a.id, a]));
   if (body.assets !== undefined) {
@@ -357,7 +412,13 @@ async function handleUpsertJobById(
       }
     }
     nextAssets = rebuilt;
-  } else if (rawAssetUrlInput !== undefined || body.assetFile !== undefined || body.assetSpec !== undefined) {
+  } else if (
+    rawAssetUrlInput !== undefined ||
+    body.assetFile !== undefined ||
+    body.assetSpec !== undefined ||
+    nextTopAltText !== undefined ||
+    nextTopCredit !== undefined
+  ) {
     if (nextAssets.length > 0) {
       nextAssets = nextAssets.map((a, idx) =>
         idx === 0
@@ -366,6 +427,8 @@ async function handleUpsertJobById(
               url: rawAssetUrlInput !== undefined ? nextAssetUrl : a.url,
               file: body.assetFile !== undefined ? nextAssetFile : a.file,
               spec: body.assetSpec !== undefined ? nextAssetSpec : a.spec,
+              altText: nextTopAltText === null ? undefined : (nextTopAltText ?? a.altText),
+              credit: nextTopCredit === null ? undefined : (nextTopCredit ?? a.credit),
               status:
                 (nextAssetUrl || nextAssetFile) && (a.status === 'needed' || a.status === 'in_progress')
                   ? 'delivered'
@@ -384,6 +447,8 @@ async function handleUpsertJobById(
           platform: 'all',
           order: 0,
           spec: nextAssetSpec,
+          altText: nextTopAltText ?? undefined,
+          credit: nextTopCredit ?? undefined,
           status: nextAssetUrl || nextAssetFile ? 'delivered' : 'needed',
           addedBy: actor.actorName,
           createdAt: now,

@@ -999,8 +999,8 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             })}
 
           {opsView === 'desk' ? (
-            <section className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch">
-              <div className="lg:col-span-8 min-w-0">
+            <section className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_330px] xl:grid-cols-[minmax(0,1fr)_355px] gap-3 items-stretch">
+              <div className="min-w-0">
                 <OpsDecisionDesk
                   pipeline={pipeline}
                   requests={requests}
@@ -1107,7 +1107,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   onToast={showToast}
                 />
               </div>
-              <div className="lg:col-span-4 min-w-0">
+              <div className="min-w-0">
                 <CrewChatPanel
                   tall
                   messages={chat}
@@ -2396,7 +2396,7 @@ function CrewChatPanel({
       }`}
     >
       {/* Top Bar: Header + Filter/Target Pills */}
-      <div className="px-3 pt-2.5 pb-2 border-b border-border/80 bg-card/95 backdrop-blur-sm space-y-2 shrink-0">
+      <div className="px-2.5 pt-2 pb-1.5 border-b border-border/80 bg-card/95 backdrop-blur-sm space-y-1.5 shrink-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <MessageSquare className="w-3.5 h-3.5 text-accent shrink-0" />
@@ -2412,7 +2412,7 @@ function CrewChatPanel({
           </span>
         </div>
 
-        <nav aria-label="Crew chat filters" className="flex items-center gap-1.5 overflow-x-auto ops-scroll pb-0.5">
+        <nav aria-label="Crew chat filters" className="flex items-center gap-1 overflow-x-auto ops-scroll pb-0.5">
           {CHAT_TARGET_CHIPS.map((chip) => {
             const active = targetMention === chip.key;
             return (
@@ -2430,7 +2430,7 @@ function CrewChatPanel({
                     ? 'Show all crew messages & broadcast to @All'
                     : `Filter & target ${chip.label} (click again for @All)`
                 }
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border whitespace-nowrap transition-all ${
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium border whitespace-nowrap transition-all ${
                   active
                     ? 'bg-cyan-500/15 border-cyan-500/45 text-cyan-800 dark:text-cyan-200 shadow-sm'
                     : 'bg-background/70 border-border text-muted-foreground hover:text-foreground hover:border-accent/50'
@@ -2439,7 +2439,7 @@ function CrewChatPanel({
                 {chip.key === 'all' ? (
                   <>
                     <span>{chip.label}</span>
-                    <span className="px-1 rounded text-[10px] font-mono bg-cyan-500/25 text-cyan-900 dark:text-cyan-100">
+                    <span className="px-1 rounded text-[9px] font-mono bg-cyan-500/25 text-cyan-900 dark:text-cyan-100">
                       {messages.length}
                     </span>
                   </>
@@ -2460,7 +2460,7 @@ function CrewChatPanel({
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className="h-full overflow-y-auto overscroll-contain [overflow-anchor:none] scroll-auto ops-scroll px-3 py-2.5 space-y-2.5"
+          className="h-full overflow-y-auto overscroll-contain [overflow-anchor:none] scroll-auto ops-scroll px-2.5 py-2 space-y-2"
         >
           {filteredMessages.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border bg-background/40 px-3 py-5 text-xs text-muted-foreground text-center">

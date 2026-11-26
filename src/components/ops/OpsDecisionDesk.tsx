@@ -484,9 +484,9 @@ export default function OpsDecisionDesk({
           )}
         </div>
       ) : (
-        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3">
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[270px_minmax(0,1fr)] gap-3">
           {/* Inbox List */}
-          <div className="lg:col-span-4 min-h-0 overflow-y-auto overscroll-contain [overflow-anchor:none] ops-scroll pr-1 space-y-1.5 max-h-64 lg:max-h-none">
+          <div className="min-h-0 overflow-y-auto overscroll-contain [overflow-anchor:none] ops-scroll pr-1 space-y-1.5 max-h-64 lg:max-h-none">
             {items.map((item) => {
               const selected = selectedItem?.key === item.key;
 
@@ -663,7 +663,7 @@ export default function OpsDecisionDesk({
 
           {/* Full Draft Decision Reader */}
           {selectedCard && selectedCompleteness && (
-            <div className="lg:col-span-8 min-h-0 flex flex-col rounded-lg border border-border bg-background/70 overflow-hidden">
+            <div className="min-h-0 flex flex-col rounded-lg border border-border bg-background/70 overflow-hidden">
               {/* Reader Header + Navigation */}
               <div className="px-3.5 py-2.5 border-b border-border/80 flex flex-wrap items-start justify-between gap-2 bg-card/50 shrink-0">
                 <div className="min-w-0 flex-1 space-y-1">
@@ -1594,7 +1594,7 @@ export default function OpsDecisionDesk({
 
           {/* Request Decision Reader */}
           {selectedRequest && selectedRequestStatus && (
-            <div className="lg:col-span-8 min-h-0 flex flex-col rounded-lg border border-border bg-background/70 overflow-hidden">
+            <div className="min-h-0 flex flex-col rounded-lg border border-border bg-background/70 overflow-hidden">
               {/* Reader Header + Navigation */}
               <div className="px-3.5 py-2.5 border-b border-border/80 flex flex-wrap items-start justify-between gap-2 bg-card/50 shrink-0">
                 <div className="min-w-0 flex-1 space-y-1">

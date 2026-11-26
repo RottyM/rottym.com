@@ -13,6 +13,7 @@ import {
   parseNewJobAssetInput,
   resolveEffectivePhotoStatus,
   syncCardWithAssets,
+  syncVisualArtifactsNeeded,
 } from '@/lib/ops/drop-parser';
 import { appendOpsActivity, opsGetDoc, opsSetDoc } from '@/lib/ops/firestore-rest';
 import type { PipelineCard } from '@/lib/ops/types';
@@ -100,6 +101,10 @@ export async function POST(
   const added: typeof currentAssets = [];
   const seenIds = new Set(currentAssets.map((a) => a.id));
 
+  const nextAssets = [...currentAssets];
+  const actorAgentId = inferAgentId(actor.actorName);
+  const replacedPlaceholderIndices = new Set<number>();
+
   for (let i = 0; i < inputs.length; i++) {
     const rawItem = inputs[i];
     if (!rawItem || typeof rawItem !== 'object' || Array.isArray(rawItem)) {
@@ -110,7 +115,7 @@ export async function POST(
     }
     const parsed = parseNewJobAssetInput(rawItem, {
       addedBy: actor.actorName,
-      defaultOrder: currentAssets.length + added.length,
+      defaultOrder: nextAssets.length,
       canReviewAsset,
       now,
     });
@@ -120,6 +125,50 @@ export async function POST(
         { status: parsed.status, headers: NO_STORE_HEADERS }
       );
     }
+
+    const hasExplicitId = rawItem.id !== undefined && rawItem.id !== null && String(rawItem.id).trim() !== '';
+    const hasDeliveredMedia = Boolean(parsed.asset.url || parsed.asset.file);
+    let fulfilledIdx = -1;
+    if (!hasExplicitId && hasDeliveredMedia) {
+      // Fulfill matching open placeholder (e.g. from Assign -> Pixel) instead of stranding an empty needed item.
+      const matchPriority = [
+        (p: (typeof nextAssets)[number], idx: number) =>
+          !replacedPlaceholderIndices.has(idx) &&
+          (p.status === 'needed' || p.status === 'in_progress') &&
+          !p.url &&
+          !p.file &&
+          inferAgentId(p.assignedTo || '') === actorAgentId &&
+          (p.platform === parsed.asset.platform || p.platform === 'all' || parsed.asset.platform === 'all'),
+        (p: (typeof nextAssets)[number], idx: number) =>
+          !replacedPlaceholderIndices.has(idx) &&
+          (p.status === 'needed' || p.status === 'in_progress') &&
+          !p.url &&
+          !p.file &&
+          (p.platform === parsed.asset.platform || p.platform === 'all' || parsed.asset.platform === 'all'),
+      ];
+      for (const pred of matchPriority) {
+        const found = nextAssets.findIndex((p, idx) => pred(p, idx));
+        if (found >= 0) {
+          fulfilledIdx = found;
+          break;
+        }
+      }
+    }
+
+    if (fulfilledIdx >= 0) {
+      const target = nextAssets[fulfilledIdx];
+      const replacement = {
+        ...parsed.asset,
+        id: target.id,
+        order: target.order,
+        assignedTo: parsed.asset.assignedTo ?? target.assignedTo,
+      };
+      nextAssets[fulfilledIdx] = replacement;
+      replacedPlaceholderIndices.add(fulfilledIdx);
+      added.push(replacement);
+      continue;
+    }
+
     if (seenIds.has(parsed.asset.id)) {
       return NextResponse.json(
         { error: `Duplicate asset id '${parsed.asset.id}'.` },
@@ -127,11 +176,11 @@ export async function POST(
       );
     }
     seenIds.add(parsed.asset.id);
+    nextAssets.push(parsed.asset);
     added.push(parsed.asset);
   }
 
-  const combined = [...currentAssets, ...added];
-  const synced = syncCardWithAssets(existing, combined);
+  const synced = syncCardWithAssets(existing, nextAssets);
   const nextPhotoStatus = resolveEffectivePhotoStatus({
     existing: existing.photoStatus,
     assetFile: synced.assetFile,
@@ -162,6 +211,12 @@ export async function POST(
     postItAt: nextPostItAt,
     postItBy: nextPostItBy,
     photoStatus: nextPhotoStatus,
+    artifactsNeeded: syncVisualArtifactsNeeded(
+      existing.artifactsNeeded,
+      undefined,
+      synced.assetSpec,
+      Boolean(synced.assetFile || synced.assetUrl || nextPhotoStatus === 'not_needed')
+    ),
     noImageNeededBy: undefined,
     noImageNeededAt: undefined,
     updatedAt: now,

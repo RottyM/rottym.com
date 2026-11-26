@@ -346,7 +346,7 @@ export function parseBatchClearanceMarkdown(raw: string, filename = 'clearance.m
         } else if (k === 'artifacts') {
           if (v && v.toLowerCase() !== 'none') artifactsNeeded.push(v.slice(0, 160));
         } else if (k === 'note' || k === 'notes') {
-          notes = v.slice(0, 300);
+          notes = v.slice(0, 1200);
         }
       }
 
@@ -641,7 +641,7 @@ function parseKeyValueLines(text: string): Record<string, string> {
 
 export const FIELD_MAX_LENGTHS = {
   title: 160,
-  note: 600,
+  note: 1200,
   draftCopy: 4000,
   source: 120,
   sourceUrl: 500,
@@ -804,7 +804,10 @@ export function syncVisualArtifactsNeeded(
   }
   if (hasVisualAsset) {
     return baseArtifacts.filter(
-      (entry) => !/^Visual needed\b/i.test(entry) && !/^Awaiting Pixel\b/i.test(entry)
+      (entry) =>
+        !/^Visual needed\b/i.test(entry) &&
+        !/^Awaiting Pixel\b/i.test(entry) &&
+        !/^(Photo missing|Photo needed|Image needed)\b/i.test(entry)
     );
   }
   return baseArtifacts;
@@ -1617,11 +1620,18 @@ export const ALLOWED_ASSET_FIELDS = new Set([
   'order',
   'spec',
   'altText',
+  'alt',
+  'alt_text',
+  'imageAlt',
   'caption',
   'credit',
+  'sourceCredit',
+  'photoCredit',
+  'attribution',
   'sourceUrl',
   'label',
   'assignedTo',
+  'assignee',
   'status',
   'rejectionReason',
 ]);
@@ -1668,9 +1678,17 @@ export function parseNewJobAssetInput(
     spec = check.value || undefined;
   }
 
+  const rawAltText =
+    input.altText !== undefined
+      ? input.altText
+      : input.alt !== undefined
+        ? input.alt
+        : input.alt_text !== undefined
+          ? input.alt_text
+          : input.imageAlt;
   let altText: string | undefined;
-  if (input.altText !== undefined && input.altText !== null) {
-    const check = validateStringLength('altText', input.altText, FIELD_MAX_LENGTHS.altText);
+  if (rawAltText !== undefined && rawAltText !== null) {
+    const check = validateStringLength('altText', rawAltText, FIELD_MAX_LENGTHS.altText);
     if (!check.ok) return { ok: false, status: 400, error: check.error };
     altText = check.value || undefined;
   }
@@ -1682,9 +1700,17 @@ export function parseNewJobAssetInput(
     caption = check.value || undefined;
   }
 
+  const rawCredit =
+    input.credit !== undefined
+      ? input.credit
+      : input.sourceCredit !== undefined
+        ? input.sourceCredit
+        : input.photoCredit !== undefined
+          ? input.photoCredit
+          : input.attribution;
   let credit: string | undefined;
-  if (input.credit !== undefined && input.credit !== null) {
-    const check = validateStringLength('credit', input.credit, FIELD_MAX_LENGTHS.credit);
+  if (rawCredit !== undefined && rawCredit !== null) {
+    const check = validateStringLength('credit', rawCredit, FIELD_MAX_LENGTHS.credit);
     if (!check.ok) return { ok: false, status: 400, error: check.error };
     credit = check.value || undefined;
   }
@@ -1770,8 +1796,9 @@ export function parseNewJobAssetInput(
       ? Math.round(input.order)
       : opts.defaultOrder;
 
+  const rawAssigned = input.assignedTo !== undefined ? input.assignedTo : input.assignee;
   const assignedTo =
-    input.assignedTo !== undefined ? normalizeAssignedTo(input.assignedTo) : undefined;
+    rawAssigned !== undefined ? normalizeAssignedTo(rawAssigned) : undefined;
 
   const isReviewed = status === 'approved' || status === 'rejected';
   return {
@@ -1846,6 +1873,26 @@ export function applyJobAssetPatch(
     next.sourceUrl = sourceCheck.value;
   }
 
+  const normalizedPatch: Record<string, unknown> = { ...patch };
+  if (normalizedPatch.altText === undefined) {
+    const altAlias =
+      normalizedPatch.alt !== undefined
+        ? normalizedPatch.alt
+        : normalizedPatch.alt_text !== undefined
+          ? normalizedPatch.alt_text
+          : normalizedPatch.imageAlt;
+    if (altAlias !== undefined) normalizedPatch.altText = altAlias;
+  }
+  if (normalizedPatch.credit === undefined) {
+    const creditAlias =
+      normalizedPatch.sourceCredit !== undefined
+        ? normalizedPatch.sourceCredit
+        : normalizedPatch.photoCredit !== undefined
+          ? normalizedPatch.photoCredit
+          : normalizedPatch.attribution;
+    if (creditAlias !== undefined) normalizedPatch.credit = creditAlias;
+  }
+
   const textFields: Array<[keyof JobAsset, keyof typeof FIELD_MAX_LENGTHS]> = [
     ['file', 'assetFile'],
     ['spec', 'assetSpec'],
@@ -1857,7 +1904,7 @@ export function applyJobAssetPatch(
   ];
 
   for (const [field, maxKey] of textFields) {
-    const val = patch[field];
+    const val = normalizedPatch[field];
     if (val === undefined) continue;
     if (val === null || val === '') {
       (next as unknown as Record<string, unknown>)[field] = undefined;
@@ -1899,11 +1946,12 @@ export function applyJobAssetPatch(
     next.order = Math.round(patch.order);
   }
 
-  if (patch.assignedTo !== undefined) {
+  const rawPatchAssigned = patch.assignedTo !== undefined ? patch.assignedTo : patch.assignee;
+  if (rawPatchAssigned !== undefined) {
     next.assignedTo =
-      patch.assignedTo === null || patch.assignedTo === ''
+      rawPatchAssigned === null || rawPatchAssigned === ''
         ? undefined
-        : normalizeAssignedTo(patch.assignedTo);
+        : normalizeAssignedTo(rawPatchAssigned);
   }
 
   if (patch.status !== undefined) {
