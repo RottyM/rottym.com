@@ -173,6 +173,11 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [highlightKinds, setHighlightKinds] = useState<Map<string, UpdateAlertKind>>(() => new Map());
+  const [unseenIds, setUnseenIds] = useState<Set<string>>(() => new Set());
+  const seenStampsRef = useRef<{ clientId: string; map: Map<string, string> }>({
+    clientId: '',
+    map: new Map(),
+  });
   const stampSnapshotRef = useRef<{
     clientId: string;
     initialized: { crew: boolean; pipeline: boolean; chat: boolean; requests: boolean };
@@ -188,6 +193,47 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
     stamps: { crew: new Map(), pipeline: new Map(), chat: new Map(), requests: new Map() },
   });
   const highlightExpiryRef = useRef<Map<string, { expiresAt: number; kind: UpdateAlertKind }>>(new Map());
+
+  const persistSeenMap = useCallback((clientScope: string, map: Map<string, string>) => {
+    try {
+      const obj: Record<string, string> = {};
+      for (const [k, v] of map.entries()) obj[k] = v;
+      window.localStorage.setItem(`rottym_ops_seen_${clientScope}`, JSON.stringify(obj));
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, []);
+
+  const markItemSeen = useCallback(
+    (id: string) => {
+      const store = stampSnapshotRef.current;
+      const clientScope = store.clientId || 'rottym';
+      const stamp = store.stamps.pipeline.get(id) ?? store.stamps.requests.get(id) ?? '';
+      if (seenStampsRef.current.clientId !== clientScope) {
+        seenStampsRef.current = { clientId: clientScope, map: new Map() };
+      }
+      seenStampsRef.current.map.set(id, stamp);
+      persistSeenMap(clientScope, seenStampsRef.current.map);
+      setUnseenIds((prev) => {
+        if (!prev.has(id)) return prev;
+        const copy = new Set(prev);
+        copy.delete(id);
+        return copy;
+      });
+    },
+    [persistSeenMap]
+  );
+
+  const markAllSeen = useCallback(() => {
+    const store = stampSnapshotRef.current;
+    const clientScope = store.clientId || 'rottym';
+    const nextMap = new Map<string, string>();
+    for (const [k, v] of store.stamps.pipeline.entries()) nextMap.set(k, v);
+    for (const [k, v] of store.stamps.requests.entries()) nextMap.set(k, v);
+    seenStampsRef.current = { clientId: clientScope, map: nextMap };
+    persistSeenMap(clientScope, nextMap);
+    setUnseenIds(new Set());
+  }, [persistSeenMap]);
 
   const applyTrackedUpdate = useCallback(
     <T extends { id: string; updatedAt?: string; createdAt?: string }>(
@@ -208,6 +254,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         };
         highlightExpiryRef.current.clear();
         setHighlightKinds((prev) => (prev.size > 0 ? new Map() : prev));
+        setUnseenIds(new Set());
       }
 
       const prevMap = store.stamps[kind];
@@ -228,7 +275,63 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         nextMap.set(item.id, item.updatedAt || item.createdAt || '');
       }
       store.stamps[kind] = nextMap;
+      const wasInitialized = store.initialized[kind];
       store.initialized[kind] = true;
+
+      if (kind === 'pipeline' || kind === 'requests') {
+        let seenDirty = false;
+        if (seenStampsRef.current.clientId !== clientScope) {
+          const loaded = new Map<string, string>();
+          let hadSaved = false;
+          try {
+            const raw = window.localStorage.getItem(`rottym_ops_seen_${clientScope}`);
+            if (raw) {
+              hadSaved = true;
+              const parsed = JSON.parse(raw) as Record<string, string>;
+              for (const [k, v] of Object.entries(parsed)) {
+                if (typeof v === 'string') loaded.set(k, v);
+              }
+            }
+          } catch {
+            // Ignore corrupt storage
+          }
+          seenStampsRef.current = { clientId: clientScope, map: loaded };
+          if (!hadSaved) {
+            for (const item of nextList) {
+              loaded.set(item.id, item.updatedAt || item.createdAt || '');
+            }
+            seenDirty = true;
+          }
+        } else if (!wasInitialized && seenStampsRef.current.map.size === 0) {
+          for (const item of nextList) {
+            seenStampsRef.current.map.set(item.id, item.updatedAt || item.createdAt || '');
+          }
+          seenDirty = true;
+        }
+        if (seenDirty) {
+          persistSeenMap(clientScope, seenStampsRef.current.map);
+        }
+
+        setUnseenIds((prev) => {
+          const copy = new Set(prev);
+          const seenMap = seenStampsRef.current.map;
+          let mutated = false;
+          for (const item of nextList) {
+            const stamp = item.updatedAt || item.createdAt || '';
+            const seenStamp = seenMap.get(item.id);
+            if (seenStamp !== stamp) {
+              if (!copy.has(item.id)) {
+                copy.add(item.id);
+                mutated = true;
+              }
+            } else if (copy.has(item.id)) {
+              copy.delete(item.id);
+              mutated = true;
+            }
+          }
+          return mutated ? copy : prev;
+        });
+      }
 
       if (changed.length > 0) {
         const HIGHLIGHT_MS = 20_000;
@@ -267,7 +370,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
 
       setter(nextList);
     },
-    []
+    [persistSeenMap]
   );
 
   const showToast = useCallback((msg: string) => {
@@ -1020,6 +1123,9 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   nowMs={nowMs}
                   busy={busy}
                   highlightKinds={highlightKinds}
+                  unseenIds={unseenIds}
+                  onMarkSeen={markItemSeen}
+                  onMarkAllSeen={markAllSeen}
                   onEditCard={(card) => setModal({ type: 'card', card })}
                   onAssignCard={async (card, assignedTo) => {
                     const label = crew.find((c) => c.agentId === assignedTo)?.name || assignedTo || 'Unassigned';

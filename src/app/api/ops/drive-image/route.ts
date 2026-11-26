@@ -102,24 +102,31 @@ export async function GET(request: Request) {
   }
 
   // 3) Public Drive thumbnail fallback
-  try {
-    const pubRes = await fetch(
-      `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w${sz}`,
-      { cache: 'no-store', signal: AbortSignal.timeout(10000) }
-    );
-    const ct = pubRes.headers.get('content-type') || '';
-    if (pubRes.ok && ct.startsWith('image/')) {
-      const buf = await pubRes.arrayBuffer();
-      return new NextResponse(buf, {
-        status: 200,
-        headers: {
-          'Content-Type': ct,
-          'Cache-Control': 'private, max-age=300',
-        },
+  const publicUrls = [
+    `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w${sz}`,
+    `https://lh3.googleusercontent.com/d/${encodeURIComponent(fileId)}=w${sz}`,
+  ];
+  for (const pubUrl of publicUrls) {
+    try {
+      const pubRes = await fetch(pubUrl, {
+        cache: 'no-store',
+        redirect: 'follow',
+        signal: AbortSignal.timeout(10000),
       });
+      const ct = pubRes.headers.get('content-type') || '';
+      if (pubRes.ok && ct.startsWith('image/')) {
+        const buf = await pubRes.arrayBuffer();
+        return new NextResponse(buf, {
+          status: 200,
+          headers: {
+            'Content-Type': ct,
+            'Cache-Control': 'private, max-age=300',
+          },
+        });
+      }
+    } catch {
+      // Try next public URL
     }
-  } catch {
-    // Unavailable
   }
 
   return NextResponse.json(

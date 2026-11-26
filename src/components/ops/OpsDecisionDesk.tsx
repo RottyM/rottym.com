@@ -206,6 +206,9 @@ export default function OpsDecisionDesk({
   nowMs,
   busy,
   highlightKinds,
+  unseenIds,
+  onMarkSeen,
+  onMarkAllSeen,
   onEditCard,
   onAssignCard,
   onAssignAssetTask,
@@ -228,6 +231,9 @@ export default function OpsDecisionDesk({
   nowMs: number;
   busy: boolean;
   highlightKinds: Map<string, UpdateAlertKind>;
+  unseenIds?: Set<string>;
+  onMarkSeen?: (id: string) => void;
+  onMarkAllSeen?: () => void;
   onEditCard: (card: PipelineCard) => void;
   onAssignCard?: (card: PipelineCard, assignedTo: string) => Promise<void>;
   onAssignAssetTask?: (
@@ -409,23 +415,23 @@ export default function OpsDecisionDesk({
     { id: 'all', label: 'All', count: counts.all },
   ];
 
-  const tabAlerts = useMemo<Record<DeskTab, UpdateAlertKind | undefined>>(() => {
-    const pickAlert = (
-      matchCards: PipelineCard[],
-      matchReqs: OpsRequest[]
-    ): UpdateAlertKind | undefined => {
-      let result: UpdateAlertKind | undefined;
+  const tabAlerts = useMemo<Record<DeskTab, { live?: UpdateAlertKind; unseenCount: number }>>(() => {
+    const inspect = (matchCards: PipelineCard[], matchReqs: OpsRequest[]) => {
+      let live: UpdateAlertKind | undefined;
+      let unseenCount = 0;
       for (const c of matchCards) {
         const k = highlightKinds.get(c.id);
-        if (k === 'new') return 'new';
-        if (k === 'updated') result = 'updated';
+        if (k === 'new') live = 'new';
+        else if (k === 'updated' && !live) live = 'updated';
+        if (unseenIds?.has(c.id)) unseenCount += 1;
       }
       for (const r of matchReqs) {
         const k = highlightKinds.get(r.id);
-        if (k === 'new') return 'new';
-        if (k === 'updated') result = 'updated';
+        if (k === 'new') live = 'new';
+        else if (k === 'updated' && !live) live = 'updated';
+        if (unseenIds?.has(r.id)) unseenCount += 1;
       }
-      return result;
+      return { live, unseenCount };
     };
 
     const active = pipeline.filter((c) => c.stage !== 'archived');
@@ -435,15 +441,15 @@ export default function OpsDecisionDesk({
     });
 
     return {
-      action: pickAlert(active.filter(isActionItem), openReqs),
-      approved: pickAlert(active.filter(isApprovedCrewItem), []),
-      ready: pickAlert(active.filter(isReadyItem), []),
-      requests: pickAlert([], requests),
-      drops: pickAlert(active.filter(isDropItem), []),
-      posted: pickAlert(active.filter((c) => c.stage === 'posted'), []),
-      all: pickAlert(active, requests),
+      action: inspect(active.filter(isActionItem), openReqs),
+      approved: inspect(active.filter(isApprovedCrewItem), []),
+      ready: inspect(active.filter(isReadyItem), []),
+      requests: inspect([], requests),
+      drops: inspect(active.filter(isDropItem), []),
+      posted: inspect(active.filter((c) => c.stage === 'posted'), []),
+      all: inspect(active, requests),
     };
-  }, [pipeline, requests, nowMs, highlightKinds]);
+  }, [pipeline, requests, nowMs, highlightKinds, unseenIds]);
 
   return (
     <section className="rounded-xl border border-border bg-card p-3 flex flex-col gap-2.5 lg:h-[620px] overflow-hidden [overflow-anchor:none]">
@@ -452,7 +458,9 @@ export default function OpsDecisionDesk({
         <div className="flex flex-wrap items-center gap-1">
           {tabs.map((t) => {
             const active = tab === t.id;
-            const alertMeta = getUpdateAlertMeta(tabAlerts[t.id]);
+            const tState = tabAlerts[t.id];
+            const alertMeta = getUpdateAlertMeta(tState?.live);
+            const hasUnseen = (tState?.unseenCount || 0) > 0;
             return (
               <button
                 key={t.id}
@@ -462,17 +470,24 @@ export default function OpsDecisionDesk({
                   setSelectedKey(null);
                   setFocusedAssetId(null);
                 }}
+                title={hasUnseen ? `${tState.unseenCount} unseen update(s) in ${t.label}` : undefined}
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
                   alertMeta && !active
                     ? alertMeta.tabBorderCls
                     : active && alertMeta
                       ? `${alertMeta.tabBorderCls} font-semibold ring-1 ring-current/25`
-                      : active
-                        ? 'border-accent bg-accent/15 text-foreground font-semibold'
-                        : 'border-border bg-background hover:border-accent/50 text-muted-foreground hover:text-foreground'
+                      : hasUnseen && !active
+                        ? 'border-amber-500/60 bg-amber-500/10 text-amber-900 dark:text-amber-200'
+                        : active
+                          ? 'border-accent bg-accent/15 text-foreground font-semibold'
+                          : 'border-border bg-background hover:border-accent/50 text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {alertMeta && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${alertMeta.dotCls}`} />}
+                {alertMeta ? (
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${alertMeta.dotCls}`} />
+                ) : hasUnseen ? (
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-amber-400" />
+                ) : null}
                 <span>
                   {t.label}{' '}
                   <span className="font-mono text-[11px] opacity-80">({t.count})</span>
@@ -482,22 +497,34 @@ export default function OpsDecisionDesk({
           })}
         </div>
 
-        <select
-          aria-label="Filter by lane"
-          value={laneFilter}
-          onChange={(e) => {
-            setLaneFilter(e.target.value as PipelineLane | 'all');
-            setSelectedKey(null);
-          }}
-          className="px-2 py-1 rounded-md text-[11px] font-mono border border-border bg-background text-foreground focus:outline-none focus:border-accent"
-        >
-          <option value="all">All Lanes</option>
-          {lanes.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.label}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {unseenIds && unseenIds.size > 0 && onMarkAllSeen && (
+            <button
+              type="button"
+              onClick={onMarkAllSeen}
+              title="Clear persistent unseen update markers"
+              className="px-2 py-1 rounded-lg text-[10px] font-mono border border-amber-500/45 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20"
+            >
+              Mark seen ({unseenIds.size})
+            </button>
+          )}
+          <select
+            aria-label="Filter by lane"
+            value={laneFilter}
+            onChange={(e) => {
+              setLaneFilter(e.target.value as PipelineLane | 'all');
+              setSelectedKey(null);
+            }}
+            className="px-2 py-1 rounded-md text-[11px] font-mono border border-border bg-background text-foreground focus:outline-none focus:border-accent"
+          >
+            <option value="all">All Lanes</option>
+            {lanes.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Master-Detail Desk Body */}
@@ -538,17 +565,22 @@ export default function OpsDecisionDesk({
                 const reqStatus = getEffectiveRequestStatus(req, nowMs);
                 const badge = requestStatusBadge(reqStatus);
                 const reqAlert = getUpdateAlertMeta(highlightKinds.get(req.id));
+                const reqUnseen = Boolean(unseenIds?.has(req.id));
 
                 return (
                   <div
                     key={item.key}
                     role="button"
                     tabIndex={0}
-                    onClick={() => setSelectedKey(item.key)}
+                    onClick={() => {
+                      setSelectedKey(item.key);
+                      onMarkSeen?.(req.id);
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         setSelectedKey(item.key);
+                        onMarkSeen?.(req.id);
                       }
                     }}
                     className={`w-full text-left rounded-lg border p-2.5 transition-all duration-300 space-y-1 cursor-pointer ${
@@ -556,16 +588,22 @@ export default function OpsDecisionDesk({
                         ? reqAlert.cardBorderCls
                         : selected
                           ? 'border-accent bg-accent/10'
-                          : 'border-border bg-background/60 hover:border-accent/50'
+                          : reqUnseen
+                            ? 'border-amber-500/45 border-l-4 border-l-amber-400 bg-amber-500/[0.04] hover:border-accent/50'
+                            : 'border-border bg-background/60 hover:border-accent/50'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono">
-                      <div className="flex items-center gap-1 min-w-0">
-                        {reqAlert && (
+                    <div className="flex flex-wrap items-center justify-between gap-1 text-[10px] font-mono">
+                      <div className="flex flex-wrap items-center gap-1 min-w-0">
+                        {reqAlert ? (
                           <span className={`px-1 py-0 rounded border shrink-0 text-[9px] ${reqAlert.badgeCls}`}>
                             {reqAlert.label}
                           </span>
-                        )}
+                        ) : reqUnseen ? (
+                          <span className="px-1 py-0 rounded border border-amber-500/45 bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0 text-[9px] font-semibold">
+                            NEW
+                          </span>
+                        ) : null}
                         <span className="px-1.5 py-0.2 rounded bg-violet-500/15 text-violet-700 dark:text-violet-300 uppercase shrink-0 font-semibold">
                           Request
                         </span>
@@ -602,21 +640,31 @@ export default function OpsDecisionDesk({
               const card = item.card;
               const badge = stageBadge(card);
               const cardAlert = getUpdateAlertMeta(highlightKinds.get(card.id));
+              const cardUnseen = Boolean(unseenIds?.has(card.id));
               const completeness = getCardCompleteness(card);
               const cardAssets = getCardAssets(card);
               const cardLiveLinks = getCardPublishedLinks(card);
               const fmt = getCardFormatBadges(card);
+              const hasDelivered = cardAssets.some((a) => a.status === 'delivered');
+              const hasRejected = cardAssets.some((a) => a.status === 'rejected');
+              const hasNeeded = cardAssets.some(
+                (a) => a.status === 'needed' || a.status === 'in_progress'
+              );
 
               return (
                 <div
                   key={item.key}
                   role="button"
                   tabIndex={0}
-                  onClick={() => setSelectedKey(item.key)}
+                  onClick={() => {
+                    setSelectedKey(item.key);
+                    onMarkSeen?.(card.id);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       setSelectedKey(item.key);
+                      onMarkSeen?.(card.id);
                     }
                   }}
                   className={`w-full text-left rounded-lg border p-2.5 transition-all duration-300 space-y-1 cursor-pointer ${
@@ -624,16 +672,22 @@ export default function OpsDecisionDesk({
                       ? cardAlert.cardBorderCls
                       : selected
                         ? 'border-accent bg-accent/10'
-                        : 'border-border bg-background/60 hover:border-accent/50'
+                        : cardUnseen
+                          ? 'border-amber-500/45 border-l-4 border-l-amber-400 bg-amber-500/[0.04] hover:border-accent/50'
+                          : 'border-border bg-background/60 hover:border-accent/50'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono">
-                    <div className="flex items-center gap-1 min-w-0">
-                      {cardAlert && (
+                  <div className="flex flex-wrap items-center justify-between gap-1 text-[10px] font-mono">
+                    <div className="flex flex-wrap items-center gap-1 min-w-0">
+                      {cardAlert ? (
                         <span className={`px-1 py-0 rounded border shrink-0 text-[9px] ${cardAlert.badgeCls}`}>
                           {cardAlert.label}
                         </span>
-                      )}
+                      ) : cardUnseen ? (
+                        <span className="px-1 py-0 rounded border border-amber-500/45 bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0 text-[9px] font-semibold">
+                          UPDATED
+                        </span>
+                      ) : null}
                       <span className="px-1.5 py-0.2 rounded bg-muted text-foreground uppercase shrink-0">
                         {card.lane}
                       </span>
@@ -650,7 +704,7 @@ export default function OpsDecisionDesk({
                       )}
                     </div>
                     {card.assignedTo && (
-                      <span className="text-accent truncate">→ {card.assignedTo}</span>
+                      <span className="text-accent truncate shrink-0">→ {card.assignedTo}</span>
                     )}
                   </div>
 
@@ -662,14 +716,28 @@ export default function OpsDecisionDesk({
                     <span className="inline-flex items-center gap-1 truncate">
                       {cardAssets.length > 0 ? (
                         <span
-                          className={`inline-flex items-center gap-0.5 ${
-                            completeness.canApproveReady
-                              ? 'text-emerald-700 dark:text-emerald-300'
-                              : 'text-cyan-700 dark:text-cyan-300'
+                          className={`inline-flex items-center gap-1 ${
+                            hasRejected
+                              ? 'text-red-600 dark:text-red-400 font-semibold'
+                              : hasDelivered
+                                ? 'text-amber-700 dark:text-amber-300 font-semibold'
+                                : completeness.canApproveReady
+                                  ? 'text-emerald-700 dark:text-emerald-300'
+                                  : hasNeeded
+                                    ? 'text-amber-700 dark:text-amber-300'
+                                    : 'text-cyan-700 dark:text-cyan-300'
                           }`}
                         >
-                          <ImageIcon className="w-2.5 h-2.5" />
-                          {cardAssets.length} {cardAssets.length === 1 ? 'asset' : 'assets'}
+                          <ImageIcon className="w-2.5 h-2.5 shrink-0" />
+                          {hasRejected
+                            ? 'Asset rejected'
+                            : hasDelivered
+                              ? `Review (${cardAssets.filter((a) => a.status === 'delivered').length})`
+                              : completeness.canApproveReady
+                                ? `Assets ready (${cardAssets.length})`
+                                : hasNeeded
+                                  ? 'Asset needed'
+                                  : `${cardAssets.length} ${cardAssets.length === 1 ? 'asset' : 'assets'}`}
                         </span>
                       ) : completeness.assetState === 'not_needed' ? (
                         <span className="text-sky-700 dark:text-sky-300">No image needed</span>

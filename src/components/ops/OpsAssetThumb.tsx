@@ -1,9 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ExternalLink, Film, FileImage, X } from 'lucide-react';
+import { ExternalLink, Film, FileImage, Lock, X } from 'lucide-react';
 import { extractDriveFileId } from '@/lib/ops/drop-parser';
-import { DRIVE_TOKEN_EVENT, getGoogleDriveAccessToken, getOpsAuth } from '@/lib/ops/firebase-client';
+import {
+  DRIVE_TOKEN_EVENT,
+  getGoogleDriveAccessToken,
+  getOpsAuth,
+  signInOpsWithGoogle,
+} from '@/lib/ops/firebase-client';
 import type { JobAsset } from '@/lib/ops/types';
 
 export function assetPlatformLabel(platform: JobAsset['platform']): string {
@@ -66,6 +71,8 @@ export function OpsAssetThumb({
 
   const [loadedBlob, setLoadedBlob] = useState<{ key: string; url: string } | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
+  const [browserFallbackKey, setBrowserFallbackKey] = useState<string | null>(null);
+  const [connectingDrive, setConnectingDrive] = useState(false);
   const [tokenVersion, setTokenVersion] = useState(0);
 
   useEffect(() => {
@@ -103,7 +110,11 @@ export function OpsAssetThumb({
         setLoadedBlob({ key: fetchKey, url: createdUrl });
       } catch {
         if (!cancelled) {
-          setFailedKey(fetchKey);
+          if (driveId) {
+            setBrowserFallbackKey(fetchKey);
+          } else {
+            setFailedKey(fetchKey);
+          }
         }
       }
     })();
@@ -115,7 +126,11 @@ export function OpsAssetThumb({
   }, [rawUrl, driveId, needsAuthFetch, sz, fetchKey]);
 
   const objectUrl = loadedBlob?.key === fetchKey ? loadedBlob.url : null;
-  const resolvedSrc = needsAuthFetch ? objectUrl : rawUrl || null;
+  const directDriveThumb =
+    driveId && browserFallbackKey === fetchKey
+      ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveId)}&sz=w${sz}`
+      : null;
+  const resolvedSrc = needsAuthFetch ? objectUrl || directDriveThumb : rawUrl || null;
   const failed = failedKey === fetchKey;
 
   if (resolvedSrc && !failed) {
@@ -125,15 +140,17 @@ export function OpsAssetThumb({
         src={resolvedSrc}
         alt={alt || asset.altText || asset.label || asset.file || 'Asset preview'}
         className={className}
-        referrerPolicy="no-referrer"
+        referrerPolicy={directDriveThumb && !objectUrl ? 'strict-origin-when-cross-origin' : 'no-referrer'}
         onError={() => setFailedKey(fetchKey)}
       />
     );
   }
 
+  const hasDriveToken = Boolean(getGoogleDriveAccessToken());
+
   return (
     <div
-      className={`flex flex-col items-center justify-center bg-muted/40 text-muted-foreground ${className}`}
+      className={`flex flex-col items-center justify-center bg-muted/40 text-muted-foreground p-2 ${className}`}
     >
       {asset.kind === 'video' ? (
         <Film className="w-4 h-4 shrink-0" />
@@ -141,9 +158,32 @@ export function OpsAssetThumb({
         <FileImage className="w-4 h-4 shrink-0" />
       )}
       {size !== 'thumb' && (
-        <span className="mt-1 text-[10px] font-mono px-2 text-center truncate max-w-full">
-          {asset.file || (failed ? 'Preview unavailable (auth/sharing)' : 'No preview')}
-        </span>
+        <>
+          <span className="mt-1 text-[10px] font-mono px-2 text-center truncate max-w-full">
+            {asset.file || (failed ? 'Preview unavailable' : 'No preview')}
+          </span>
+          {driveId && !hasDriveToken && (
+            <button
+              type="button"
+              disabled={connectingDrive}
+              onClick={async (e) => {
+                e.stopPropagation();
+                setConnectingDrive(true);
+                try {
+                  await signInOpsWithGoogle();
+                } catch {
+                  // Token handler updates automatically on success
+                } finally {
+                  setConnectingDrive(false);
+                }
+              }}
+              className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-accent/50 bg-accent/15 text-accent text-[11px] font-mono font-semibold hover:bg-accent/25 disabled:opacity-50"
+            >
+              <Lock className="w-3 h-3" />
+              {connectingDrive ? 'Connecting...' : 'Connect Drive to preview'}
+            </button>
+          )}
+        </>
       )}
     </div>
   );
