@@ -25,6 +25,7 @@ import {
   normalizeLane,
   normalizePhotoStatus,
   normalizePlatformList,
+  normalizePostFormat,
   normalizeVerdictTag,
   parseNewJobAssetInput,
   refreshStaleCardNote,
@@ -69,6 +70,8 @@ const ALLOWED_JOB_ITEM_FIELDS = new Set([
   'unverifiedClaims',
   'photoStatus',
   'textOnly',
+  'postFormat',
+  'format',
   'eventDate',
   'verdictTag',
   'note',
@@ -456,6 +459,20 @@ export async function POST(request: Request) {
       );
     }
 
+    const rawPostFormat =
+      itemInput.postFormat !== undefined ? itemInput.postFormat : itemInput.format;
+    const postFormat =
+      rawPostFormat !== undefined ? normalizePostFormat(rawPostFormat) : undefined;
+    if (typeof rawPostFormat === 'string' && rawPostFormat.trim() && !postFormat) {
+      return NextResponse.json(
+        {
+          error:
+            'Invalid postFormat. Allowed: article, article_linkedin, post_no_photo, post_photo, reply, reel, fb_ig, fb_only, ig_only.',
+        },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+
     let note: string | undefined;
     if (itemInput.note !== undefined && itemInput.note !== null) {
       const noteCheck = validateStringLength('note', itemInput.note, FIELD_MAX_LENGTHS.note);
@@ -706,6 +723,7 @@ export async function POST(request: Request) {
         assetUrl: effectiveAssetUrl,
         assetSpec: effectiveAssetSpec,
         verdictTag: verdictTag || existing.verdictTag,
+        postFormat: rawPostFormat !== undefined ? postFormat : existing.postFormat,
         eventDate: effectiveEventDate,
         photoStatus: nextPhotoStatus,
         noImageNeededBy:
@@ -843,6 +861,7 @@ export async function POST(request: Request) {
       lane,
       channel: laneToChannel(lane),
       contentType,
+      postFormat,
       stage: finalCreateStage,
       agentId:
         (typeof itemInput.agentId === 'string' && itemInput.agentId.trim().slice(0, 40)) ||

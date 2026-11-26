@@ -20,8 +20,10 @@ import {
   extractDriveFileId,
   getCardAssets,
   getCardCompleteness,
+  getCardFormatBadges,
   getCardPublishedLinks,
   getEffectiveRequestStatus,
+  POST_FORMAT_LABELS,
   resolveVisualPreviewUrl,
   splitTextWithUrls,
 } from '@/lib/ops/drop-parser';
@@ -45,6 +47,7 @@ import type {
   OpsRequest,
   PipelineCard,
   PipelineLane,
+  PostFormat,
   RequestStatus,
 } from '@/lib/ops/types';
 
@@ -207,6 +210,7 @@ export default function OpsDecisionDesk({
   onEditCard,
   onAssignCard,
   onAssignAssetTask,
+  onSetPostFormat,
   onApproveReady,
   onSetNoImageNeeded,
   onUpdateAsset,
@@ -231,6 +235,7 @@ export default function OpsDecisionDesk({
     card: PipelineCard,
     asset: { assignedTo: string; kind: JobAssetKind; platform: JobAssetPlatform; spec?: string }
   ) => Promise<void>;
+  onSetPostFormat?: (card: PipelineCard, postFormat: PostFormat | null) => Promise<void>;
   onApproveReady: (card: PipelineCard) => Promise<void>;
   onSetNoImageNeeded: (card: PipelineCard, enabled: boolean) => Promise<void>;
   onUpdateAsset: (card: PipelineCard, assetId: string, patch: Record<string, unknown>) => Promise<void>;
@@ -421,7 +426,7 @@ export default function OpsDecisionDesk({
                   setSelectedKey(null);
                   setFocusedAssetId(null);
                 }}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
                   active
                     ? 'border-accent bg-accent/15 text-foreground font-semibold'
                     : 'border-border bg-background hover:border-accent/50 text-muted-foreground hover:text-foreground'
@@ -552,6 +557,7 @@ export default function OpsDecisionDesk({
               const completeness = getCardCompleteness(card);
               const cardAssets = getCardAssets(card);
               const cardLiveLinks = getCardPublishedLinks(card);
+              const fmt = getCardFormatBadges(card);
 
               return (
                 <div
@@ -577,6 +583,9 @@ export default function OpsDecisionDesk({
                     <div className="flex items-center gap-1 min-w-0">
                       <span className="px-1.5 py-0.2 rounded bg-muted text-foreground uppercase shrink-0">
                         {card.lane}
+                      </span>
+                      <span className="px-1.5 py-0.2 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold shrink-0">
+                        {fmt.primary}{fmt.secondary ? ` · ${fmt.secondary}` : ''}
                       </span>
                       <span className={`px-1.5 py-0.2 rounded border shrink-0 ${badge.cls}`}>
                         {badge.label}
@@ -658,51 +667,82 @@ export default function OpsDecisionDesk({
               {/* Reader Header + Navigation */}
               <div className="px-3.5 py-2.5 border-b border-border/80 flex flex-wrap items-start justify-between gap-2 bg-card/50 shrink-0">
                 <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
-                    <span className="px-1.5 py-0.5 rounded bg-muted text-foreground uppercase">
-                      {selectedCard.lane}
-                    </span>
-                    <span className={`px-1.5 py-0.5 rounded border ${stageBadge(selectedCard).cls}`}>
-                      {stageBadge(selectedCard).label}
-                    </span>
-                    <span
-                      className={`px-1.5 py-0.5 rounded border ${
-                        assetStateBadge(selectedCompleteness.assetState).cls
-                      }`}
-                    >
-                      {assetStateBadge(selectedCompleteness.assetState).label}
-                    </span>
-                    {selectedCard.verdictTag && (
-                      <span className="px-1.5 py-0.5 rounded border border-border bg-card text-foreground uppercase">
-                        {selectedCard.verdictTag}
-                      </span>
-                    )}
-                    <span className="text-muted-foreground font-mono">
-                      By {selectedCard.agentId}
-                    </span>
-                    {selectedCard.marleyReviewedBy && (
-                      <span className="text-muted-foreground font-mono">
-                        · Cleared by {selectedCard.marleyReviewedBy}
-                      </span>
-                    )}
-                    {selectedCard.assignedTo && (
-                      <span className="px-1.5 py-0.5 rounded border border-accent/35 bg-accent/10 text-accent">
-                        → {selectedCard.assignedTo}
-                      </span>
-                    )}
-                    {selectedCard.stage === 'posted' &&
-                      Boolean(selectedCard.note && /\b(needs marley review|not posted|not ready)\b/i.test(selectedCard.note)) && (
-                        <span
-                          className="px-1.5 py-0.5 rounded border border-amber-500/45 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                          title="Card note still has pre-post draft text"
-                        >
-                          Stale note
+                  {(() => {
+                    const fmt = getCardFormatBadges(selectedCard);
+                    return (
+                      <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
+                        <span className="px-1.5 py-0.5 rounded bg-muted text-foreground uppercase">
+                          {selectedCard.lane}
                         </span>
-                      )}
-                    {selectedCard.eventDate && (
-                      <span className="text-muted-foreground">Event: {selectedCard.eventDate}</span>
-                    )}
-                  </div>
+                        {onSetPostFormat && selectedCard.stage !== 'posted' && selectedCard.stage !== 'archived' ? (
+                          <select
+                            aria-label="Deliverable type / format"
+                            value={selectedCard.postFormat || ''}
+                            disabled={busy}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              void onSetPostFormat(selectedCard, v ? (v as PostFormat) : null);
+                            }}
+                            title="Deliverable format (auto-detected if left on Auto)"
+                            className="px-1.5 py-0.5 rounded border border-indigo-500/45 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold text-[10px] focus:outline-none focus:border-accent disabled:opacity-50"
+                          >
+                            <option value="">
+                              Type: {fmt.primary}{fmt.secondary ? ` · ${fmt.secondary}` : ''} (Auto)
+                            </option>
+                            {(Object.entries(POST_FORMAT_LABELS) as Array<[PostFormat, string]>).map(([k, lbl]) => (
+                              <option key={`fmt-${k}`} value={k}>
+                                {lbl}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded border border-indigo-500/45 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold">
+                            {fmt.primary}{fmt.secondary ? ` · ${fmt.secondary}` : ''}
+                          </span>
+                        )}
+                        <span className={`px-1.5 py-0.5 rounded border ${stageBadge(selectedCard).cls}`}>
+                          {stageBadge(selectedCard).label}
+                        </span>
+                        <span
+                          className={`px-1.5 py-0.5 rounded border ${
+                            assetStateBadge(selectedCompleteness.assetState).cls
+                          }`}
+                        >
+                          {assetStateBadge(selectedCompleteness.assetState).label}
+                        </span>
+                        {selectedCard.verdictTag && (
+                          <span className="px-1.5 py-0.5 rounded border border-border bg-card text-foreground uppercase">
+                            {selectedCard.verdictTag}
+                          </span>
+                        )}
+                        <span className="text-muted-foreground font-mono">
+                          By {selectedCard.agentId}
+                        </span>
+                        {selectedCard.marleyReviewedBy && (
+                          <span className="text-muted-foreground font-mono">
+                            · Cleared by {selectedCard.marleyReviewedBy}
+                          </span>
+                        )}
+                        {selectedCard.assignedTo && (
+                          <span className="px-1.5 py-0.5 rounded border border-accent/35 bg-accent/10 text-accent">
+                            → {selectedCard.assignedTo}
+                          </span>
+                        )}
+                        {selectedCard.stage === 'posted' &&
+                          Boolean(selectedCard.note && /\b(needs marley review|not posted|not ready)\b/i.test(selectedCard.note)) && (
+                            <span
+                              className="px-1.5 py-0.5 rounded border border-amber-500/45 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                              title="Card note still has pre-post draft text"
+                            >
+                              Stale note
+                            </span>
+                          )}
+                        {selectedCard.eventDate && (
+                          <span className="text-muted-foreground">Event: {selectedCard.eventDate}</span>
+                        )}
+                      </div>
+                    );
+                  })()}
                   <h3 className="text-sm font-bold text-foreground leading-snug">
                     {selectedCard.title}
                   </h3>

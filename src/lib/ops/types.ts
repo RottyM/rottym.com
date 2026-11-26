@@ -25,6 +25,17 @@ export type PipelineStage = 'pulled' | 'clearance' | 'drafted' | 'approved' | 'p
 
 export type MarleyVerdictTag = 'NEW' | 'FOLLOW-UP' | 'REPEAT' | 'SKIP' | 'HOLD' | 'REJECTED';
 
+export type PostFormat =
+  | 'article'
+  | 'article_linkedin'
+  | 'post_no_photo'
+  | 'post_photo'
+  | 'reply'
+  | 'reel'
+  | 'fb_ig'
+  | 'fb_only'
+  | 'ig_only';
+
 export type PhotoStatus = 'needed' | 'missing' | 'attached' | 'verified' | 'not_needed';
 
 export type CardAssetState = 'attached' | 'missing' | 'not_needed';
@@ -164,6 +175,7 @@ export interface PipelineCard {
   lane: PipelineLane;
   channel: ChannelId;
   contentType: ContentKind;
+  postFormat?: PostFormat;
   stage: PipelineStage;
   agentId: string;
   source: string;

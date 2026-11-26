@@ -20,6 +20,7 @@ import {
   getCardAssets,
   getCardCompleteness,
   getCardPublishedLinks,
+  POST_FORMAT_LABELS,
   resolveAvatarRenderUrl,
   syncCardWithAssets,
 } from '@/lib/ops/drop-parser';
@@ -36,6 +37,7 @@ import type {
   PipelineLane,
   PipelineStage,
   PlatformKey,
+  PostFormat,
 } from '@/lib/ops/types';
 import { OpsAssetThumb, assetStatusBadge, uploadHostedAssetImage } from './OpsAssetThumb';
 
@@ -232,6 +234,7 @@ function CardEditorForm({
   const initialAssets = getCardAssets(card);
   const [title, setTitle] = useState(card.title);
   const [lane, setLane] = useState<PipelineLane>(card.lane);
+  const [postFormat, setPostFormat] = useState<PostFormat | ''>(card.postFormat || '');
   const [stage, setStage] = useState<PipelineStage>(card.stage);
   const [assignedTo, setAssignedTo] = useState(card.assignedTo || '');
   const [source, setSource] = useState(card.source);
@@ -356,6 +359,7 @@ function CardEditorForm({
     return {
       title,
       lane,
+      postFormat: postFormat || '',
       stage: overrideStage ?? stage,
       assignedTo: assignedTo || null,
       targetPlatforms,
@@ -564,12 +568,25 @@ function CardEditorForm({
         <input className={INPUT_CLS} value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div>
           <label className={LABEL_CLS}>Lane</label>
           <select className={INPUT_CLS} value={lane} onChange={(e) => setLane(e.target.value as PipelineLane)}>
             {LANE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className={LABEL_CLS}>Deliverable Type</label>
+          <select
+            className={INPUT_CLS}
+            value={postFormat}
+            onChange={(e) => setPostFormat((e.target.value || '') as PostFormat | '')}
+          >
+            <option value="">Auto-detect</option>
+            {(Object.entries(POST_FORMAT_LABELS) as Array<[PostFormat, string]>).map(([k, lbl]) => (
+              <option key={`modal-fmt-${k}`} value={k}>{lbl}</option>
             ))}
           </select>
         </div>

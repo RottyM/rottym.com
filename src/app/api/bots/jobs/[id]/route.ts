@@ -23,6 +23,7 @@ import {
   normalizeLane,
   normalizePhotoStatus,
   normalizePlatformList,
+  normalizePostFormat,
   normalizeVerdictTag,
   parseNewJobAssetInput,
   refreshStaleCardNote,
@@ -66,6 +67,8 @@ const ALLOWED_JOB_PATCH_FIELDS = new Set([
   'unverifiedClaims',
   'photoStatus',
   'textOnly',
+  'postFormat',
+  'format',
   'eventDate',
   'verdictTag',
 ]);
@@ -502,6 +505,23 @@ async function handleUpsertJobById(
     );
   }
 
+  const rawPostFormat = body.postFormat !== undefined ? body.postFormat : body.format;
+  const nextPostFormat =
+    rawPostFormat === null || rawPostFormat === ''
+      ? undefined
+      : rawPostFormat !== undefined
+        ? normalizePostFormat(rawPostFormat)
+        : existing.postFormat;
+  if (typeof rawPostFormat === 'string' && rawPostFormat.trim() && !nextPostFormat) {
+    return NextResponse.json(
+      {
+        error:
+          'Invalid postFormat. Allowed: article, article_linkedin, post_no_photo, post_photo, reply, reel, fb_ig, fb_only, ig_only.',
+      },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+
   const baseFlags = (existing.flaggedNotes || []).filter(
     (flag) => !(nextSourceUrl || nextStage === 'posted') || !flag.startsWith('FLAG: Missing verified source URL')
   );
@@ -511,6 +531,7 @@ async function handleUpsertJobById(
     title: nextTitle,
     lane: nextLane,
     channel: laneToChannel(nextLane),
+    postFormat: nextPostFormat,
     stage: nextStage,
     readyForRotty: nextReady,
     postIt: nextPostIt,

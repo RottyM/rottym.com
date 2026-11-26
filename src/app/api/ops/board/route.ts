@@ -17,6 +17,7 @@ import {
   normalizeLane,
   normalizePhotoStatus,
   normalizePlatformList,
+  normalizePostFormat,
   parseAdminPasteBlock,
   parseConnectorAlert,
   parseMultiItemDeskList,
@@ -392,6 +393,7 @@ export async function POST(request: Request) {
       noImageNeededAt: photoStatus === 'not_needed' && !assetFile && !assetUrl ? now : undefined,
       note,
       draftCopy,
+      postFormat: normalizePostFormat(body.postFormat),
       marleyStatus: stage === 'approved' || stage === 'posted' ? 'approved' : 'pending',
       readyForRotty: wantsReady,
       approvedBy: stage === 'approved' || stage === 'posted' ? user.name : undefined,
@@ -653,11 +655,19 @@ export async function POST(request: Request) {
     const explicitArtifacts =
       body.artifactsNeeded !== undefined ? cleanBotStringList(body.artifactsNeeded) : undefined;
 
+    const nextPostFormat =
+      body.postFormat === null || body.postFormat === ''
+        ? undefined
+        : body.postFormat !== undefined
+          ? normalizePostFormat(body.postFormat)
+          : existing.postFormat;
+
     const updated: PipelineCard = {
       ...existing,
       title: nextTitle,
       lane: nextLane,
       channel: laneToChannel(nextLane),
+      postFormat: nextPostFormat,
       stage: nextStage,
       assignedTo:
         body.assignedTo !== undefined ? normalizeAssignedTo(body.assignedTo) : existing.assignedTo,

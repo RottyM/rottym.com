@@ -9,6 +9,7 @@ import {
   AlertTriangle,
   Check,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Clock,
   Columns3,
@@ -57,6 +58,7 @@ import type {
 import {
   getCardAssets,
   getCardCompleteness,
+  getCardFormatBadges,
   getCardPublishedLinks,
   getEffectiveRequestStatus,
   resolveAvatarRenderUrl,
@@ -870,7 +872,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                 <Inbox className="w-3.5 h-3.5" />
                 Decision Desk
                 {needsYouCount > 0 && (
-                  <span className="px-1.5 py-0 rounded-full text-[10px] font-mono bg-background/20 text-accent-foreground">
+                  <span className="px-1.5 py-0 rounded-lg text-[10px] font-mono bg-background/20 text-accent-foreground">
                     {needsYouCount}
                   </span>
                 )}
@@ -896,6 +898,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   const dotCls = STATUS_DOT[m.status] || STATUS_DOT.active;
                   const isGlow = highlightedIds.has(m.id);
                   const hasConnAlert = Boolean(m.connectorAlert && m.connectorAlert.status !== 'ok');
+                  const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
                   const tip = [
                     m.name,
                     `${m.role} · ${m.model}`,
@@ -909,7 +912,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       type="button"
                       title={tip}
                       onClick={() => setModal({ type: 'crew', member: m })}
-                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-medium transition-all duration-500 ${
+                      className={`inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-lg border text-[11px] font-medium transition-all duration-500 ${
                         hasConnAlert
                           ? 'border-red-500/70 bg-red-500/15 text-red-700 dark:text-red-300'
                           : isGlow
@@ -917,10 +920,10 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                             : 'border-border bg-background/70 hover:border-accent/60'
                       }`}
                     >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                          hasConnAlert ? 'bg-red-500 animate-pulse' : dotCls
-                        }`}
+                      <CrewPillAvatar
+                        name={m.name}
+                        src={avatarSrc}
+                        dotCls={hasConnAlert ? 'bg-red-500 animate-pulse' : dotCls}
                       />
                       <span className="truncate max-w-[90px]">{m.name}</span>
                     </button>
@@ -929,7 +932,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                 <button
                   type="button"
                   onClick={() => setModal({ type: 'create_crew', defaultSet: 'new' })}
-                  className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full border border-border bg-background hover:border-accent text-[11px] text-muted-foreground hover:text-foreground"
+                  className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-lg border border-border bg-background hover:border-accent text-[11px] text-muted-foreground hover:text-foreground"
                 >
                   <Plus className="w-3 h-3" />
                   Add
@@ -1032,6 +1035,14 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                         },
                       },
                       `Assigned ${assetPayload.kind.replace('_', ' ')} to ${label}: ${card.title}`
+                    );
+                  }}
+                  onSetPostFormat={async (card, postFormat) => {
+                    await postAction(
+                      { action: 'update_card', id: card.id, postFormat: postFormat ?? '' },
+                      postFormat
+                        ? `Updated type to ${postFormat.replace(/_/g, ' ')}: ${card.title}`
+                        : `Reset type to auto-detect: ${card.title}`
                     );
                   }}
                   onDecideRequest={async (req, decision, label) => {
@@ -1531,6 +1542,47 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
 const UPDATED_CARD_GLOW_CLS =
   'border-cyan-500 dark:border-cyan-400 ring-2 ring-cyan-500/45 dark:ring-cyan-400/50 shadow-[0_0_20px_rgba(34,211,238,0.45)]';
 
+/** Compact circular avatar with status dot and initial-letter fallback for top crew pills. */
+function CrewPillAvatar({
+  name,
+  src,
+  dotCls,
+}: {
+  name: string;
+  src?: string;
+  dotCls: string;
+}) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const initials =
+    name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() || '')
+      .join('') || '?';
+  const showImage = Boolean(src && failedSrc !== src);
+
+  return (
+    <span className="relative w-[18px] h-[18px] rounded-full border border-border/80 bg-accent/15 text-accent font-mono text-[8px] font-bold inline-flex items-center justify-center shrink-0">
+      <span className="overflow-hidden w-full h-full rounded-full flex items-center justify-center relative">
+        <span>{initials}</span>
+        {showImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={src}
+            alt={name}
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={() => setFailedSrc(src ?? null)}
+          />
+        )}
+      </span>
+      <span
+        className={`absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ring-[1.5px] ring-background ${dotCls}`}
+      />
+    </span>
+  );
+}
+
 const STATUS_DOT: Record<AgentStatus, string> = {
   active: 'bg-emerald-500',
   on_call: 'bg-cyan-500',
@@ -1995,12 +2047,221 @@ function PipelineCardTile({
 }
 
 const CHAT_TARGET_CHIPS = [
-  { key: 'all', label: '@All' },
-  { key: 'marley', label: '@Marley' },
-  { key: 'sovereign', label: '@Sovereign' },
-  { key: 'pixel', label: '@Pixel' },
-  { key: 'cheat-code', label: '@CheatCode' },
+  {
+    key: 'all',
+    label: '@All',
+    mentionToken: '',
+    dotCls: 'bg-cyan-400',
+    tagCls: 'text-cyan-700 dark:text-cyan-300',
+    accentBorderL: 'border-l-cyan-500/80',
+    accentBorderR: 'border-r-cyan-500/70',
+    accentText: 'text-cyan-700 dark:text-cyan-300',
+  },
+  {
+    key: 'marley',
+    label: '@Marley',
+    mentionToken: '@Marley',
+    dotCls: 'bg-teal-400',
+    tagCls: 'text-teal-700 dark:text-teal-300',
+    accentBorderL: 'border-l-teal-500/80',
+    accentBorderR: 'border-r-teal-500/70',
+    accentText: 'text-teal-700 dark:text-teal-300',
+  },
+  {
+    key: 'sovereign',
+    label: '@Sovereign',
+    mentionToken: '@Sovereign',
+    dotCls: 'bg-indigo-400',
+    tagCls: 'text-indigo-700 dark:text-indigo-300',
+    accentBorderL: 'border-l-indigo-500/80',
+    accentBorderR: 'border-r-indigo-500/70',
+    accentText: 'text-indigo-700 dark:text-indigo-300',
+  },
+  {
+    key: 'pixel',
+    label: '@Pixel',
+    mentionToken: '@Pixel',
+    dotCls: 'bg-amber-400',
+    tagCls: 'text-amber-700 dark:text-amber-300',
+    accentBorderL: 'border-l-amber-500/80',
+    accentBorderR: 'border-r-amber-500/70',
+    accentText: 'text-amber-700 dark:text-amber-300',
+  },
+  {
+    key: 'cheat-code',
+    label: '@CheatCode',
+    mentionToken: '@CheatCode',
+    dotCls: 'bg-violet-400',
+    tagCls: 'text-violet-700 dark:text-violet-300',
+    accentBorderL: 'border-l-violet-500/80',
+    accentBorderR: 'border-r-violet-500/70',
+    accentText: 'text-violet-700 dark:text-violet-300',
+  },
 ];
+
+function normalizeChatHandle(raw?: string): string {
+  return (raw || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function getChatAccentByHandle(handle?: string) {
+  const norm = normalizeChatHandle(handle);
+  return (
+    CHAT_TARGET_CHIPS.find((c) => c.key !== 'all' && normalizeChatHandle(c.key) === norm) ||
+    CHAT_TARGET_CHIPS[0]
+  );
+}
+
+const CHAT_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+function formatChatDateDivider(dateKey: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+  if (!match) return dateKey;
+  const year = Number(match[1]);
+  const monthIdx = Number(match[2]) - 1;
+  const dayNum = Number(match[3]);
+  const shortLabel = `${dayNum} ${CHAT_MONTHS[monthIdx] || match[2]}`;
+  const now = new Date();
+  const todayUtc = now.toISOString().slice(0, 10);
+  const yesterdayUtc = new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10);
+  if (dateKey === todayUtc) return `Today • ${shortLabel}`;
+  if (dateKey === yesterdayUtc) return `Yesterday • ${shortLabel}`;
+  const currentYear = Number(todayUtc.slice(0, 4));
+  return year !== currentYear ? `${shortLabel} ${year}` : shortLabel;
+}
+
+function getChatCardMeta(card: PipelineCard) {
+  const completeness = getCardCompleteness(card);
+  const isReady = card.stage === 'approved' && Boolean(card.readyForRotty) && completeness.canApproveReady;
+  const liveLinks = getCardPublishedLinks(card);
+  let statusLabel = 'Clearance';
+  let statusCls = 'border-cyan-500/35 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300';
+  let footerDot = 'bg-cyan-400';
+  let footerNote = 'In desk queue';
+
+  if (card.stage === 'posted') {
+    statusLabel = 'Posted';
+    statusCls = 'border-emerald-500/35 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300';
+    footerDot = 'bg-emerald-400';
+    footerNote = liveLinks.length > 0 ? `${liveLinks.length} live link${liveLinks.length > 1 ? 's' : ''}` : 'Published';
+  } else if (card.stage === 'archived') {
+    statusLabel = 'Archived';
+    statusCls = 'border-border bg-muted text-muted-foreground';
+    footerDot = 'bg-muted-foreground';
+    footerNote = 'Archived';
+  } else if (card.postIt && isReady) {
+    statusLabel = 'Post it Armed';
+    statusCls = 'border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300';
+    footerDot = 'bg-emerald-400';
+    footerNote = card.claimedBy ? `Claimed · ${card.claimedBy}` : 'Armed for publisher';
+  } else if (isReady) {
+    statusLabel = 'Ready';
+    statusCls = 'border-cyan-500/40 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300';
+    footerDot = 'bg-cyan-400';
+    footerNote = 'Ready for Rotty';
+  } else if (completeness.assetState === 'missing') {
+    statusLabel = 'Asset Missing';
+    statusCls = 'border-amber-500/35 bg-amber-500/15 text-amber-700 dark:text-amber-300';
+    footerDot = 'bg-amber-400';
+    footerNote = card.assignedTo ? `Awaiting @${card.assignedTo}` : 'Awaiting asset link';
+  } else if (card.stage === 'approved') {
+    statusLabel = 'Approved';
+    statusCls = 'border-emerald-500/35 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300';
+    footerDot = 'bg-emerald-400';
+    footerNote = card.assignedTo ? `Assigned → ${card.assignedTo}` : 'Approved crew queue';
+  } else if (card.stage === 'pulled') {
+    statusLabel = 'Drop';
+    statusCls = 'border-border bg-muted/70 text-foreground/85';
+    footerDot = 'bg-cyan-400';
+    footerNote = 'Pulled drop';
+  } else if (card.stage === 'drafted') {
+    statusLabel = 'Drafted';
+    statusCls = 'border-sky-500/35 bg-sky-500/15 text-sky-700 dark:text-sky-300';
+    footerDot = 'bg-sky-400';
+    footerNote = 'Draft ready for review';
+  }
+
+  let sourceDomain = '';
+  if (card.sourceUrl) {
+    try {
+      sourceDomain = new URL(card.sourceUrl).hostname.replace(/^www\./, '');
+    } catch {
+      sourceDomain = '';
+    }
+  }
+
+  const formatBadges = getCardFormatBadges(card);
+  const primaryFormat = formatBadges.secondary
+    ? `${formatBadges.primary} · ${formatBadges.secondary}`
+    : formatBadges.primary;
+  const assetLabel =
+    completeness.assetState === 'missing'
+      ? 'Needs Photo'
+      : completeness.assetState === 'not_needed'
+        ? 'No Photo Needed'
+        : 'Asset Ready';
+
+  return {
+    completeness,
+    liveLinks,
+    statusLabel,
+    statusCls,
+    footerDot,
+    footerNote,
+    sourceDomain,
+    primaryFormat,
+    assetLabel,
+  };
+}
+
+function CrewChatAvatar({
+  name,
+  src,
+  isOperator = false,
+  badgeDotCls,
+}: {
+  name: string;
+  src?: string;
+  isOperator?: boolean;
+  badgeDotCls?: string;
+}) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const initials =
+    name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() || '')
+      .join('') || '?';
+  const showImage = Boolean(src && failedSrc !== src);
+
+  return (
+    <div
+      className={`relative w-7 h-7 rounded-full border font-mono text-[10px] font-bold flex items-center justify-center shrink-0 ${
+        isOperator
+          ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-700 dark:text-cyan-300 shadow-[0_0_12px_-3px_rgba(6,182,212,0.35)]'
+          : 'bg-accent/15 border-border text-accent'
+      }`}
+    >
+      <span className="overflow-hidden w-full h-full rounded-full flex items-center justify-center relative">
+        <span>{initials}</span>
+        {showImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={src}
+            alt={name}
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={() => setFailedSrc(src ?? null)}
+          />
+        )}
+      </span>
+      {badgeDotCls && (
+        <span
+          className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-2 ring-background ${badgeDotCls}`}
+        />
+      )}
+    </div>
+  );
+}
 
 function renderLinkifiedText(text: string) {
   return splitTextWithUrls(text).map((seg, i) =>
@@ -2046,15 +2307,27 @@ function CrewChatPanel({
   const [showJumpLatest, setShowJumpLatest] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const initializedScrollRef = useRef(false);
   const stickToBottomRef = useRef(true);
   const forceScrollRef = useRef(false);
 
-  const lastMessageId = messages[messages.length - 1]?.id || '';
+  const filteredMessages = useMemo(() => {
+    if (targetMention === 'all') return messages;
+    const targetNorm = normalizeChatHandle(targetMention);
+    return messages.filter((m) => {
+      if (normalizeChatHandle(m.senderId) === targetNorm) return true;
+      if (normalizeChatHandle(m.senderName) === targetNorm) return true;
+      if (m.mentions?.some((tag) => normalizeChatHandle(tag) === targetNorm)) return true;
+      return false;
+    });
+  }, [messages, targetMention]);
+
+  const lastMessageId = filteredMessages[filteredMessages.length - 1]?.id || '';
 
   useEffect(() => {
     const el = scrollContainerRef.current;
-    if (!el || messages.length === 0) return;
+    if (!el || filteredMessages.length === 0) return;
 
     if (!initializedScrollRef.current) {
       el.scrollTop = el.scrollHeight;
@@ -2072,7 +2345,7 @@ function CrewChatPanel({
     } else {
       setShowJumpLatest(true);
     }
-  }, [lastMessageId, messages.length]);
+  }, [lastMessageId, filteredMessages.length]);
 
   const handleScroll = () => {
     const el = scrollContainerRef.current;
@@ -2091,14 +2364,14 @@ function CrewChatPanel({
     return map;
   }, [pipeline]);
 
-  const avatarBySender = useMemo(() => {
-    const map = new Map<string, string>();
+  const crewInfoByHandle = useMemo(() => {
+    const map = new Map<string, { avatar?: string; dotCls: string; statusLabel?: string }>();
     for (const c of crew) {
       const resolved = resolveAvatarRenderUrl(c.avatarUrl);
-      if (resolved) {
-        map.set(c.agentId.toLowerCase(), resolved);
-        map.set(c.name.toLowerCase(), resolved);
-      }
+      const dotCls = STATUS_DOT[c.status] || STATUS_DOT.active;
+      const entry = { avatar: resolved, dotCls, statusLabel: AGENT_BADGE[c.status]?.label };
+      map.set(normalizeChatHandle(c.agentId), entry);
+      map.set(normalizeChatHandle(c.name), entry);
     }
     return map;
   }, [crew]);
@@ -2106,173 +2379,470 @@ function CrewChatPanel({
   const activeChipLabel =
     CHAT_TARGET_CHIPS.find((c) => c.key === targetMention)?.label || '@All';
 
+  const appendMentionTag = (mentionToken: string) => {
+    if (!mentionToken) return;
+    setDraft((prev) => {
+      if (new RegExp(`(^|\\s)${mentionToken}\\b`, 'i').test(prev)) return prev;
+      const sep = prev.length === 0 || /\s$/.test(prev) ? '' : ' ';
+      return `${prev}${sep}${mentionToken} `;
+    });
+    inputRef.current?.focus();
+  };
+
   return (
     <section
-      className={`rounded-xl border border-border bg-card p-3 flex flex-col gap-2 overflow-hidden [overflow-anchor:none] ${
-        tall ? 'h-[420px] lg:h-[620px]' : 'h-[240px] lg:h-[264px]'
+      className={`rounded-xl border border-border bg-card flex flex-col overflow-hidden [overflow-anchor:none] ${
+        tall ? 'h-[480px] lg:h-[620px]' : 'h-[264px] lg:h-[296px]'
       }`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-1.5 shrink-0">
-        <div className="flex items-center gap-1.5">
-          <MessageSquare className="w-3.5 h-3.5 text-accent" />
-          <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
-            Crew Chat
-          </h2>
-          <span className="text-[11px] font-mono text-muted-foreground">{messages.length}</span>
+      {/* Top Bar: Header + Filter/Target Pills */}
+      <div className="px-3 pt-2.5 pb-2 border-b border-border/80 bg-card/95 backdrop-blur-sm space-y-2 shrink-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <MessageSquare className="w-3.5 h-3.5 text-accent shrink-0" />
+            <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">
+              Crew Chat
+            </h2>
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+          </div>
+          <span className="text-[10px] font-mono text-muted-foreground">
+            {targetMention === 'all'
+              ? `${messages.length} msgs`
+              : `${filteredMessages.length}/${messages.length} in ${activeChipLabel}`}
+          </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1">
+        <nav aria-label="Crew chat filters" className="flex items-center gap-1.5 overflow-x-auto ops-scroll pb-0.5">
           {CHAT_TARGET_CHIPS.map((chip) => {
             const active = targetMention === chip.key;
             return (
               <button
                 key={chip.key}
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  stickToBottomRef.current = true;
                   setTargetMention((prev) =>
                     chip.key === 'all' ? 'all' : prev === chip.key ? 'all' : chip.key
-                  )
-                }
+                  );
+                }}
                 title={
                   chip.key === 'all'
-                    ? 'Default broadcast to all bots'
-                    : `Target ${chip.label} (click again to return to @All)`
+                    ? 'Show all crew messages & broadcast to @All'
+                    : `Filter & target ${chip.label} (click again for @All)`
                 }
-                className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono border transition-colors ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border whitespace-nowrap transition-all ${
                   active
-                    ? 'border-accent bg-accent/15 text-foreground font-semibold'
-                    : 'border-border bg-background hover:border-accent/60 text-muted-foreground hover:text-foreground'
+                    ? 'bg-cyan-500/15 border-cyan-500/45 text-cyan-800 dark:text-cyan-200 shadow-sm'
+                    : 'bg-background/70 border-border text-muted-foreground hover:text-foreground hover:border-accent/50'
                 }`}
               >
-                {chip.label}
+                {chip.key === 'all' ? (
+                  <>
+                    <span>{chip.label}</span>
+                    <span className="px-1 rounded text-[10px] font-mono bg-cyan-500/25 text-cyan-900 dark:text-cyan-100">
+                      {messages.length}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${chip.dotCls}`} />
+                    <span>{chip.label}</span>
+                  </>
+                )}
               </button>
             );
           })}
-        </div>
+        </nav>
       </div>
 
+      {/* Chat Feed Area */}
       <div className="relative flex-1 min-h-0">
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className="h-full overflow-y-auto overscroll-contain [overflow-anchor:none] scroll-auto ops-scroll space-y-1.5 pr-1"
+          className="h-full overflow-y-auto overscroll-contain [overflow-anchor:none] scroll-auto ops-scroll px-3 py-2.5 space-y-2.5"
         >
-          {messages.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border bg-background/40 px-3 py-4 text-xs text-muted-foreground text-center">
-              No messages yet — bots can talk via <span className="font-mono text-foreground">/api/bots/chat</span> or ping them below (defaults to <span className="font-mono text-accent">@All</span>).
+          {filteredMessages.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border bg-background/40 px-3 py-5 text-xs text-muted-foreground text-center">
+              {messages.length === 0 ? (
+                <>
+                  No messages yet — bots can talk via <span className="font-mono text-foreground">/api/bots/chat</span> or ping them below (defaults to <span className="font-mono text-accent">@All</span>).
+                </>
+              ) : (
+                <>
+                  No messages in <span className="font-mono text-foreground">{activeChipLabel}</span> yet.{' '}
+                  <button
+                    type="button"
+                    onClick={() => setTargetMention('all')}
+                    className="text-accent hover:underline font-mono"
+                  >
+                    Show @All
+                  </button>
+                </>
+              )}
             </div>
           ) : (
-            messages.map((m) => {
+            filteredMessages.map((m, idx) => {
+              const dateKey = m.createdAt?.slice(0, 10) || '';
+              const prevDateKey = idx > 0 ? filteredMessages[idx - 1]?.createdAt?.slice(0, 10) || '' : '';
+              const showDateDivider = Boolean(dateKey && dateKey !== prevDateKey);
+
               const isGlow = highlightedIds.has(m.id);
               const isOp = m.senderKind === 'operator';
-              const avatarSrc =
-                avatarBySender.get(m.senderId.toLowerCase()) ||
-                avatarBySender.get(m.senderName.toLowerCase());
-              const initials =
-                m.senderName
-                  .split(/\s+/)
-                  .slice(0, 2)
-                  .map((w) => w[0]?.toUpperCase() || '')
-                  .join('') || '?';
+              const senderInfo =
+                crewInfoByHandle.get(normalizeChatHandle(m.senderId)) ||
+                crewInfoByHandle.get(normalizeChatHandle(m.senderName));
+              const linkedCard = m.jobId ? cardById.get(m.jobId) : undefined;
+              const cardMeta = linkedCard ? getChatCardMeta(linkedCard) : null;
+              const liveLinks = cardMeta?.liveLinks || [];
+
+              const primaryTargetHandle =
+                m.mentions?.find((tag) => normalizeChatHandle(tag) !== 'rotty') || m.mentions?.[0];
+              const targetAccent = getChatAccentByHandle(primaryTargetHandle || m.senderId);
+              const senderAccent = getChatAccentByHandle(m.senderId || m.senderName);
+              const timeStr = m.createdAt?.slice(11, 16) || '';
+
+              const isOperatorDispatch = isOp || Boolean(linkedCard || m.jobTitle);
+              const isCompactReply = !isOp && !linkedCard && !m.jobTitle && m.text.length < 220;
+
+              const operatorBorderL =
+                cardMeta?.completeness.assetState === 'missing'
+                  ? 'border-l-amber-500/80'
+                  : targetAccent.accentBorderL;
 
               return (
-                <div
-                  key={m.id}
-                  className={`group rounded-lg border bg-background/70 px-2.5 py-1.5 transition-all duration-500 flex items-start gap-2 ${
-                    isGlow
-                      ? UPDATED_CARD_GLOW_CLS
-                      : isOp
-                        ? 'border-accent/35'
-                        : 'border-border'
-                  }`}
-                >
-                  <div className="relative w-6 h-6 rounded-full border border-border bg-accent/15 text-accent font-mono text-[9px] font-bold flex items-center justify-center shrink-0 overflow-hidden mt-0.5">
-                    <span>{initials}</span>
-                    {avatarSrc && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={avatarSrc}
-                        alt={m.senderName}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex flex-wrap items-center gap-1 min-w-0">
-                        <span className="text-[11px] font-bold text-foreground">{m.senderName}</span>
-                        {isOp && (
-                          <span className="px-1 py-0 rounded text-[9px] font-mono border border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
-                            Operator
-                          </span>
-                        )}
-                        {m.mentions && m.mentions.length > 0 && (
-                          <span className="px-1 py-0 rounded text-[9px] font-mono bg-accent/10 text-accent truncate max-w-[140px]">
-                            {m.mentions.map((tag) => `@${tag}`).join(' ')}
-                          </span>
-                        )}
-                        {m.jobTitle && (() => {
-                          const linkedCard = m.jobId ? cardById.get(m.jobId) : undefined;
-                          return linkedCard && onOpenJob ? (
-                            <button
-                              type="button"
-                              onClick={() => onOpenJob(linkedCard)}
-                              className="px-1 py-0 rounded text-[9px] font-mono bg-muted text-foreground hover:text-accent hover:underline truncate max-w-[160px]"
-                              title={`Open card: ${m.jobTitle}`}
-                            >
-                              Re: {m.jobTitle}
-                            </button>
-                          ) : (
-                            <span className="px-1 py-0 rounded text-[9px] font-mono bg-muted text-muted-foreground truncate max-w-[160px]">
-                              Re: {m.jobTitle}
-                            </span>
-                          );
-                        })()}
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <span className="text-[10px] font-mono text-muted-foreground">
-                          {m.createdAt?.slice(11, 16) || ''}
-                        </span>
-                        <button
-                          type="button"
-                          aria-label="Delete chat message"
-                          disabled={busy}
-                          onClick={() => onDelete(m.id)}
-                          className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-red-500 transition-opacity disabled:opacity-40"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
+                <div key={m.id} className="space-y-2.5">
+                  {showDateDivider && (
+                    <div className="flex items-center justify-center my-1">
+                      <div className="h-px bg-border/80 flex-1" />
+                      <span className="px-2.5 py-0.5 text-[10px] font-mono tracking-wider uppercase text-muted-foreground bg-muted/60 dark:bg-card border border-border rounded-lg mx-2">
+                        {formatChatDateDivider(dateKey)}
+                      </span>
+                      <div className="h-px bg-border/80 flex-1" />
                     </div>
-                    <p className="text-xs text-foreground/95 whitespace-pre-wrap break-words leading-snug">
-                      {renderLinkifiedText(m.text)}
-                    </p>
-                    {m.jobId && (() => {
-                      const linkedCard = cardById.get(m.jobId);
-                      const liveLinks = linkedCard ? getCardPublishedLinks(linkedCard) : [];
-                      if (liveLinks.length === 0) return null;
-                      return (
-                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                  )}
+
+                  {isCompactReply ? (
+                    /* Compact Crew Reply Card */
+                    <article
+                      className={`group rounded-xl border bg-background/75 p-2.5 ml-3 border-r-2 transition-all duration-500 ${
+                        isGlow ? UPDATED_CARD_GLOW_CLS : `border-border ${senderAccent.accentBorderR}`
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 pb-1">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <CrewChatAvatar
+                            name={m.senderName}
+                            src={senderInfo?.avatar}
+                            badgeDotCls={senderInfo?.dotCls}
+                          />
+                          <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                            <span className={`text-xs font-bold truncate ${senderAccent.accentText}`}>
+                              {m.senderName}
+                            </span>
+                            {m.mentions && m.mentions.length > 0 && (
+                              <span className="text-[10px] font-mono text-accent truncate">
+                                {m.mentions.map((tag) => `@${tag}`).join(' ')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <span className="text-[10px] font-mono text-muted-foreground">{timeStr}</span>
+                          <button
+                            type="button"
+                            aria-label="Delete chat message"
+                            disabled={busy}
+                            onClick={() => onDelete(m.id)}
+                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-red-500 transition-opacity disabled:opacity-40"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-xs text-foreground/95 pl-9 whitespace-pre-wrap break-words leading-relaxed">
+                        {renderLinkifiedText(m.text)}
+                      </p>
+                      {liveLinks.length > 0 && (
+                        <div className="pl-9 mt-1.5 flex flex-wrap items-center gap-1.5">
                           {liveLinks.map((l) => (
                             <a
                               key={`chat-${m.id}-${l.platform}`}
                               href={l.href}
                               target="_blank"
                               rel="noopener noreferrer"
-                              title={`Preview ${l.label} post: ${l.href}`}
-                              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 hover:underline"
+                              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono text-emerald-700 dark:text-emerald-300 hover:underline"
                             >
                               {l.shortLabel} Live <ExternalLink className="w-2.5 h-2.5" />
                             </a>
                           ))}
                         </div>
-                      );
-                    })()}
-                  </div>
+                      )}
+                    </article>
+                  ) : isOperatorDispatch && isOp ? (
+                    /* Operator Dispatch / Assignment Card */
+                    <article
+                      className={`group rounded-xl border border-l-4 bg-background/75 p-2.5 transition-all duration-500 ${
+                        isGlow ? UPDATED_CARD_GLOW_CLS : `border-border ${operatorBorderL}`
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 pb-1.5 mb-1.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <CrewChatAvatar name={m.senderName} src={senderInfo?.avatar} isOperator />
+                          <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                            <span className="text-xs font-bold text-foreground">{m.senderName}</span>
+                            <span className="px-1.5 py-0 rounded text-[9px] font-mono font-semibold bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/35">
+                              Operator
+                            </span>
+                            {m.mentions && m.mentions.length > 0 && (
+                              <span className={`text-[11px] font-semibold truncate ${targetAccent.accentText}`}>
+                                {m.mentions.map((tag) => `@${tag}`).join(' ')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <span className="text-[10px] font-mono text-muted-foreground">{timeStr}</span>
+                          <button
+                            type="button"
+                            aria-label="Delete chat message"
+                            disabled={busy}
+                            onClick={() => onDelete(m.id)}
+                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-red-500 transition-opacity disabled:opacity-40"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg p-2.5 border border-border/80 bg-muted/40 dark:bg-card/70 space-y-1.5">
+                        {(m.jobTitle || cardMeta) && (
+                          <div className="flex items-start justify-between gap-2">
+                            {linkedCard && onOpenJob ? (
+                              <button
+                                type="button"
+                                onClick={() => onOpenJob(linkedCard)}
+                                title={`Open card: ${m.jobTitle || linkedCard.title}`}
+                                className={`text-left text-[10px] font-mono uppercase tracking-wide hover:underline truncate ${
+                                  cardMeta?.completeness.assetState === 'missing'
+                                    ? 'text-amber-600 dark:text-amber-400'
+                                    : targetAccent.accentText
+                                }`}
+                              >
+                                Re: {m.jobTitle || linkedCard.title}
+                              </button>
+                            ) : (
+                              <span className="text-[10px] font-mono text-accent uppercase tracking-wide truncate">
+                                Re: {m.jobTitle}
+                              </span>
+                            )}
+                            {cardMeta && (
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-[9px] font-semibold border shrink-0 leading-none ${cardMeta.statusCls}`}
+                              >
+                                {cardMeta.statusLabel}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <p className="text-xs text-foreground/95 whitespace-pre-wrap break-words leading-snug">
+                          {renderLinkifiedText(m.text)}
+                        </p>
+
+                        {cardMeta && (
+                          <div className="pt-1.5 border-t border-border/70 text-[10px] font-mono text-muted-foreground flex flex-wrap items-center gap-1.5">
+                            <span
+                              className={
+                                cardMeta.completeness.assetState === 'missing'
+                                  ? 'text-amber-600 dark:text-amber-400'
+                                  : 'text-emerald-600 dark:text-emerald-400'
+                              }
+                            >
+                              {cardMeta.assetLabel}
+                            </span>
+                            {cardMeta.primaryFormat && (
+                              <>
+                                <span>•</span>
+                                <span>{cardMeta.primaryFormat}</span>
+                              </>
+                            )}
+                            {cardMeta.sourceDomain && (
+                              <>
+                                <span>•</span>
+                                <span className="text-accent truncate max-w-[140px]">
+                                  {cardMeta.sourceDomain}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {(linkedCard || liveLinks.length > 0) && (
+                        <div className="flex items-center justify-between gap-2 mt-2 pt-0.5 text-[11px]">
+                          <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                            {liveLinks.length > 0 ? (
+                              liveLinks.map((l) => (
+                                <a
+                                  key={`chat-${m.id}-${l.platform}`}
+                                  href={l.href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono text-emerald-700 dark:text-emerald-300 hover:underline"
+                                >
+                                  {l.shortLabel} Live <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              ))
+                            ) : cardMeta ? (
+                              <span className="text-muted-foreground inline-flex items-center gap-1.5 truncate">
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cardMeta.footerDot}`} />
+                                <span className="truncate">{cardMeta.footerNote}</span>
+                              </span>
+                            ) : null}
+                          </div>
+                          {linkedCard && onOpenJob && (
+                            <button
+                              type="button"
+                              onClick={() => onOpenJob(linkedCard)}
+                              className="inline-flex items-center gap-0.5 text-[11px] font-medium text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 px-2 py-0.5 rounded shrink-0 transition-colors"
+                            >
+                              <span>Open Card</span>
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </article>
+                  ) : (
+                    /* Bot Structured Report Card */
+                    <article
+                      className={`group rounded-xl border bg-background/75 p-2.5 transition-all duration-500 ${
+                        isGlow ? UPDATED_CARD_GLOW_CLS : 'border-border'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/70 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <CrewChatAvatar
+                            name={m.senderName}
+                            src={senderInfo?.avatar}
+                            badgeDotCls={senderInfo?.dotCls}
+                          />
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5 leading-tight">
+                              <span className="text-xs font-bold text-foreground truncate">
+                                {m.senderName}
+                              </span>
+                              {/\bverified\b|\blive\b/i.test(m.text) ? (
+                                <span className="px-1.5 py-0 rounded text-[9px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
+                                  VERIFIED
+                                </span>
+                              ) : senderInfo?.statusLabel ? (
+                                <span className="px-1.5 py-0 rounded text-[9px] font-mono bg-muted text-muted-foreground border border-border">
+                                  {senderInfo.statusLabel}
+                                </span>
+                              ) : null}
+                            </div>
+                            {m.mentions && m.mentions.length > 0 && (
+                              <span className="text-[10px] text-muted-foreground block truncate">
+                                Target:{' '}
+                                <span className="text-accent font-mono">
+                                  {m.mentions.map((tag) => `@${tag}`).join(' ')}
+                                </span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <span className="text-[10px] font-mono text-muted-foreground">{timeStr}</span>
+                          <button
+                            type="button"
+                            aria-label="Delete chat message"
+                            disabled={busy}
+                            onClick={() => onDelete(m.id)}
+                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-red-500 transition-opacity disabled:opacity-40"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg p-2 border border-border/80 bg-muted/35 dark:bg-card/70 space-y-1">
+                        {m.jobTitle && (
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                            <span className="text-amber-500 dark:text-amber-400 shrink-0">★</span>
+                            {linkedCard && onOpenJob ? (
+                              <button
+                                type="button"
+                                onClick={() => onOpenJob(linkedCard)}
+                                className="text-left hover:text-accent hover:underline truncate"
+                                title={`Open card: ${m.jobTitle}`}
+                              >
+                                {m.jobTitle}
+                              </button>
+                            ) : (
+                              <span className="truncate">{m.jobTitle}</span>
+                            )}
+                          </div>
+                        )}
+                        <p className="text-xs text-foreground/95 whitespace-pre-wrap break-words leading-relaxed">
+                          {renderLinkifiedText(m.text)}
+                        </p>
+                      </div>
+
+                      {(cardMeta || liveLinks.length > 0) && (
+                        <>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                            {cardMeta && (
+                              <span
+                                className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] border font-mono ${cardMeta.statusCls}`}
+                              >
+                                {cardMeta.statusLabel}
+                              </span>
+                            )}
+                            {cardMeta?.primaryFormat && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-muted/60 text-foreground/90 border border-border font-mono">
+                                {cardMeta.primaryFormat}
+                              </span>
+                            )}
+                            {cardMeta?.completeness.assetState === 'missing' && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/25 font-mono">
+                                {cardMeta.assetLabel}
+                              </span>
+                            )}
+                            {liveLinks.map((l) => (
+                              <a
+                                key={`chat-${m.id}-${l.platform}`}
+                                href={l.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={`Preview ${l.label} post: ${l.href}`}
+                                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 hover:underline"
+                              >
+                                {l.shortLabel} Live <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            ))}
+                          </div>
+
+                          {linkedCard && onOpenJob && (
+                            <div className="flex items-center justify-between gap-2 mt-2 pt-1.5 border-t border-border/70 text-xs">
+                              <span className="text-[10px] font-mono text-muted-foreground truncate">
+                                {cardMeta?.footerNote}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => onOpenJob(linkedCard)}
+                                className="text-[11px] font-medium text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 px-2 py-0.5 rounded inline-flex items-center gap-0.5 shrink-0 transition-colors"
+                              >
+                                <span>View Card</span>
+                                <ChevronRight className="w-3 h-3" />
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </article>
+                  )}
                 </div>
               );
             })
@@ -2289,15 +2859,32 @@ function CrewChatPanel({
               setShowJumpLatest(false);
               el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
             }}
-            className="absolute bottom-1.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-accent text-accent-foreground shadow-md hover:opacity-90 transition-opacity"
+            className="absolute bottom-2 right-3 px-2.5 py-1 rounded-lg text-[10px] font-mono font-semibold bg-accent text-accent-foreground shadow-md hover:opacity-90 transition-opacity"
           >
             ↓ Latest
           </button>
         )}
       </div>
 
+      {/* Quick-Mention Dock + Input Composer */}
+      <div className="border-t border-border/80 bg-card/95 px-3 py-1.5 flex items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto ops-scroll">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase shrink-0">Tags:</span>
+          {CHAT_TARGET_CHIPS.filter((c) => c.key !== 'all').map((chip) => (
+            <button
+              key={`tag-${chip.key}`}
+              type="button"
+              onClick={() => appendMentionTag(chip.mentionToken)}
+              className={`px-2 py-0.5 rounded-lg border border-border bg-background/80 hover:border-accent/60 text-[10px] font-medium whitespace-nowrap transition-colors ${chip.tagCls}`}
+            >
+              + {chip.mentionToken}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <form
-        className="flex items-center gap-1.5 pt-1 border-t border-border/70 shrink-0"
+        className="flex items-center gap-2 px-3 pb-2.5 pt-1.5 bg-card border-t border-border/70 shrink-0"
         onSubmit={async (e) => {
           e.preventDefault();
           const trimmed = draft.trim();
@@ -2310,19 +2897,25 @@ function CrewChatPanel({
           await onSend(trimmed, to);
         }}
       >
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder={`Message ${activeChipLabel} as Rotty...`}
-          className="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg text-xs bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
-        />
+        <div className="relative flex-1 min-w-0">
+          <input
+            ref={inputRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={`Message ${activeChipLabel} as Rotty...`}
+            className="w-full pl-3 pr-7 py-2 rounded-xl text-xs bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+          />
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-muted-foreground border border-border rounded px-1 pointer-events-none">
+            @
+          </span>
+        </div>
         <button
           type="submit"
           disabled={busy || !draft.trim()}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50 shrink-0"
+          className="h-8 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-semibold text-xs inline-flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 shrink-0 transition-all"
         >
-          <Send className="w-3 h-3" />
-          Send
+          <span className="hidden sm:inline">Send</span>
+          <Send className="w-3.5 h-3.5" />
         </button>
       </form>
     </section>

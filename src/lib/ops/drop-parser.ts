@@ -18,6 +18,7 @@ import type {
   PipelineLinks,
   PipelineStage,
   PlatformKey,
+  PostFormat,
   RequestActionOption,
   RequestStatus,
   RequestUrgency,
@@ -872,6 +873,125 @@ export function findUnknownFields(
   allowed: Set<string>
 ): string[] {
   return Object.keys(obj).filter((k) => !allowed.has(k));
+}
+
+export const POST_FORMAT_LABELS: Record<PostFormat, string> = {
+  article: 'Article',
+  article_linkedin: 'Article + LinkedIn',
+  post_no_photo: 'Post (No Photo)',
+  post_photo: 'Post + Photo',
+  reply: 'Reply',
+  reel: 'Reel',
+  fb_ig: 'FB / IG',
+  fb_only: 'FB Only',
+  ig_only: 'IG Only',
+};
+
+export function normalizePostFormat(raw: unknown): PostFormat | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const clean = raw
+    .trim()
+    .toLowerCase()
+    .replace(/\+/g, ' plus ')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  if (clean === 'article') return 'article';
+  if (clean === 'article_plus_linkedin' || clean === 'article_linkedin') return 'article_linkedin';
+  if (clean === 'post_no_photo' || clean === 'no_photo' || clean === 'text_only' || clean === 'post_text') {
+    return 'post_no_photo';
+  }
+  if (clean === 'post_plus_photo' || clean === 'post_photo' || clean === 'photo_post') {
+    return 'post_photo';
+  }
+  if (clean === 'reply' || clean === 'x_reply') return 'reply';
+  if (clean === 'reel' || clean === 'reels' || clean === 'video_reel') return 'reel';
+  if (clean === 'fb_ig' || clean === 'fb_and_ig' || clean === 'meta') return 'fb_ig';
+  if (clean === 'fb_only' || clean === 'fb' || clean === 'facebook_only') return 'fb_only';
+  if (clean === 'ig_only' || clean === 'ig' || clean === 'instagram_only') return 'ig_only';
+  return undefined;
+}
+
+export function getCardFormatBadges(
+  card: Partial<PipelineCard>
+): { primary: string; secondary?: string; inferred: boolean } {
+  const assets = getCardAssets(card);
+  const isNoPhoto =
+    card.photoStatus === 'not_needed' &&
+    assets.length === 0 &&
+    !card.assetUrl?.trim() &&
+    !card.assetFile?.trim();
+  const isReel =
+    assets.some((a) => a.kind === 'video') ||
+    /\breel\b|9:16/i.test(`${card.assetSpec || ''} ${card.note || ''}`);
+
+  if (card.postFormat && POST_FORMAT_LABELS[card.postFormat]) {
+    const label = POST_FORMAT_LABELS[card.postFormat];
+    const alreadyPhotoSpecific =
+      card.postFormat === 'post_no_photo' ||
+      card.postFormat === 'post_photo' ||
+      card.postFormat === 'reel';
+    return {
+      primary: label,
+      secondary: alreadyPhotoSpecific ? undefined : isNoPhoto ? 'No Photo' : '+ Photo',
+      inferred: false,
+    };
+  }
+
+  const title = card.title || '';
+  const note = card.note || '';
+  const tps = card.targetPlatforms || [];
+
+  if (/^reply\s+to\b/i.test(title) || /\breply\b/i.test(note)) {
+    return {
+      primary: 'Reply',
+      secondary: isNoPhoto ? 'No Photo' : '+ Photo',
+      inferred: true,
+    };
+  }
+
+  if (isReel) {
+    const platPrefix =
+      tps.length === 1 && tps[0] === 'ig'
+        ? 'IG · '
+        : tps.length === 1 && tps[0] === 'fb'
+          ? 'FB · '
+          : '';
+    return {
+      primary: `${platPrefix}Reel`,
+      inferred: true,
+    };
+  }
+
+  if (card.lane === 'article' || card.contentType === 'article') {
+    const hasLi =
+      tps.includes('linkedin') || /\b(article\s*\+\s*linkedin|\+\s*linkedin)\b/i.test(note);
+    return {
+      primary: hasLi ? 'Article + LinkedIn' : 'Article',
+      secondary: isNoPhoto ? 'No Photo' : '+ Photo',
+      inferred: true,
+    };
+  }
+
+  if (tps.includes('fb') && tps.includes('ig')) {
+    return { primary: 'FB / IG', secondary: isNoPhoto ? 'No Photo' : '+ Photo', inferred: true };
+  }
+  if (tps.length === 1 && tps[0] === 'fb') {
+    return { primary: 'FB Only', secondary: isNoPhoto ? 'No Photo' : '+ Photo', inferred: true };
+  }
+  if (tps.length === 1 && tps[0] === 'ig') {
+    return { primary: 'IG Only', secondary: isNoPhoto ? 'No Photo' : '+ Photo', inferred: true };
+  }
+  if (card.lane === 'fb-ig') {
+    return { primary: 'FB / IG', secondary: isNoPhoto ? 'No Photo' : '+ Photo', inferred: true };
+  }
+  if (card.lane === 'linkedin') {
+    return { primary: isNoPhoto ? 'Post (No Photo)' : 'Post + Photo', inferred: true };
+  }
+
+  return {
+    primary: isNoPhoto ? 'Post (No Photo)' : 'Post + Photo',
+    inferred: true,
+  };
 }
 
 export function normalizeVerdictTag(raw: unknown): MarleyVerdictTag | undefined {
