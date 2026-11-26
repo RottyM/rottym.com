@@ -1,0 +1,293 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model (Project: rottym-com-vibe)
+// ===============================================================
+//
+// All writes to Cloud Firestore are performed server-side by the Next.js
+// backend using GoogleAuth / Firebase Admin credentials, which bypass these
+// Security Rules. Client SDKs have zero write access across the entire
+// database (`allow create, update, delete: if false;` everywhere).
+//
+// ---------------------------------------------------------------
+// Feature/Showroom Collections
+// ---------------------------------------------------------------
+//
+// Collection: scans/{scanId}
+//   Document ID: scanId (opaque, unguessable scan identifier, 1..256 chars)
+//   Access: Exact-ID `get` only for clients; `list` and all writes denied.
+//   Security Invariant: Must NOT contain PII (e.g., emails, IP addresses,
+//   secrets), because any client knowing the exact scanId can `get` it.
+//
+// Collection: ratelimits/{key}
+//   Document ID: rate-limit bucket key (e.g., hashed IP / endpoint key)
+//   Access: Server-only. All client reads and writes denied.
+//
+// Collection: usage/{day}
+//   Document ID: date bucket (e.g., YYYY-MM-DD)
+//   Access: Server-only. All client reads and writes denied.
+//
+// ---------------------------------------------------------------
+// RottyM Command Center Collections (Private Multi-Client)
+// ---------------------------------------------------------------
+//
+// Security Invariants for all `ops_*` collections:
+//   - No client SDK writes (`create`, `update`, `delete` are always `false`).
+//     All mutations go through authenticated Next.js API routes so schema
+//     validation and append-only `ops_activity` audit logging are guaranteed.
+//   - Client SDK reads (`get`, `list`) require a verified Firebase Auth
+//     email (`request.auth != null && request.auth.token.email_verified == true
+//     && request.auth.token.email is string`).
+//   - Owner (`rmendez@rottym.com`, normalized lowercase) can read all `ops_*`
+//     documents across all workspaces.
+//   - Client workspace members can only read `ops_clients` documents where
+//     their lowercase email is in `memberEmails`, and `ops_*` documents whose
+//     `clientId` references an `ops_clients` document containing their
+//     lowercase email in `memberEmails`.
+//   - Backend MUST normalize all entries in `memberEmails` to lowercase.
+//
+// Collection: ops_clients/{clientId}
+//   Document ID: clientId (slug, e.g. 'rottym', 'test-client', 1..128 chars)
+//   Fields:
+//     - id: string (required)
+//     - name: string (required)
+//     - domain: string (required)
+//     - subtitle: string (required)
+//     - memberEmails: list<string> (required, lowercase normalized emails)
+//     - lanes: list<map> (required, { id, label, scheduleNote })
+//     - isTestClient: bool (optional)
+//     - updatedAt: string (required, ISO-8601 timestamp)
+//
+// Collection: ops_crew/{docId}
+//   Document ID: '{clientId}__{agentId}'
+//   Fields:
+//     - id: string (required)
+//     - clientId: string (required, references ops_clients/{clientId})
+//     - agentId: string (required)
+//     - name: string (required)
+//     - set: string (required, 'original' | 'new')
+//     - model: string (required)
+//     - engine: string (required, 'grok' | 'llama' | 'gemini' | 'claude')
+//     - role: string (required)
+//     - status: string (required, 'active' | 'stand_down' | 'on_hold' | 'out' | 'on_call')
+//     - statusNote: string (optional)
+//     - usagePct: number (optional)
+//     - resetNote: string (optional)
+//     - updatedAt: string (required)
+//     - updatedBy: string (required)
+//
+// Collection: ops_pipeline/{docId}
+//   Document ID: pipeline card ID
+//   Fields:
+//     - id: string (required)
+//     - clientId: string (required, references ops_clients/{clientId})
+//     - title: string (required)
+//     - lane: string (required, 'linkedin' | 'fb-ig' | 'x' | 'article')
+//     - channel: string (required, 'linkedin' | 'meta' | 'x')
+//     - contentType: string (required, 'post' | 'article' | 'image' | 'pull')
+//     - stage: string (required, 'pulled' | 'clearance' | 'drafted' | 'approved' | 'posted')
+//     - agentId: string (required)
+//     - source: string (required)
+//     - sourceUrl: string (optional)
+//     - note: string (optional)
+//     - draftCopy: string (required)
+//     - flaggedNotes: list<string> (optional)
+//     - marleyStatus: string (required, 'pending' | 'approved' | 'rejected')
+//     - marleyNote: string (optional)
+//     - discrepancies: list<string> (optional)
+//     - artifactsNeeded: list<string> (optional)
+//     - readyForRotty: bool (required)
+//     - approvedBy: string (optional)
+//     - claimedBy: string (optional)
+//     - leaseExpiresAt: string (optional)
+//     - jobDate: string (optional)
+//     - sourceFile: string (optional)
+//     - assetFile: string (optional)
+//     - assetSpec: string (optional)
+//     - links: map (optional, { fb, ig, linkedin, x })
+//     - createdAt: string (required)
+//     - updatedAt: string (required)
+//
+// Collection: ops_gates/{docId}
+//   Document ID: gate item ID
+//   Fields:
+//     - id: string (required)
+//     - clientId: string (required, references ops_clients/{clientId})
+//     - label: string (required)
+//     - state: string (required, 'hold' | 'blocked' | 'awaiting' | 'resolved')
+//     - detail: string (required)
+//     - since: string (required)
+//     - updatedAt: string (required)
+//
+// Collection: ops_metrics/{docId}
+//   Document ID: clientId
+//   Fields:
+//     - id: string (required)
+//     - clientId: string (required, references ops_clients/{clientId})
+//     - sessions: number | null (required)
+//     - sessionsPeriod: string (required)
+//     - generateLead: number | null (required)
+//     - xFollowers: number | null (required)
+//     - asOf: string (required)
+//     - showroomPhase: string (required)
+//     - showroomNote: string (required)
+//     - updatedAt: string (required)
+//     - updatedBy: string (required)
+//
+// Collection: ops_activity/{docId}
+//   Document ID: activity entry ID (append-only via backend)
+//   Fields:
+//     - id: string (required)
+//     - clientId: string (required, references ops_clients/{clientId})
+//     - timestamp: string (required, ISO-8601)
+//     - actor: string (required)
+//     - action: string (required)
+//     - target: string (required)
+//     - text: string (required)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Validate that a scan document ID is a non-empty bounded string.
+    // Prevents malformed or oversized path inputs on exact-ID lookups.
+    function isValidScanId(scanId) {
+      return scanId is string && scanId.size() > 0 && scanId.size() <= 256;
+    }
+
+    // Require an authenticated Firebase user with a verified string email.
+    function isVerifiedOpsUser() {
+      return request.auth != null &&
+        request.auth.token.email_verified == true &&
+        request.auth.token.email is string &&
+        request.auth.token.email.size() > 0 &&
+        request.auth.token.email.size() <= 320;
+    }
+
+    // Normalized lowercase email from the verified Firebase Auth token.
+    function verifiedEmailLower() {
+      return request.auth.token.email.lower();
+    }
+
+    // Command Center owner check (cannot be spoofed via client document data).
+    function isOpsOwner() {
+      return isVerifiedOpsUser() && verifiedEmailLower() == 'rmendez@rottym.com';
+    }
+
+    // Check membership directly against an ops_clients document's data map.
+    // Enforces `is list` so `in` only evaluates list membership.
+    function isClientDocMember(clientData) {
+      return isVerifiedOpsUser() &&
+        'memberEmails' in clientData &&
+        clientData.memberEmails is list &&
+        verifiedEmailLower() in clientData.memberEmails;
+    }
+
+    // Check membership for a given clientId by reading ops_clients/{clientId}.
+    // Guards against empty/oversized IDs and `/` path-segment traversal.
+    function isClientMember(clientId) {
+      return isVerifiedOpsUser() &&
+        clientId is string &&
+        clientId.size() > 0 &&
+        clientId.size() <= 128 &&
+        !clientId.matches('.*[/].*') &&
+        exists(/databases/$(database)/documents/ops_clients/$(clientId)) &&
+        isClientDocMember(get(/databases/$(database)/documents/ops_clients/$(clientId)).data);
+    }
+
+    // Check whether the verified user belongs to the workspace referenced by
+    // a client-scoped document's `clientId` field.
+    function isClientScopedMember(docData) {
+      return isVerifiedOpsUser() &&
+        'clientId' in docData &&
+        docData.clientId is string &&
+        isClientMember(docData.clientId);
+    }
+
+    // ===============================================================
+    // Default Deny
+    // ===============================================================
+
+    // Default deny: block all client reads and writes on every path
+    // (including unlisted collections and nested subcollections) unless
+    // explicitly matched and permitted below.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Feature/Showroom Collection Rules
+    // ===============================================================
+
+    // Scan results: clients may only fetch a single scan by its exact
+    // scanId. Collection enumeration (`list`) is blocked to prevent scraping
+    // or discovering other users' scan IDs, and all client writes are blocked
+    // because only the Next.js backend creates/updates scans.
+    match /scans/{scanId} {
+      allow get: if isValidScanId(scanId);
+      allow list: if false;
+      allow create, update, delete: if false;
+    }
+
+    // Rate-limit counters: strictly server-only.
+    match /ratelimits/{key} {
+      allow read, write: if false;
+    }
+
+    // Daily usage & budget telemetry: strictly server-only.
+    match /usage/{day} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // RottyM Command Center Collection Rules (`ops_*`)
+    // ===============================================================
+
+    // Client workspaces: readable only by the owner or verified members
+    // listed in `memberEmails`. All client writes are denied.
+    match /ops_clients/{clientId} {
+      allow get, list: if isOpsOwner() || isClientDocMember(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // Crew roster: readable only by the owner or verified members of the
+    // referenced `clientId` workspace. All client writes are denied.
+    match /ops_crew/{docId} {
+      allow get, list: if isOpsOwner() || isClientScopedMember(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // Content pipeline cards: readable only by the owner or verified members
+    // of the referenced `clientId` workspace. All client writes are denied.
+    match /ops_pipeline/{docId} {
+      allow get, list: if isOpsOwner() || isClientScopedMember(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // Operational gates: readable only by the owner or verified members of
+    // the referenced `clientId` workspace. All client writes are denied.
+    match /ops_gates/{docId} {
+      allow get, list: if isOpsOwner() || isClientScopedMember(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // Workspace metrics snapshots: readable only by the owner or verified
+    // members of the referenced `clientId` workspace. All client writes denied.
+    match /ops_metrics/{docId} {
+      allow get, list: if isOpsOwner() || isClientScopedMember(resource.data);
+      allow create, update, delete: if false;
+    }
+
+    // Append-only activity log: readable only by the owner or verified
+    // members of the referenced `clientId` workspace. All client writes denied.
+    match /ops_activity/{docId} {
+      allow get, list: if isOpsOwner() || isClientScopedMember(resource.data);
+      allow create, update, delete: if false;
+    }
+  }
+}

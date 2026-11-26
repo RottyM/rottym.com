@@ -19,6 +19,7 @@ export default function Header() {
   const drawerRef = useRef<HTMLDivElement>(null);
 
   const isCampaignRoute = CAMPAIGN_ROUTES.some((route) => pathname === route || pathname?.startsWith(`${route}/`));
+  const isOpsRoute = pathname === '/ops' || pathname?.startsWith('/ops/');
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
@@ -65,7 +66,7 @@ export default function Header() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [mobileMenuOpen]);
 
-  if (isCampaignRoute) {
+  if (isCampaignRoute || isOpsRoute) {
     return null;
   }
 

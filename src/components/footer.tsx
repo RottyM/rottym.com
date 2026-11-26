@@ -11,6 +11,10 @@ export default function Footer() {
   const pathname = usePathname();
   const currentYear = new Date().getFullYear();
 
+  if (pathname === '/ops' || pathname?.startsWith('/ops/')) {
+    return null;
+  }
+
   if (CAMPAIGN_ROUTES.some((route) => pathname === route || pathname?.startsWith(`${route}/`))) {
     return (
       <footer className="border-t border-border/60 bg-muted/20 py-6 mt-12">
