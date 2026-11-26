@@ -76,8 +76,8 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border shadow-sm transition-all">
-      <div className="max-w-7xl mx-auto py-2.5 sm:py-3.5 px-3.5 sm:px-6 flex justify-between items-center gap-2">
+    <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border shadow-sm transition-colors">
+      <div className="max-w-7xl mx-auto min-h-[60px] sm:min-h-[78px] py-2.5 sm:py-3.5 px-3.5 sm:px-6 flex justify-between items-center gap-2">
         <Link href="/" className="inline-flex items-center group min-w-0" aria-label={isEs ? 'Inicio Rottman M. Mendez' : 'Rottman M. Mendez Home'}>
           <div className="sm:hidden" aria-hidden="true">
             <RottyMLogo variant="compact" size={38} animated={true} />
@@ -114,21 +114,22 @@ export default function Header() {
           </Link>
           <Link
             href="/contact"
-            className="inline-flex items-center justify-center px-3 xl:px-4 py-1.5 xl:py-2 bg-slate-950 hover:bg-slate-800 text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground rounded-lg hover:scale-105 transition-all shadow-sm font-semibold font-mono text-xs uppercase tracking-wider whitespace-nowrap"
+            className="inline-flex items-center justify-center px-3 xl:px-4 py-1.5 xl:py-2 bg-slate-950 hover:bg-slate-800 text-white dark:bg-accent dark:text-accent-foreground dark:hover:bg-[#38bdf8] dark:hover:text-accent-foreground rounded-lg hover:scale-105 transition-[transform,colors,background-color] duration-150 shadow-sm font-semibold font-mono text-xs uppercase tracking-wider whitespace-nowrap"
           >
             {isEs ? 'Agenda una llamada' : 'Book a call'}
           </Link>
 
-          <div className="inline-flex items-center rounded-lg border border-border bg-card/90 p-1 gap-1 shadow-xs">
-            {!hideLangToggle && (
-              <>
-                <LangToggle embedded />
-                <div className="h-4 w-px bg-border" aria-hidden="true" />
-              </>
-            )}
+          <div className="inline-flex items-center rounded-lg border border-border bg-card/90 p-1 gap-1 shadow-xs shrink-0">
+            <div
+              className={`inline-flex items-center gap-1 ${hideLangToggle ? 'invisible pointer-events-none' : ''}`}
+              aria-hidden={hideLangToggle || undefined}
+            >
+              <LangToggle embedded disabled={hideLangToggle} />
+              <div className="h-4 w-px bg-border" aria-hidden="true" />
+            </div>
             <button
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="p-1.5 rounded-md hover:bg-muted transition-colors text-foreground/80"
+              className="w-7 h-7 inline-flex items-center justify-center rounded-md hover:bg-muted transition-colors text-foreground/80 shrink-0"
               aria-label={
                 mounted
                   ? isEs
@@ -137,13 +138,26 @@ export default function Header() {
                   : 'Toggle theme'
               }
             >
-              {mounted && (resolvedTheme === 'dark' ? <Sun className="w-4 h-4" aria-hidden="true" /> : <Moon className="w-4 h-4" aria-hidden="true" />)}
+              {mounted ? (
+                resolvedTheme === 'dark' ? (
+                  <Sun className="w-4 h-4" aria-hidden="true" />
+                ) : (
+                  <Moon className="w-4 h-4" aria-hidden="true" />
+                )
+              ) : (
+                <span className="w-4 h-4 block" aria-hidden="true" />
+              )}
             </button>
           </div>
         </nav>
 
         <div className="flex lg:hidden items-center gap-2 shrink-0">
-          {!hideLangToggle && <LangToggle compact />}
+          <div
+            className={hideLangToggle ? 'invisible pointer-events-none' : ''}
+            aria-hidden={hideLangToggle || undefined}
+          >
+            <LangToggle compact disabled={hideLangToggle} />
+          </div>
           <button
             ref={menuButtonRef}
             className="p-2 -mr-1.5 text-foreground rounded-lg hover:bg-muted transition-colors"

@@ -14,9 +14,11 @@ const OPTIONS: Array<{ value: SiteLang; label: string; ariaLabel: string }> = [
 export default function LangToggle({
   embedded = false,
   compact = false,
+  disabled = false,
 }: {
   embedded?: boolean;
   compact?: boolean;
+  disabled?: boolean;
 }) {
   const { lang, setLang } = useLang();
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
@@ -25,6 +27,7 @@ export default function LangToggle({
 
   return (
     <fieldset
+      disabled={disabled}
       className={
         embedded
           ? 'inline-flex items-center gap-0.5 shrink-0'
@@ -38,7 +41,7 @@ export default function LangToggle({
         return (
           <label
             key={opt.value}
-            className={`cursor-pointer select-none rounded-md font-mono font-bold transition-all focus-within:ring-2 focus-within:ring-accent ${
+            className={`cursor-pointer select-none rounded-md font-mono font-bold transition-colors focus-within:ring-2 focus-within:ring-accent ${
               compact ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-[11px]'
             } ${
               checked
@@ -51,6 +54,7 @@ export default function LangToggle({
               name={`site-lang-${groupId}`}
               value={opt.value}
               checked={checked}
+              tabIndex={disabled ? -1 : undefined}
               aria-label={opt.ariaLabel}
               onChange={() => {
                 if (opt.value === activeLang) return;

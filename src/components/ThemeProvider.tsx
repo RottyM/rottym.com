@@ -58,13 +58,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    root.lang = lang;
-    localStorage.setItem(LANG_STORAGE_KEY, lang);
+    window.document.documentElement.lang = lang;
   }, [lang]);
 
   const setTheme = (newTheme: Theme) => setThemeState(newTheme);
-  const setLang = (newLang: SiteLang) => setLangState(newLang);
+  const setLang = (newLang: SiteLang) => {
+    setLangState(newLang);
+    try {
+      localStorage.setItem(LANG_STORAGE_KEY, newLang);
+    } catch {
+      // Ignore storage failures in private contexts
+    }
+  };
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme, lang, setLang }}>
