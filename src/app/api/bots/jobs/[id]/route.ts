@@ -114,7 +114,7 @@ async function handleUpsertJobById(
 
   if (requestedStage === 'archived' && existing.stage !== 'posted' && !isBotJobOwner(actor, existing)) {
     return NextResponse.json(
-      { error: 'Only the creating bot (or Marley / operator) can archive this job.' },
+      { error: 'Only the creating bot or an operator can archive this job.' },
       { status: 403, headers: NO_STORE_HEADERS }
     );
   }
@@ -249,7 +249,7 @@ export async function DELETE(
 
   if (!isBotJobOwner(actor, existing)) {
     return NextResponse.json(
-      { error: 'Only the creating bot (or Marley / operator) can delete this job.' },
+      { error: 'Only the creating bot or an operator can delete this job.' },
       { status: 403, headers: NO_STORE_HEADERS }
     );
   }

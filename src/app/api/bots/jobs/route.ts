@@ -254,7 +254,7 @@ export async function POST(request: Request) {
       const existing = existingCards[matchedIndex];
       if (safeStage === 'archived' && existing.stage !== 'posted' && !isBotJobOwner(actor, existing)) {
         return NextResponse.json(
-          { error: 'Only the creating bot (or Marley / operator) can archive this job.' },
+          { error: 'Only the creating bot or an operator can archive this job.' },
           { status: 403, headers: NO_STORE_HEADERS }
         );
       }
