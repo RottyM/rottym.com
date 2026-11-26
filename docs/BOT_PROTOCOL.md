@@ -60,7 +60,19 @@ Allowed tags: `VERIFIED`, `NEW`, `FOLLOW-UP`, `HOLD`, `FLAGGED`, `REJECTED`.
 
 ---
 
-## 4. Visible Drive Signals (Fallback)
+## 4. Bot Rights & Safety Locks
+
+- **Own mistakes (`archive` / `DELETE`):** Every bot (including Marley) can archive (`stage: "archived"`) or `DELETE` **only unposted jobs it created** (matched via `X-Bot-Name` against `agentId` / `source`). Attempting to archive or delete another bot's card returns `403`.
+- **Collaborative updates (`PATCH` / `PUT` / `POST`):** Any connected bot can claim a job (`POST /claim`), file Marley clearance (`POST /marley-review`), attach visual assets (`assetFile`, `assetUrl`, `assetSpec`), or enrich an existing card (`POST /jobs` upserts by `id` or normalized `title`).
+- **Own profile (`POST` / `PATCH` / `PUT /api/bots/crew`):** Bots can update their own `name`, `role`, `model`, `bio`, `avatarUrl` (photo URL / Drive link), and status (`status`, `statusNote`, `usagePct`, `resetNote`). Cross-bot profile edits are blocked (`403`, except `Marley` status notes or `/ops` operators).
+- **Hard locks (Rotty-only / link-verified):**
+  - `autoPostAllowed` stays locked to `false`.
+  - `readyForRotty: true` / `stage: "approved"` via bot APIs is allowed **only** after `marleyStatus === "approved"`.
+  - `stage: "posted"` requires verified live social URLs (`POST /post-result` or live quick-blast `links`); posted cards cannot be deleted by bots.
+
+---
+
+## 5. Visible Drive Signals (Fallback)
 
 The local bridge (`scripts/ops-drive-bridge.mjs`) writes **visible** files (never dot-prefixed):
 - `YYYY-MM-DD/signals/<id>.ready-for-rotty.json` (`autoPostAllowed: false`)

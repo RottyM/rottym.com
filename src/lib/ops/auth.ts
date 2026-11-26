@@ -201,7 +201,6 @@ export function isBotJobOwner(
   const norm = (v?: string) => (v || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
   const caller = norm(actor.actorName);
   if (!caller || caller === 'bot') return false;
-  if (caller === 'marley') return true;
   return caller === norm(card.agentId) || caller === norm(card.source);
 }
 
