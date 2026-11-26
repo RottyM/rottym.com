@@ -1,11 +1,51 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 type Theme = 'light' | 'dark' | 'system';
 export type SiteLang = 'en' | 'es';
 
 const LANG_STORAGE_KEY = 'rm-lang';
+
+const ROUTE_TITLES: Record<string, { en: string; es: string }> = {
+  '/': {
+    en: 'Fast, Modern Websites for Northern Virginia Businesses | RottyM',
+    es: 'Sitios Web Rápidos para Negocios en el Norte de Virginia | RottyM',
+  },
+  '/services': {
+    en: 'Services — Modern Websites, Booking & Custom Workflows | RottyM',
+    es: 'Servicios — Sitios Web, Reservas y Flujos a la Medida | RottyM',
+  },
+  '/packages': {
+    en: 'Local Packages & Pricing — Reston & NoVA | RottyM',
+    es: 'Paquetes Locales y Precios — Reston y NoVA | RottyM',
+  },
+  '/portfolio': {
+    en: 'Portfolio & Case Studies | RottyM',
+    es: 'Portafolio y Casos de Éxito | RottyM',
+  },
+  '/about': {
+    en: 'About Rotty — Web Engineer in Reston, VA | RottyM',
+    es: 'Sobre Rotty — Ingeniero Web en Reston, VA | RottyM',
+  },
+  '/contact': {
+    en: 'Contact & Book a Call — Reston, VA | RottyM',
+    es: 'Contacto y Agenda una Llamada — Reston, VA | RottyM',
+  },
+  '/start': {
+    en: 'Start Here — Audit, Packages or Discovery Call | RottyM',
+    es: 'Empieza Aquí — Auditoría, Paquetes o Llamada | RottyM',
+  },
+  '/audit': {
+    en: 'Free 3-Minute Website Audit | RottyM',
+    es: 'Auditoría Gratuita de Tu Sitio Web | RottyM',
+  },
+  '/wordpress-rebuild': {
+    en: 'WordPress Escape & Performance Rebuild | RottyM',
+    es: 'Migración de Alto Rendimiento desde WordPress | RottyM',
+  },
+};
 
 interface ThemeContextType {
   theme: Theme;
@@ -18,6 +58,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [theme, setThemeState] = useState<Theme>('system');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
   const [lang, setLangState] = useState<SiteLang>('en');
@@ -59,7 +100,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     window.document.documentElement.lang = lang;
-  }, [lang]);
+    const key = pathname && pathname !== '/' ? pathname.replace(/\/+$/, '') : '/';
+    const entry = ROUTE_TITLES[key];
+    if (entry) {
+      window.document.title = entry[lang];
+    }
+  }, [lang, pathname]);
 
   const setTheme = (newTheme: Theme) => setThemeState(newTheme);
   const setLang = (newLang: SiteLang) => {

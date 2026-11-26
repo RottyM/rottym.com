@@ -65,10 +65,9 @@ export function HeroQuoteDeck() {
         <div className="flex items-center gap-1">
           <a
             href="#testimonials"
-            className="font-mono text-[10px] font-bold uppercase tracking-wider text-accent hover:underline inline-flex items-center min-h-[28px] px-2 py-1 rounded-lg mr-1"
+            className="font-mono text-[10px] font-bold uppercase tracking-wider text-accent hover:underline inline-flex items-center gap-1 min-h-[28px] px-2 py-1 rounded-lg mr-1 whitespace-nowrap"
           >
-            {isEs ? `Ver ${total}` : `All ${total}`}
-            <span className="sr-only">{isEs ? ' testimonios de clientes' : ' client testimonials'}</span>{' '}
+            <span>{isEs ? `Ver ${total} testimonios` : `All ${total} reviews`}</span>
             <span aria-hidden="true">↓</span>
           </a>
           <button

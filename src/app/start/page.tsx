@@ -36,7 +36,7 @@ const ACTION_CARDS = [
     title: { en: 'Packages & Upfront Pricing', es: 'Paquetes y Precios Fijos' },
     subtitle: {
       en: 'Fixed-scope builds from $2,500 — Local Launchpad, Booking & Intake, and Performance Rebuild.',
-      es: 'Proyectos con alcance fijo desde $2,500 — Lanzamiento Local, Citas y Registro, y Migración.',
+      es: 'Proyectos con alcance fijo desde $2,500 — Lanzamiento Local, Agenda y Registro, y Migración de Alto Rendimiento.',
     },
     href: '/packages',
     icon: Boxes,

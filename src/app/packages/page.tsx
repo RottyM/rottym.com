@@ -229,13 +229,15 @@ export default function PackagesPage() {
             <span className="font-mono text-[9px] sm:text-xs text-muted-foreground uppercase whitespace-nowrap hidden sm:inline">
               {isEs ? 'RESTON Y NORTE DE VIRGINIA' : 'RESTON & NORTHERN VIRGINIA'}
             </span>
-            <span className="font-mono text-[9px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">RESTON &amp; NOVA</span>
+            <span className="font-mono text-[9px] text-muted-foreground uppercase whitespace-nowrap sm:hidden">
+              {isEs ? 'RESTON Y NOVA' : 'RESTON & NOVA'}
+            </span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
             {isEs ? 'Paquetes Locales para Negocios en ' : 'Local Packages for '}
             <span className="tech-gradient-text inline-block pr-2.5">
-              Reston &amp; NoVA
+              {isEs ? 'Reston y NoVA' : 'Reston & NoVA'}
             </span>
             {!isEs && ' Businesses'}
           </h1>

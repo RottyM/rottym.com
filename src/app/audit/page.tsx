@@ -64,7 +64,7 @@ const PRICING_ROWS = [
     href: '/packages#performance-rebuild',
   },
   {
-    name: { en: 'Booking & Intake', es: 'Agenda y Registro de Clientes' },
+    name: { en: 'Booking & Intake', es: 'Agenda y Registro' },
     range: '$4,200–$5,800',
     note: {
       en: 'Online scheduling, automated confirmations & structured client intake',

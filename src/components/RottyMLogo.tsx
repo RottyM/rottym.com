@@ -38,7 +38,7 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
   variant = 'full',
   size = 'md',
   animated = true,
-  subtitle = 'MODERN WEBSITES & REAL WORKFLOWS',
+  subtitle,
   hideSubtitle = false,
   className = '',
 }) => {
@@ -46,13 +46,17 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [isBursting, setIsBursting] = useState(false);
 
-  // Safely resolve active theme
+  // Safely resolve active theme & language
   let contextTheme: 'light' | 'dark' = 'dark';
+  let contextLang: 'en' | 'es' = 'en';
   try {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const themeContext = useTheme();
     if (themeContext?.resolvedTheme) {
       contextTheme = themeContext.resolvedTheme;
+    }
+    if (themeContext?.lang) {
+      contextLang = themeContext.lang;
     }
   } catch {
     // Fallback if rendered outside ThemeProvider
@@ -60,6 +64,9 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
 
   const activeTheme: 'light' | 'dark' =
     theme === 'auto' ? (mounted ? contextTheme : 'dark') : theme;
+  const activeLang: 'en' | 'es' = mounted ? contextLang : 'en';
+  const resolvedSubtitle =
+    subtitle ?? (activeLang === 'es' ? 'SITIOS MODERNOS Y FLUJOS REALES' : 'MODERN WEBSITES & REAL WORKFLOWS');
 
   const isDark = activeTheme === 'dark';
 
@@ -430,7 +437,7 @@ export const RottyMLogo: React.FC<RottyMLogoProps> = ({
         {/* Row 2: Title Tagline (Harmonized in scale and weight with navigation menu) */}
         {!isCompact && !hideSubtitle && (
           <div className="text-[9px] xs:text-[10px] sm:text-[12px] md:text-[12.5px] font-bold tracking-[0.04em] sm:tracking-[0.07em] text-foreground/80 dark:text-foreground/80 uppercase leading-none whitespace-nowrap mt-[2px] sm:mt-[3px]">
-            {subtitle}
+            {resolvedSubtitle}
           </div>
         )}
       </div>

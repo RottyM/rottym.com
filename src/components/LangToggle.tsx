@@ -8,7 +8,7 @@ const emptySubscribe = () => () => {};
 
 const OPTIONS: Array<{ value: SiteLang; label: string; ariaLabel: string }> = [
   { value: 'en', label: 'EN', ariaLabel: 'English' },
-  { value: 'es', label: 'SP', ariaLabel: 'Español (Spanish)' },
+  { value: 'es', label: 'ES', ariaLabel: 'Español (Spanish)' },
 ];
 
 export default function LangToggle({

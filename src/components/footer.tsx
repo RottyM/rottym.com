@@ -112,7 +112,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/resume" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
-                  {isEs ? 'Currículum (EN)' : 'Resume'}
+                  {isEs ? 'Currículum (solo inglés)' : 'Resume'}
                 </Link>
               </li>
               <li>
@@ -136,12 +136,12 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/packages#booking-intake" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
-                  {isEs ? 'Citas y Registro de Clientes' : 'Booking & Client Intake'}
+                  {isEs ? 'Agenda y Registro ($4.2k–$5.8k)' : 'Booking & Client Intake'}
                 </Link>
               </li>
               <li>
                 <Link href="/packages#performance-rebuild" className="inline-flex items-center min-h-[26px] py-0.5 text-muted-foreground hover:text-accent transition-colors">
-                  {isEs ? 'Migración desde WordPress' : 'WordPress Escape Rebuild'}
+                  {isEs ? 'Migración de Alto Rendimiento' : 'WordPress Escape Rebuild'}
                 </Link>
               </li>
               <li>
