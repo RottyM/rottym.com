@@ -30,6 +30,7 @@ const STAGE_OPTIONS: Array<{ value: PipelineStage; label: string }> = [
   { value: 'drafted', label: 'Drafted' },
   { value: 'approved', label: 'Ready for Rotty' },
   { value: 'posted', label: 'Posted' },
+  { value: 'archived', label: 'Archived' },
 ];
 
 const CREW_STATUS_OPTIONS: Array<{ value: AgentStatus; label: string }> = [

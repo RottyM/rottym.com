@@ -30,7 +30,7 @@ import type {
   PipelineStage,
 } from '@/lib/ops/types';
 
-const VALID_STAGES = new Set<PipelineStage>(['pulled', 'clearance', 'drafted', 'approved', 'posted']);
+const VALID_STAGES = new Set<PipelineStage>(['pulled', 'clearance', 'drafted', 'approved', 'posted', 'archived']);
 const VALID_LANES = new Set<PipelineLane>(['linkedin', 'fb-ig', 'x', 'article']);
 const VALID_AGENT_STATUSES = new Set<AgentStatus>(['active', 'stand_down', 'on_hold', 'out', 'on_call']);
 const VALID_GATE_STATES = new Set<GateState>(['hold', 'blocked', 'awaiting', 'resolved']);

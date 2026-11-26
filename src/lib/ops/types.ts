@@ -8,7 +8,7 @@ export type PipelineLane = 'linkedin' | 'fb-ig' | 'x' | 'article';
 
 export type ChannelId = 'linkedin' | 'meta' | 'x';
 
-export type PipelineStage = 'pulled' | 'clearance' | 'drafted' | 'approved' | 'posted';
+export type PipelineStage = 'pulled' | 'clearance' | 'drafted' | 'approved' | 'posted' | 'archived';
 
 export type ContentKind = 'post' | 'article' | 'image' | 'pull';
 

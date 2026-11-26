@@ -7,10 +7,36 @@ import {
   unauthorizedResponse,
 } from '@/lib/ops/auth';
 import { laneToChannel, normalizeLane } from '@/lib/ops/drop-parser';
-import { appendOpsActivity, opsGetDoc, opsSetDoc } from '@/lib/ops/firestore-rest';
+import { appendOpsActivity, opsDeleteDoc, opsGetDoc, opsSetDoc } from '@/lib/ops/firestore-rest';
 import type { PipelineCard, PipelineStage } from '@/lib/ops/types';
 
-const VALID_BOT_STAGES = new Set<PipelineStage>(['pulled', 'clearance', 'drafted']);
+const NO_STORE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+};
+
+const VALID_BOT_EDIT_STAGES = new Set<PipelineStage>([
+  'pulled',
+  'clearance',
+  'drafted',
+  'archived',
+]);
+
+function normalizeRequestedStage(raw: unknown): PipelineStage | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const clean = raw.trim().toLowerCase();
+  if (clean === 'cancelled' || clean === 'canceled') return 'archived';
+  if (
+    clean === 'pulled' ||
+    clean === 'clearance' ||
+    clean === 'drafted' ||
+    clean === 'approved' ||
+    clean === 'posted' ||
+    clean === 'archived'
+  ) {
+    return clean;
+  }
+  return undefined;
+}
 
 function sanitizeUrl(raw: unknown): string | undefined {
   if (typeof raw !== 'string' || !raw.trim()) return undefined;
@@ -31,7 +57,32 @@ function cleanList(raw: unknown): string[] | undefined {
     .slice(0, 8);
 }
 
-export async function PATCH(
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const actor = await authorizeBotOrOpsUser(request, 'Bot');
+  if (!actor) return unauthorizedResponse();
+
+  const { id } = await context.params;
+  const existing = await opsGetDoc<PipelineCard>('ops_pipeline', id);
+  if (!existing) {
+    return NextResponse.json({ error: 'Job not found' }, { status: 404, headers: NO_STORE_HEADERS });
+  }
+
+  const scopedClientId = resolveBotTargetClientId(actor, existing.clientId);
+  if (!scopedClientId || scopedClientId !== existing.clientId) return forbiddenResponse();
+  if (actor.user && !(await canUserAccessClient(actor.user, existing.clientId))) {
+    return forbiddenResponse();
+  }
+
+  return NextResponse.json(
+    { ok: true, job: { ...existing, autoPostAllowed: false } },
+    { status: 200, headers: NO_STORE_HEADERS }
+  );
+}
+
+async function handleUpsertJobById(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
@@ -43,11 +94,13 @@ export async function PATCH(
   try {
     body = (await request.json()) as Record<string, unknown>;
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400, headers: NO_STORE_HEADERS });
   }
 
   const existing = await opsGetDoc<PipelineCard>('ops_pipeline', id);
-  if (!existing) return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+  if (!existing) {
+    return NextResponse.json({ error: 'Job not found' }, { status: 404, headers: NO_STORE_HEADERS });
+  }
 
   const scopedClientId = resolveBotTargetClientId(
     actor,
@@ -58,14 +111,45 @@ export async function PATCH(
     return forbiddenResponse();
   }
 
+  const requestedStage = normalizeRequestedStage(body.stage);
+  if (requestedStage === 'posted' && !actor.user) {
+    return NextResponse.json(
+      { error: 'Marking a job posted requires a live URL via POST /post-result.' },
+      { status: 403, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  const wantsReadyForRotty = body.readyForRotty === true || requestedStage === 'approved';
+  if (wantsReadyForRotty && existing.marleyStatus !== 'approved') {
+    return NextResponse.json(
+      { error: 'readyForRotty requires Marley approval first (marleyStatus must be approved).' },
+      { status: 403, headers: NO_STORE_HEADERS }
+    );
+  }
+
   const nextLane =
     typeof body.lane === 'string' || typeof body.channel === 'string'
       ? normalizeLane(typeof body.lane === 'string' ? body.lane : (body.channel as string))
       : existing.lane;
 
-  const requestedStage = body.stage as PipelineStage | undefined;
-  const nextStage: PipelineStage =
-    requestedStage && VALID_BOT_STAGES.has(requestedStage) ? requestedStage : existing.stage;
+  let nextStage: PipelineStage = existing.stage;
+  let nextReady = existing.readyForRotty;
+
+  if (existing.stage === 'posted') {
+    nextStage = 'posted';
+  } else if (wantsReadyForRotty && existing.marleyStatus === 'approved') {
+    nextStage = 'approved';
+    nextReady = true;
+  } else if (requestedStage && VALID_BOT_EDIT_STAGES.has(requestedStage)) {
+    nextStage = requestedStage;
+    if (requestedStage === 'archived') {
+      nextReady = false;
+    }
+  }
+
+  if (body.readyForRotty === false) {
+    nextReady = false;
+  }
 
   const updated: PipelineCard = {
     ...existing,
@@ -76,6 +160,7 @@ export async function PATCH(
     lane: nextLane,
     channel: laneToChannel(nextLane),
     stage: nextStage,
+    readyForRotty: nextReady,
     sourceUrl: body.sourceUrl !== undefined ? sanitizeUrl(body.sourceUrl) : existing.sourceUrl,
     note:
       typeof body.note === 'string'
@@ -99,7 +184,57 @@ export async function PATCH(
   };
 
   await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
-  await appendOpsActivity(existing.clientId, actor.actorName, 'updated job details', updated.title);
+  await appendOpsActivity(
+    existing.clientId,
+    actor.actorName,
+    nextStage === 'archived'
+      ? 'archived job'
+      : wantsReadyForRotty && nextReady
+        ? 'queued Ready for Rotty'
+        : 'updated job details',
+    updated.title
+  );
 
-  return NextResponse.json({ ok: true, job: updated }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json(
+    { ok: true, job: { ...updated, autoPostAllowed: false } },
+    { status: 200, headers: NO_STORE_HEADERS }
+  );
+}
+
+export const PATCH = handleUpsertJobById;
+export const PUT = handleUpsertJobById;
+
+export async function DELETE(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const actor = await authorizeBotOrOpsUser(request, 'Bot');
+  if (!actor) return unauthorizedResponse();
+
+  const { id } = await context.params;
+  const existing = await opsGetDoc<PipelineCard>('ops_pipeline', id);
+  if (!existing) {
+    return NextResponse.json({ error: 'Job not found' }, { status: 404, headers: NO_STORE_HEADERS });
+  }
+
+  const scopedClientId = resolveBotTargetClientId(actor, existing.clientId);
+  if (!scopedClientId || scopedClientId !== existing.clientId) return forbiddenResponse();
+  if (actor.user && !(await canUserAccessClient(actor.user, existing.clientId))) {
+    return forbiddenResponse();
+  }
+
+  if (existing.stage === 'posted' && !actor.user) {
+    return NextResponse.json(
+      { error: 'Posted jobs cannot be deleted by bots.' },
+      { status: 403, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  await opsDeleteDoc('ops_pipeline', id);
+  await appendOpsActivity(existing.clientId, actor.actorName, 'deleted job', existing.title);
+
+  return NextResponse.json(
+    { ok: true, deletedId: id },
+    { status: 200, headers: NO_STORE_HEADERS }
+  );
 }

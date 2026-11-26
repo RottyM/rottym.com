@@ -15,9 +15,21 @@ import {
 } from '@/lib/ops/firestore-rest';
 import type { ContentKind, PipelineCard, PipelineLane, PipelineLinks, PipelineStage } from '@/lib/ops/types';
 
-const VALID_STAGES = new Set<PipelineStage>(['pulled', 'clearance', 'drafted', 'approved', 'posted']);
+const VALID_STAGES = new Set<PipelineStage>([
+  'pulled',
+  'clearance',
+  'drafted',
+  'approved',
+  'posted',
+  'archived',
+]);
+
+const NO_STORE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+};
 
 const STAGE_RANK: Record<PipelineStage, number> = {
+  archived: -1,
   pulled: 0,
   clearance: 1,
   drafted: 2,
@@ -79,6 +91,7 @@ export async function GET(request: Request) {
 
   await ensureOpsSeeded();
   const stage = searchParams.get('stage');
+  const includeArchived = searchParams.get('includeArchived') === 'true';
   const lane = searchParams.get('lane');
   const channel = searchParams.get('channel');
   const date = searchParams.get('date');
@@ -91,6 +104,7 @@ export async function GET(request: Request) {
 
   const jobs = all
     .filter((item) => {
+      if (!stage && !includeArchived && item.stage === 'archived') return false;
       if (stage && item.stage !== stage) return false;
       if (lane && item.lane !== lane) return false;
       if (channel && item.channel !== channel) return false;
@@ -116,7 +130,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json(
     { clientId, count: jobs.length, jobs },
-    { status: 200, headers: { 'Cache-Control': 'no-store' } }
+    { status: 200, headers: NO_STORE_HEADERS }
   );
 }
 
@@ -165,8 +179,11 @@ export async function POST(request: Request) {
           ? itemInput.channel
           : undefined
     );
-    const requestedStage: PipelineStage = VALID_STAGES.has(itemInput.stage as PipelineStage)
-      ? (itemInput.stage as PipelineStage)
+    const rawStage = typeof itemInput.stage === 'string' ? itemInput.stage.trim().toLowerCase() : '';
+    const normalizedStage =
+      rawStage === 'cancelled' || rawStage === 'canceled' ? 'archived' : rawStage;
+    const requestedStage: PipelineStage = VALID_STAGES.has(normalizedStage as PipelineStage)
+      ? (normalizedStage as PipelineStage)
       : 'pulled';
 
     const links = sanitizeLinks(itemInput.links);
@@ -174,7 +191,8 @@ export async function POST(request: Request) {
     const hasLivePostLink = Boolean(externalPostUrl || (links && Object.values(links).some(Boolean)));
 
     // Bots can log an already-live quick blast directly as 'posted' if they include the live post URL,
-    // but cannot self-set 'approved' / readyForRotty without Rotty.
+    // and can move Marley-approved cards into 'approved' (Ready for Rotty) during an update,
+    // but new cards cannot self-set 'approved' or 'posted' without live evidence.
     const safeStage: PipelineStage =
       requestedStage === 'posted' && hasLivePostLink
         ? 'posted'
@@ -206,35 +224,52 @@ export async function POST(request: Request) {
     const draftCopy = typeof itemInput.draftCopy === 'string' ? itemInput.draftCopy.slice(0, 2400) : '';
 
     const allowDuplicate = itemInput.allowDuplicate === true;
+    const explicitId = typeof itemInput.id === 'string' ? itemInput.id.trim() : '';
     const titleKey = normalizeTitleKey(title);
-    const matchedIndex = allowDuplicate
-      ? -1
-      : existingCards.findIndex((c) => {
-          if (typeof itemInput.id === 'string' && c.id === itemInput.id.trim()) return true;
-          return titleKey.length > 0 && normalizeTitleKey(c.title) === titleKey;
-        });
+    const matchedIndex = existingCards.findIndex((c) => {
+      if (explicitId && c.id === explicitId) return true;
+      if (allowDuplicate) return false;
+      return c.stage !== 'archived' && titleKey.length > 0 && normalizeTitleKey(c.title) === titleKey;
+    });
 
     if (matchedIndex >= 0) {
       const existing = existingCards[matchedIndex];
       const combinedLinks = mergeLinks(existing.links, mergedLinks);
       const effectiveSourceUrl = sourceUrl || existing.sourceUrl;
-      const nextStage: PipelineStage =
-        safeStage === 'posted'
-          ? 'posted'
-          : STAGE_RANK[safeStage] > STAGE_RANK[existing.stage]
-            ? safeStage
-            : existing.stage;
+      const wantsReady = itemInput.readyForRotty === true || requestedStage === 'approved';
+
+      let nextStage: PipelineStage = existing.stage;
+      let nextReady = existing.readyForRotty;
+
+      if (safeStage === 'posted') {
+        nextStage = 'posted';
+      } else if (existing.stage === 'posted') {
+        nextStage = 'posted';
+      } else if (safeStage === 'archived') {
+        nextStage = 'archived';
+        nextReady = false;
+      } else if (wantsReady && existing.marleyStatus === 'approved') {
+        nextStage = 'approved';
+        nextReady = true;
+      } else if (STAGE_RANK[safeStage] > STAGE_RANK[existing.stage]) {
+        nextStage = safeStage;
+      }
+
+      if (itemInput.readyForRotty === false) {
+        nextReady = false;
+      }
 
       const cleanedFlags = (existing.flaggedNotes || []).filter(
         (flag) => !(effectiveSourceUrl || nextStage === 'posted') || !flag.startsWith('FLAG: Missing verified source URL')
       );
-      if (!effectiveSourceUrl && nextStage !== 'posted' && cleanedFlags.length === 0) {
+      if (!effectiveSourceUrl && nextStage !== 'posted' && nextStage !== 'archived' && cleanedFlags.length === 0) {
         cleanedFlags.push('FLAG: Missing verified source URL — required before clearance.');
       }
 
       const updated: PipelineCard = {
         ...existing,
         stage: nextStage,
+        readyForRotty: nextReady,
         sourceUrl: effectiveSourceUrl,
         sourceFile: sourceFile || existing.sourceFile,
         assetFile: assetFile || existing.assetFile,
@@ -245,7 +280,6 @@ export async function POST(request: Request) {
         flaggedNotes: cleanedFlags.length > 0 ? cleanedFlags : undefined,
         marleyStatus: nextStage === 'posted' ? 'approved' : existing.marleyStatus,
         approvedBy: nextStage === 'posted' ? existing.approvedBy || 'Rotty' : existing.approvedBy,
-        readyForRotty: existing.readyForRotty,
         updatedAt: now,
       };
 
@@ -257,7 +291,7 @@ export async function POST(request: Request) {
     }
 
     const flaggedNotes: string[] = [];
-    if (!sourceUrl && safeStage !== 'posted') {
+    if (!sourceUrl && safeStage !== 'posted' && safeStage !== 'archived') {
       flaggedNotes.push('FLAG: Missing verified source URL — required before clearance.');
     }
 
@@ -271,7 +305,7 @@ export async function POST(request: Request) {
           : 'post';
 
     const job: PipelineCard = {
-      id: `${clientId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id: explicitId || `${clientId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       clientId,
       title,
       lane,
@@ -325,22 +359,26 @@ export async function POST(request: Request) {
     results.length > 1 ? results.map((c) => c.title).slice(0, 2).join(', ') : results[0].title
   );
 
-  if (results.length === 1) {
+  const safeResults = results.map((item) => ({ ...item, autoPostAllowed: false as const }));
+
+  if (safeResults.length === 1) {
     const isMerged = deduplicated.length === 1;
     return NextResponse.json(
-      isMerged ? { ok: true, deduplicated: true, job: results[0] } : { ok: true, job: results[0] },
-      { status: isMerged ? 200 : 201, headers: { 'Cache-Control': 'no-store' } }
+      isMerged
+        ? { ok: true, deduplicated: true, job: safeResults[0] }
+        : { ok: true, job: safeResults[0] },
+      { status: isMerged ? 200 : 201, headers: NO_STORE_HEADERS }
     );
   }
 
   return NextResponse.json(
     {
       ok: true,
-      count: results.length,
+      count: safeResults.length,
       createdCount: created.length,
       deduplicatedCount: deduplicated.length,
-      jobs: results,
+      jobs: safeResults,
     },
-    { status: created.length > 0 ? 201 : 200, headers: { 'Cache-Control': 'no-store' } }
+    { status: created.length > 0 ? 201 : 200, headers: NO_STORE_HEADERS }
   );
 }

@@ -10,6 +10,21 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "headers": [
+      {
+        "source": "/api/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-store, no-cache, must-revalidate, max-age=0"
+          },
+          {
+            "key": "CDN-Cache-Control",
+            "value": "no-store"
+          }
+        ]
+      }
+    ],
     "frameworksBackend": {
       "region": "us-central1"
     }

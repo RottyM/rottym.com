@@ -359,8 +359,10 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
     () =>
       pipeline.filter((p) => {
         if (laneFilter !== 'all' && p.lane !== laneFilter) return false;
-        if (stageFilter !== 'all' && p.stage !== stageFilter) return false;
-        return true;
+        if (stageFilter === 'all') {
+          return p.stage !== 'archived';
+        }
+        return p.stage === stageFilter;
       }),
     [pipeline, laneFilter, stageFilter]
   );
@@ -729,6 +731,19 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                     </button>
                   );
                 })}
+                {pipeline.some((p) => p.stage === 'archived') && (
+                  <button
+                    type="button"
+                    onClick={() => setStageFilter(stageFilter === 'archived' ? 'all' : 'archived')}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium border ${
+                      stageFilter === 'archived'
+                        ? 'border-accent bg-accent/15 text-foreground'
+                        : 'border-border bg-card text-muted-foreground'
+                    }`}
+                  >
+                    Archived ({pipeline.filter((p) => p.stage === 'archived').length})
+                  </button>
+                )}
               </div>
 
               <div className="text-[11px] font-mono text-muted-foreground">
