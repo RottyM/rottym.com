@@ -193,6 +193,18 @@ export async function authorizeBotOrOpsUser(
   return null;
 }
 
+export function isBotJobOwner(
+  actor: BotActor,
+  card: { agentId?: string; source?: string }
+): boolean {
+  if (actor.user) return true;
+  const norm = (v?: string) => (v || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const caller = norm(actor.actorName);
+  if (!caller || caller === 'bot') return false;
+  if (caller === 'marley') return true;
+  return caller === norm(card.agentId) || caller === norm(card.source);
+}
+
 export function resolveBotTargetClientId(actor: BotActor, requestedClientId?: string | null): string | null {
   const cleanRequested = requestedClientId?.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '') || '';
   if (actor.scopedClientId && actor.scopedClientId !== '__check_membership__') {

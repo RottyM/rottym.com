@@ -29,6 +29,7 @@ function toSignalPayload(item: PipelineCard): OpsSignalPayload | null {
     sourceFile: item.sourceFile || null,
     sourceUrl: item.sourceUrl || null,
     assetFile: item.assetFile || null,
+    assetUrl: item.assetUrl || null,
     readyForRotty: Boolean(item.readyForRotty),
     autoPostAllowed: false,
     marleyStatus: item.marleyStatus,

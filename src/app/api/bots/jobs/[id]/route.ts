@@ -3,10 +3,11 @@ import {
   authorizeBotOrOpsUser,
   canUserAccessClient,
   forbiddenResponse,
+  isBotJobOwner,
   resolveBotTargetClientId,
   unauthorizedResponse,
 } from '@/lib/ops/auth';
-import { laneToChannel, normalizeLane } from '@/lib/ops/drop-parser';
+import { cleanBotStringList, laneToChannel, normalizeLane, syncVisualArtifactsNeeded } from '@/lib/ops/drop-parser';
 import { appendOpsActivity, opsDeleteDoc, opsGetDoc, opsSetDoc } from '@/lib/ops/firestore-rest';
 import type { PipelineCard, PipelineStage } from '@/lib/ops/types';
 
@@ -47,14 +48,6 @@ function sanitizeUrl(raw: unknown): string | undefined {
     return undefined;
   }
   return undefined;
-}
-
-function cleanList(raw: unknown): string[] | undefined {
-  if (!Array.isArray(raw)) return undefined;
-  return raw
-    .filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0)
-    .map((entry) => entry.trim().slice(0, 140))
-    .slice(0, 8);
 }
 
 export async function GET(
@@ -119,6 +112,13 @@ async function handleUpsertJobById(
     );
   }
 
+  if (requestedStage === 'archived' && existing.stage !== 'posted' && !isBotJobOwner(actor, existing)) {
+    return NextResponse.json(
+      { error: 'Only the creating bot (or Marley / operator) can archive this job.' },
+      { status: 403, headers: NO_STORE_HEADERS }
+    );
+  }
+
   const wantsReadyForRotty = body.readyForRotty === true || requestedStage === 'approved';
   if (wantsReadyForRotty && existing.marleyStatus !== 'approved') {
     return NextResponse.json(
@@ -151,6 +151,24 @@ async function handleUpsertJobById(
     nextReady = false;
   }
 
+  const nextAssetFile =
+    typeof body.assetFile === 'string'
+      ? body.assetFile.trim().slice(0, 160) || undefined
+      : existing.assetFile;
+  const rawAssetUrlInput =
+    body.assetUrl !== undefined
+      ? body.assetUrl
+      : body.driveUrl !== undefined
+        ? body.driveUrl
+        : body.assetLink !== undefined
+          ? body.assetLink
+          : body.imageUrl;
+  const nextAssetUrl = rawAssetUrlInput !== undefined ? sanitizeUrl(rawAssetUrlInput) : existing.assetUrl;
+  const nextAssetSpec =
+    typeof body.assetSpec === 'string'
+      ? body.assetSpec.trim().slice(0, 60) || undefined
+      : existing.assetSpec;
+
   const updated: PipelineCard = {
     ...existing,
     title:
@@ -168,18 +186,17 @@ async function handleUpsertJobById(
         : existing.note,
     draftCopy:
       typeof body.draftCopy === 'string' ? body.draftCopy.slice(0, 2400) : existing.draftCopy,
-    assetFile:
-      typeof body.assetFile === 'string'
-        ? body.assetFile.trim().slice(0, 160) || undefined
-        : existing.assetFile,
-    assetSpec:
-      typeof body.assetSpec === 'string'
-        ? body.assetSpec.trim().slice(0, 60) || undefined
-        : existing.assetSpec,
-    artifactsNeeded:
-      body.artifactsNeeded !== undefined ? cleanList(body.artifactsNeeded) : existing.artifactsNeeded,
+    assetFile: nextAssetFile,
+    assetUrl: nextAssetUrl,
+    assetSpec: nextAssetSpec,
+    artifactsNeeded: syncVisualArtifactsNeeded(
+      existing.artifactsNeeded,
+      body.artifactsNeeded !== undefined ? cleanBotStringList(body.artifactsNeeded) : undefined,
+      nextAssetSpec,
+      Boolean(nextAssetFile || nextAssetUrl)
+    ),
     discrepancies:
-      body.discrepancies !== undefined ? cleanList(body.discrepancies) : existing.discrepancies,
+      body.discrepancies !== undefined ? cleanBotStringList(body.discrepancies) : existing.discrepancies,
     updatedAt: new Date().toISOString(),
   };
 
@@ -226,6 +243,13 @@ export async function DELETE(
   if (existing.stage === 'posted' && !actor.user) {
     return NextResponse.json(
       { error: 'Posted jobs cannot be deleted by bots.' },
+      { status: 403, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  if (!isBotJobOwner(actor, existing)) {
+    return NextResponse.json(
+      { error: 'Only the creating bot (or Marley / operator) can delete this job.' },
       { status: 403, headers: NO_STORE_HEADERS }
     );
   }

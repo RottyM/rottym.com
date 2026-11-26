@@ -309,6 +309,15 @@ export async function POST(request: Request) {
           ? body.source.trim().slice(0, 80)
           : existing.source,
       sourceUrl: body.sourceUrl !== undefined ? sanitizeUrl(body.sourceUrl) : existing.sourceUrl,
+      assetFile:
+        typeof body.assetFile === 'string'
+          ? body.assetFile.trim().slice(0, 160) || undefined
+          : existing.assetFile,
+      assetUrl: body.assetUrl !== undefined ? sanitizeUrl(body.assetUrl) : existing.assetUrl,
+      assetSpec:
+        typeof body.assetSpec === 'string'
+          ? body.assetSpec.trim().slice(0, 60) || undefined
+          : existing.assetSpec,
       note: typeof body.note === 'string' ? body.note.trim().slice(0, 300) || undefined : existing.note,
       draftCopy: typeof body.draftCopy === 'string' ? body.draftCopy.slice(0, 2400) : existing.draftCopy,
       marleyStatus:

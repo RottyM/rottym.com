@@ -3,10 +3,16 @@ import {
   authorizeBotOrOpsUser,
   canUserAccessClient,
   forbiddenResponse,
+  isBotJobOwner,
   resolveBotTargetClientId,
   unauthorizedResponse,
 } from '@/lib/ops/auth';
-import { laneToChannel, normalizeLane } from '@/lib/ops/drop-parser';
+import {
+  cleanBotStringList,
+  laneToChannel,
+  normalizeLane,
+  syncVisualArtifactsNeeded,
+} from '@/lib/ops/drop-parser';
 import {
   appendOpsActivity,
   ensureOpsSeeded,
@@ -115,7 +121,8 @@ export async function GET(request: Request) {
       if (needsWork === 'true') {
         const hasDisc = Boolean(item.discrepancies?.length);
         const hasArt = Boolean(item.artifactsNeeded?.length);
-        if (!hasDisc && !hasArt) return false;
+        const needsSpecVisual = Boolean(item.assetSpec && !item.assetFile && !item.assetUrl);
+        if (!hasDisc && !hasArt && !needsSpecVisual) return false;
       }
       return true;
     })
@@ -217,8 +224,19 @@ export async function POST(request: Request) {
       typeof itemInput.sourceFile === 'string' ? itemInput.sourceFile.trim().slice(0, 140) || undefined : undefined;
     const assetFile =
       typeof itemInput.assetFile === 'string' ? itemInput.assetFile.trim().slice(0, 140) || undefined : undefined;
+    const assetUrl = sanitizeUrl(
+      itemInput.assetUrl || itemInput.driveUrl || itemInput.assetLink || itemInput.imageUrl
+    );
     const assetSpec =
       typeof itemInput.assetSpec === 'string' ? itemInput.assetSpec.trim().slice(0, 60) || undefined : undefined;
+    const explicitArtifacts =
+      itemInput.artifactsNeeded !== undefined
+        ? cleanBotStringList(itemInput.artifactsNeeded)
+        : undefined;
+    const explicitDiscrepancies =
+      itemInput.discrepancies !== undefined
+        ? cleanBotStringList(itemInput.discrepancies)
+        : undefined;
     const note =
       typeof itemInput.note === 'string' ? itemInput.note.trim().slice(0, 300) || undefined : undefined;
     const draftCopy = typeof itemInput.draftCopy === 'string' ? itemInput.draftCopy.slice(0, 2400) : '';
@@ -234,8 +252,18 @@ export async function POST(request: Request) {
 
     if (matchedIndex >= 0) {
       const existing = existingCards[matchedIndex];
+      if (safeStage === 'archived' && existing.stage !== 'posted' && !isBotJobOwner(actor, existing)) {
+        return NextResponse.json(
+          { error: 'Only the creating bot (or Marley / operator) can archive this job.' },
+          { status: 403, headers: NO_STORE_HEADERS }
+        );
+      }
+
       const combinedLinks = mergeLinks(existing.links, mergedLinks);
       const effectiveSourceUrl = sourceUrl || existing.sourceUrl;
+      const effectiveAssetFile = assetFile || existing.assetFile;
+      const effectiveAssetUrl = assetUrl || existing.assetUrl;
+      const effectiveAssetSpec = assetSpec || existing.assetSpec;
       const wantsReady = itemInput.readyForRotty === true || requestedStage === 'approved';
 
       let nextStage: PipelineStage = existing.stage;
@@ -272,8 +300,17 @@ export async function POST(request: Request) {
         readyForRotty: nextReady,
         sourceUrl: effectiveSourceUrl,
         sourceFile: sourceFile || existing.sourceFile,
-        assetFile: assetFile || existing.assetFile,
-        assetSpec: assetSpec || existing.assetSpec,
+        assetFile: effectiveAssetFile,
+        assetUrl: effectiveAssetUrl,
+        assetSpec: effectiveAssetSpec,
+        artifactsNeeded: syncVisualArtifactsNeeded(
+          existing.artifactsNeeded,
+          explicitArtifacts,
+          effectiveAssetSpec,
+          Boolean(effectiveAssetFile || effectiveAssetUrl)
+        ),
+        discrepancies:
+          explicitDiscrepancies !== undefined ? explicitDiscrepancies : existing.discrepancies,
         note: note || existing.note,
         draftCopy: draftCopy.trim() ? draftCopy : existing.draftCopy,
         links: combinedLinks,
@@ -322,6 +359,13 @@ export async function POST(request: Request) {
       note,
       draftCopy,
       flaggedNotes: flaggedNotes.length > 0 ? flaggedNotes : undefined,
+      artifactsNeeded: syncVisualArtifactsNeeded(
+        undefined,
+        explicitArtifacts,
+        assetSpec,
+        Boolean(assetFile || assetUrl)
+      ),
+      discrepancies: explicitDiscrepancies,
       marleyStatus: safeStage === 'posted' ? 'approved' : 'pending',
       readyForRotty: false,
       approvedBy: safeStage === 'posted' ? 'Rotty' : undefined,
@@ -331,6 +375,7 @@ export async function POST(request: Request) {
           : now.slice(0, 10),
       sourceFile,
       assetFile,
+      assetUrl,
       assetSpec,
       links: mergedLinks,
       createdAt: now,

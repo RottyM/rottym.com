@@ -80,6 +80,7 @@ export interface PipelineCard {
   jobDate?: string;
   sourceFile?: string;
   assetFile?: string;
+  assetUrl?: string;
   assetSpec?: string;
   links?: PipelineLinks;
   createdAt: string;
@@ -131,6 +132,7 @@ export interface OpsSignalPayload {
   sourceFile: string | null;
   sourceUrl: string | null;
   assetFile: string | null;
+  assetUrl: string | null;
   readyForRotty: boolean;
   autoPostAllowed: false;
   marleyStatus: 'pending' | 'approved' | 'rejected';

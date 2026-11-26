@@ -162,6 +162,9 @@ function CardEditorForm({
   const [stage, setStage] = useState<PipelineStage>(card.stage);
   const [source, setSource] = useState(card.source);
   const [sourceUrl, setSourceUrl] = useState(card.sourceUrl || '');
+  const [assetFile, setAssetFile] = useState(card.assetFile || '');
+  const [assetUrl, setAssetUrl] = useState(card.assetUrl || '');
+  const [assetSpec, setAssetSpec] = useState(card.assetSpec || '');
   const [note, setNote] = useState(card.note || '');
   const [draftCopy, setDraftCopy] = useState(card.draftCopy || '');
   const [fbLink, setFbLink] = useState(card.links?.fb || '');
@@ -176,6 +179,9 @@ function CardEditorForm({
     readyForRotty: overrideReady,
     source,
     sourceUrl,
+    assetFile,
+    assetUrl,
+    assetSpec,
     note,
     draftCopy,
     links: { fb: fbLink, ig: igLink, linkedin: liLink, x: xLink },
@@ -245,6 +251,49 @@ function CardEditorForm({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Open source URL"
+                className="px-2.5 flex items-center rounded-lg border border-border hover:border-accent text-muted-foreground hover:text-accent"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label className={LABEL_CLS}>Asset File</label>
+          <input
+            className={INPUT_CLS}
+            value={assetFile}
+            placeholder="e.g., cover-v2.png"
+            onChange={(e) => setAssetFile(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className={LABEL_CLS}>Asset Spec</label>
+          <input
+            className={INPUT_CLS}
+            value={assetSpec}
+            placeholder="e.g., 1200x627"
+            onChange={(e) => setAssetSpec(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className={LABEL_CLS}>Asset URL (Drive link)</label>
+          <div className="flex gap-1.5">
+            <input
+              className={INPUT_CLS}
+              value={assetUrl}
+              placeholder="https://drive.google.com/..."
+              onChange={(e) => setAssetUrl(e.target.value)}
+            />
+            {assetUrl && (
+              <a
+                href={assetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open asset URL"
                 className="px-2.5 flex items-center rounded-lg border border-border hover:border-accent text-muted-foreground hover:text-accent"
               >
                 <ExternalLink className="w-4 h-4" />

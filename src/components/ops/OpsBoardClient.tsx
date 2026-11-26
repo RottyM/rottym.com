@@ -1075,6 +1075,21 @@ function PipelineCardTile({
               Source <ExternalLink className="w-2.5 h-2.5" />
             </a>
           )}
+          {card.assetUrl ? (
+            <a
+              href={card.assetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={card.assetFile || 'Open visual asset'}
+              className="inline-flex items-center gap-0.5 text-[10px] font-mono text-cyan-600 dark:text-cyan-300 hover:underline"
+            >
+              {card.assetFile ? card.assetFile.slice(0, 18) : 'Visual'} <ExternalLink className="w-2.5 h-2.5" />
+            </a>
+          ) : card.assetFile ? (
+            <span className="text-[10px] font-mono text-muted-foreground truncate max-w-[110px]" title={card.assetFile}>
+              {card.assetFile}
+            </span>
+          ) : null}
           {linkList.map((l) => (
             <a
               key={l.label}
@@ -1088,7 +1103,7 @@ function PipelineCardTile({
           ))}
         </div>
 
-        {card.stage !== 'posted' && !card.readyForRotty && (
+        {card.stage !== 'posted' && card.stage !== 'archived' && !card.readyForRotty && (
           <button
             type="button"
             onClick={onReadyForRotty}

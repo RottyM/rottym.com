@@ -621,3 +621,39 @@ function parseKeyValueLines(text: string): Record<string, string> {
   }
   return out;
 }
+
+export function cleanBotStringList(raw: unknown): string[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  return raw
+    .filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0)
+    .map((entry) => entry.trim().slice(0, 140))
+    .slice(0, 8);
+}
+
+export function syncVisualArtifactsNeeded(
+  baseArtifacts: string[] | undefined,
+  explicitArtifacts: string[] | undefined,
+  assetSpec: string | undefined,
+  hasVisualAsset: boolean
+): string[] | undefined {
+  if (explicitArtifacts !== undefined) {
+    return explicitArtifacts.length > 0 ? explicitArtifacts : undefined;
+  }
+  const current = baseArtifacts || [];
+  if (hasVisualAsset) {
+    const cleaned = current.filter(
+      (entry) => !/^Visual needed\b/i.test(entry) && !/^Awaiting Pixel\b/i.test(entry)
+    );
+    return cleaned.length > 0 ? cleaned : undefined;
+  }
+  if (!assetSpec) {
+    return current.length > 0 ? current : undefined;
+  }
+  const alreadyListed = current.some(
+    (entry) =>
+      entry.toLowerCase().includes(assetSpec.toLowerCase()) ||
+      /\b(visual|cover|image|graphic)\b/i.test(entry)
+  );
+  if (alreadyListed) return current;
+  return [...current, `Visual needed (${assetSpec})`];
+}
