@@ -975,8 +975,7 @@ export default function OpsDecisionDesk({
                       )}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 shrink-0">
-                      {!hasDriveToken &&
-                        selectedCardAssets.some((a) => Boolean(extractDriveFileId(a.url) || extractDriveFileId(a.file, true))) && (
+                      {selectedCardAssets.some((a) => Boolean(extractDriveFileId(a.url) || extractDriveFileId(a.file, true))) && (
                           <button
                             type="button"
                             disabled={busy}
@@ -988,10 +987,14 @@ export default function OpsDecisionDesk({
                                 onToast(err instanceof Error ? err.message : 'Unable to connect Google Drive');
                               }
                             }}
-                            title="Grant temporary Google Drive read access so private Drive images render inline"
+                            title={
+                              hasDriveToken
+                                ? 'Refresh or switch Google Drive account for private Drive previews'
+                                : 'Grant temporary Google Drive read access so private Drive images render inline'
+                            }
                             className="px-2 py-0.5 rounded border border-cyan-500/45 bg-cyan-500/10 hover:bg-cyan-500/20 text-[10px] font-mono text-cyan-700 dark:text-cyan-300 disabled:opacity-50"
                           >
-                            Connect Drive
+                            {hasDriveToken ? 'Reconnect Drive' : 'Connect Drive'}
                           </button>
                         )}
                       {focusedAsset?.url && (
@@ -1112,18 +1115,25 @@ export default function OpsDecisionDesk({
                       {/* Focused Asset Preview + Metadata + Per-Asset Review */}
                       {focusedAsset && (
                         <div className="p-2.5 grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-muted/10">
-                          <button
-                            type="button"
+                          <div
+                            role="button"
+                            tabIndex={0}
                             onClick={() => onPreviewAsset(focusedAsset)}
+                            onKeyDown={(e) => {
+                              if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) {
+                                e.preventDefault();
+                                onPreviewAsset(focusedAsset);
+                              }
+                            }}
                             title="Click to open full-size preview"
-                            className="sm:col-span-5 block w-full rounded-lg border border-border overflow-hidden bg-background/80 hover:border-accent transition-colors"
+                            className="sm:col-span-5 block w-full rounded-lg border border-border overflow-hidden bg-background/80 hover:border-accent transition-colors cursor-pointer"
                           >
                             <OpsAssetThumb
                               asset={focusedAsset}
                               size="medium"
                               className="w-full max-h-52 object-contain mx-auto"
                             />
-                          </button>
+                          </div>
 
                           <div className="sm:col-span-7 space-y-1.5 text-[11px]">
                             <div className="flex flex-wrap items-center gap-1.5 font-mono">
@@ -2015,8 +2025,9 @@ export default function OpsDecisionDesk({
                     {(extractDriveFileId(selectedRequest.preparedUrl) ||
                       extractDriveFileId(selectedRequest.preparedFile, true) ||
                       Boolean(selectedRequest.preparedUrl?.startsWith('/api/ops/asset-blob/'))) ? (
-                      <button
-                        type="button"
+                      <div
+                        role="button"
+                        tabIndex={0}
                         onClick={() =>
                           onPreviewAsset({
                             id: `req-${selectedRequest.id}`,
@@ -2032,8 +2043,26 @@ export default function OpsDecisionDesk({
                             updatedAt: selectedRequest.updatedAt,
                           })
                         }
+                        onKeyDown={(e) => {
+                          if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) {
+                            e.preventDefault();
+                            onPreviewAsset({
+                              id: `req-${selectedRequest.id}`,
+                              url: selectedRequest.preparedUrl,
+                              file: selectedRequest.preparedFile,
+                              kind: 'image',
+                              platform: 'all',
+                              order: 0,
+                              label: selectedRequest.title,
+                              status: 'delivered',
+                              addedBy: selectedRequest.raisedByName,
+                              createdAt: selectedRequest.raisedAt,
+                              updatedAt: selectedRequest.updatedAt,
+                            });
+                          }
+                        }}
                         title="Click to inspect full-size preview"
-                        className="block w-full bg-muted/25 p-2 text-center border-b border-border/60 hover:bg-muted/40 transition-colors"
+                        className="block w-full bg-muted/25 p-2 text-center border-b border-border/60 hover:bg-muted/40 transition-colors cursor-pointer"
                       >
                         <OpsAssetThumb
                           asset={{
@@ -2045,7 +2074,7 @@ export default function OpsDecisionDesk({
                           size="medium"
                           className="max-h-60 w-auto max-w-full rounded object-contain mx-auto"
                         />
-                      </button>
+                      </div>
                     ) : previewUrl && !hasPreviewError ? (
                       <a
                         href={selectedRequest.preparedUrl || previewUrl}

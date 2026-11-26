@@ -53,17 +53,38 @@ export function getOpsFirestore(): Firestore {
 }
 
 const DRIVE_TOKEN_KEY = 'ops_google_drive_token';
+const DRIVE_TOKEN_EXP_KEY = 'ops_google_drive_token_exp';
 
 export function getGoogleDriveAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    return sessionStorage.getItem(DRIVE_TOKEN_KEY);
+    const token = sessionStorage.getItem(DRIVE_TOKEN_KEY);
+    if (!token) return null;
+    const expRaw = sessionStorage.getItem(DRIVE_TOKEN_EXP_KEY);
+    if (expRaw) {
+      const exp = Number(expRaw);
+      if (Number.isFinite(exp) && Date.now() >= exp) {
+        return null;
+      }
+    }
+    return token;
   } catch {
     return null;
   }
 }
 
 export const DRIVE_TOKEN_EVENT = 'ops-drive-token-updated';
+
+export function clearGoogleDriveAccessToken() {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.removeItem(DRIVE_TOKEN_KEY);
+    sessionStorage.removeItem(DRIVE_TOKEN_EXP_KEY);
+    window.dispatchEvent(new Event(DRIVE_TOKEN_EVENT));
+  } catch {
+    // ignore storage failure
+  }
+}
 
 export async function signInOpsWithGoogle() {
   const auth = getOpsAuth();
@@ -75,6 +96,7 @@ export async function signInOpsWithGoogle() {
   if (oauth?.accessToken && typeof window !== 'undefined') {
     try {
       sessionStorage.setItem(DRIVE_TOKEN_KEY, oauth.accessToken);
+      sessionStorage.setItem(DRIVE_TOKEN_EXP_KEY, String(Date.now() + 50 * 60 * 1000));
       window.dispatchEvent(new Event(DRIVE_TOKEN_EVENT));
     } catch {
       // ignore storage failure
@@ -90,12 +112,6 @@ export async function signInOpsWithEmail(email: string, password: string) {
 
 export async function signOutOps() {
   const auth = getOpsAuth();
-  if (typeof window !== 'undefined') {
-    try {
-      sessionStorage.removeItem(DRIVE_TOKEN_KEY);
-    } catch {
-      // ignore
-    }
-  }
+  clearGoogleDriveAccessToken();
   return signOut(auth);
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ExternalLink, Film, FileImage, Lock, X } from 'lucide-react';
 import { extractDriveFileId } from '@/lib/ops/drop-parser';
 import {
+  clearGoogleDriveAccessToken,
   DRIVE_TOKEN_EVENT,
   getGoogleDriveAccessToken,
   getOpsAuth,
@@ -54,7 +55,10 @@ export function OpsAssetThumb({
   size = 'thumb',
   className = '',
 }: {
-  asset: Pick<JobAsset, 'url' | 'file' | 'kind' | 'altText' | 'label'>;
+  asset: Pick<JobAsset, 'url' | 'file' | 'kind' | 'altText' | 'label'> & {
+    assignedTo?: string;
+    status?: JobAsset['status'];
+  };
   alt?: string;
   size?: 'thumb' | 'medium' | 'full';
   className?: string;
@@ -103,7 +107,17 @@ export function OpsAssetThumb({
         if (driveId && driveToken) headers['X-Google-Access-Token'] = driveToken;
 
         const res = await fetch(endpoint, { headers, cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          if (driveId && driveToken) {
+            const errJson = (await res.json().catch(() => null)) as {
+              driveAuthRejected?: boolean;
+            } | null;
+            if (errJson?.driveAuthRejected) {
+              clearGoogleDriveAccessToken();
+            }
+          }
+          throw new Error(`HTTP ${res.status}`);
+        }
         const blob = await res.blob();
         if (cancelled) return;
         createdUrl = URL.createObjectURL(blob);
@@ -147,6 +161,14 @@ export function OpsAssetThumb({
   }
 
   const hasDriveToken = Boolean(getGoogleDriveAccessToken());
+  const isUnuploadedPlaceholder = !rawUrl && !driveId;
+  const emptyMessage = isUnuploadedPlaceholder
+    ? asset.status === 'rejected'
+      ? 'Rejected — no replacement uploaded yet'
+      : asset.assignedTo
+        ? `Awaiting upload from @${asset.assignedTo}`
+        : 'Awaiting image upload'
+    : asset.file || (failed ? 'Preview unavailable' : 'No preview');
 
   return (
     <div
@@ -160,9 +182,9 @@ export function OpsAssetThumb({
       {size !== 'thumb' && (
         <>
           <span className="mt-1 text-[10px] font-mono px-2 text-center truncate max-w-full">
-            {asset.file || (failed ? 'Preview unavailable' : 'No preview')}
+            {emptyMessage}
           </span>
-          {driveId && !hasDriveToken && (
+          {driveId && (!hasDriveToken || failed) && (
             <button
               type="button"
               disabled={connectingDrive}
@@ -180,7 +202,11 @@ export function OpsAssetThumb({
               className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-accent/50 bg-accent/15 text-accent text-[11px] font-mono font-semibold hover:bg-accent/25 disabled:opacity-50"
             >
               <Lock className="w-3 h-3" />
-              {connectingDrive ? 'Connecting...' : 'Connect Drive to preview'}
+              {connectingDrive
+                ? 'Connecting...'
+                : hasDriveToken
+                  ? 'Reconnect Google Drive'
+                  : 'Connect Drive to preview'}
             </button>
           )}
         </>

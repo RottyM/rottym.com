@@ -7,7 +7,58 @@ const driveAuth = new GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/drive.readonly'],
 });
 
-async function fetchDriveWithBearer(fileId: string, token: string): Promise<Response | null> {
+function detectImageMime(bytes: Uint8Array): string | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return 'image/jpeg';
+  }
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47
+  ) {
+    return 'image/png';
+  }
+  if (bytes.length >= 4 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) {
+    return 'image/gif';
+  }
+  if (
+    bytes.length >= 12 &&
+    bytes[0] === 0x52 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x46 &&
+    bytes[8] === 0x57 &&
+    bytes[9] === 0x45 &&
+    bytes[10] === 0x42 &&
+    bytes[11] === 0x50
+  ) {
+    return 'image/webp';
+  }
+  return null;
+}
+
+async function toImagePayload(res: Response): Promise<{ buf: ArrayBuffer; contentType: string } | null> {
+  const rawCt = (res.headers.get('content-type') || '').toLowerCase();
+  if (rawCt.startsWith('image/')) {
+    return { buf: await res.arrayBuffer(), contentType: rawCt };
+  }
+  if (rawCt.includes('octet-stream') || rawCt === '') {
+    const buf = await res.arrayBuffer();
+    const detected = detectImageMime(new Uint8Array(buf.slice(0, 16)));
+    if (detected) return { buf, contentType: detected };
+  }
+  return null;
+}
+
+async function fetchDriveWithBearer(
+  fileId: string,
+  token: string,
+  sz: number
+): Promise<{ payload: { buf: ArrayBuffer; contentType: string } | null; authStatus?: number }> {
+  let authStatus: number | undefined;
+
   // 1) Try media download directly
   const mediaRes = await fetch(
     `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`,
@@ -17,8 +68,11 @@ async function fetchDriveWithBearer(fileId: string, token: string): Promise<Resp
       signal: AbortSignal.timeout(12000),
     }
   );
-  if (mediaRes.ok && (mediaRes.headers.get('content-type') || '').startsWith('image/')) {
-    return mediaRes;
+  if (mediaRes.ok) {
+    const payload = await toImagePayload(mediaRes);
+    if (payload) return { payload };
+  } else if (mediaRes.status === 401 || mediaRes.status === 403) {
+    authStatus = mediaRes.status;
   }
 
   // 2) Fallback: ask Drive API for thumbnailLink
@@ -33,15 +87,24 @@ async function fetchDriveWithBearer(fileId: string, token: string): Promise<Resp
   if (metaRes.ok) {
     const meta = (await metaRes.json().catch(() => ({}))) as { thumbnailLink?: string };
     if (meta.thumbnailLink) {
-      const thumbRes = await fetch(meta.thumbnailLink, {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: 'no-store',
-        signal: AbortSignal.timeout(10000),
-      });
-      if (thumbRes.ok) return thumbRes;
+      const sizedThumbUrl = meta.thumbnailLink.replace(/=s\d+$/, `=w${sz}`);
+      for (const headers of [undefined, { Authorization: `Bearer ${token}` }]) {
+        const thumbRes = await fetch(sizedThumbUrl, {
+          headers,
+          cache: 'no-store',
+          signal: AbortSignal.timeout(10000),
+        });
+        if (thumbRes.ok) {
+          const payload = await toImagePayload(thumbRes);
+          if (payload) return { payload };
+        }
+      }
     }
+  } else if (!authStatus && (metaRes.status === 401 || metaRes.status === 403)) {
+    authStatus = metaRes.status;
   }
-  return null;
+
+  return { payload: null, authStatus };
 }
 
 export async function GET(request: Request) {
@@ -59,21 +122,22 @@ export async function GET(request: Request) {
   }
 
   const userGoogleToken = request.headers.get('x-google-access-token')?.trim();
+  let driveAuthStatus: number | undefined;
 
   // 1) Signed-in user's Google OAuth token (e.g. rmendez with drive.readonly scope)
   if (userGoogleToken) {
     try {
-      const res = await fetchDriveWithBearer(fileId, userGoogleToken);
-      if (res) {
-        const buf = await res.arrayBuffer();
-        return new NextResponse(buf, {
+      const result = await fetchDriveWithBearer(fileId, userGoogleToken, sz);
+      if (result.payload) {
+        return new NextResponse(result.payload.buf, {
           status: 200,
           headers: {
-            'Content-Type': res.headers.get('content-type') || 'image/jpeg',
+            'Content-Type': result.payload.contentType,
             'Cache-Control': 'private, max-age=300',
           },
         });
       }
+      driveAuthStatus = result.authStatus;
     } catch {
       // Fall through to service account or public thumbnail
     }
@@ -85,13 +149,12 @@ export async function GET(request: Request) {
     const tokenResp = await client.getAccessToken();
     const serverToken = typeof tokenResp === 'string' ? tokenResp : tokenResp?.token;
     if (serverToken) {
-      const res = await fetchDriveWithBearer(fileId, serverToken);
-      if (res) {
-        const buf = await res.arrayBuffer();
-        return new NextResponse(buf, {
+      const result = await fetchDriveWithBearer(fileId, serverToken, sz);
+      if (result.payload) {
+        return new NextResponse(result.payload.buf, {
           status: 200,
           headers: {
-            'Content-Type': res.headers.get('content-type') || 'image/jpeg',
+            'Content-Type': result.payload.contentType,
             'Cache-Control': 'private, max-age=300',
           },
         });
@@ -129,11 +192,15 @@ export async function GET(request: Request) {
     }
   }
 
+  const driveAuthRejected = Boolean(userGoogleToken && (driveAuthStatus === 401 || driveAuthStatus === 403));
   return NextResponse.json(
     {
-      error:
-        'Drive thumbnail unavailable. Sign in with Google Drive access or upload a hosted copy to the asset.',
-      needsDriveAuth: !userGoogleToken,
+      error: driveAuthRejected
+        ? 'Your Google Drive token expired or lacks permission for this file. Reconnect Drive or upload a hosted copy.'
+        : 'Drive thumbnail unavailable. Sign in with Google Drive access or upload a hosted copy to the asset.',
+      needsDriveAuth: !userGoogleToken || driveAuthRejected,
+      driveAuthRejected,
+      ...(driveAuthStatus ? { driveAuthStatus } : {}),
     },
     { status: 404 }
   );
