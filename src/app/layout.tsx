@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
+import SkipToContentLink from '@/components/SkipToContentLink';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -169,12 +170,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </>
         )}
         <ThemeProvider>
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent focus:text-accent-foreground focus:rounded-lg focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-accent-foreground font-bold text-sm"
-          >
-            Skip to main content
-          </a>
+          <SkipToContentLink />
           <Header />
           <main id="main-content" tabIndex={-1} className="min-h-screen transition-colors duration-300 focus:outline-none">
             {children}

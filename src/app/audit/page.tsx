@@ -46,7 +46,7 @@ const AUDIT_CARDS = [
 
 const PRICING_ROWS = [
   {
-    name: { en: 'Launchpad', es: 'Lanzamiento Local' },
+    name: { en: 'Local Launchpad', es: 'Lanzamiento Local' },
     range: '$2,500–$3,500',
     note: {
       en: '5–8 page fast modern site with quote forms & local SEO setup',
