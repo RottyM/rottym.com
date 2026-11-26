@@ -19,6 +19,8 @@ import type {
   AgentStatus,
   ContentKind,
   CrewMember,
+  CrewSet,
+  EngineFamily,
   GateItem,
   GateState,
   MetricsSnapshot,
@@ -32,6 +34,17 @@ const VALID_STAGES = new Set<PipelineStage>(['pulled', 'clearance', 'drafted', '
 const VALID_LANES = new Set<PipelineLane>(['linkedin', 'fb-ig', 'x', 'article']);
 const VALID_AGENT_STATUSES = new Set<AgentStatus>(['active', 'stand_down', 'on_hold', 'out', 'on_call']);
 const VALID_GATE_STATES = new Set<GateState>(['hold', 'blocked', 'awaiting', 'resolved']);
+const VALID_CREW_SETS = new Set<CrewSet>(['original', 'new']);
+const VALID_ENGINES = new Set<Exclude<EngineFamily, 'all'>>(['grok', 'llama', 'gemini', 'claude']);
+
+function slugifyAgentId(raw: string): string {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-_]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+}
 
 function sanitizeUrl(raw: unknown): string | undefined {
   if (typeof raw !== 'string' || !raw.trim()) return undefined;
@@ -96,9 +109,24 @@ export async function POST(request: Request) {
     const nextStatus = VALID_AGENT_STATUSES.has(body.status as AgentStatus)
       ? (body.status as AgentStatus)
       : existing.status;
+    const nextName =
+      typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 60) : existing.name;
+    const nextRole =
+      typeof body.role === 'string' && body.role.trim() ? body.role.trim().slice(0, 100) : existing.role;
+    const nextModel =
+      typeof body.model === 'string' && body.model.trim() ? body.model.trim().slice(0, 60) : existing.model;
+    const nextEngine = VALID_ENGINES.has(body.engine as Exclude<EngineFamily, 'all'>)
+      ? (body.engine as Exclude<EngineFamily, 'all'>)
+      : existing.engine;
+    const nextSet = VALID_CREW_SETS.has(body.set as CrewSet) ? (body.set as CrewSet) : existing.set;
 
     const updated: CrewMember = {
       ...existing,
+      name: nextName,
+      role: nextRole,
+      model: nextModel,
+      engine: nextEngine,
+      set: nextSet,
       status: nextStatus,
       statusNote:
         typeof body.statusNote === 'string'
@@ -117,8 +145,83 @@ export async function POST(request: Request) {
     };
 
     await opsSetDoc('ops_crew', docId, updated as unknown as Record<string, unknown>);
-    await appendOpsActivity(clientId, user.name, `set crew ${updated.name} -> ${updated.status}`, updated.statusNote || updated.name);
+    await appendOpsActivity(
+      clientId,
+      user.name,
+      `updated crew ${updated.name} -> ${updated.status}`,
+      updated.statusNote || `${updated.model} (${updated.set} set)`
+    );
     return NextResponse.json({ ok: true, crew: updated }, { status: 200 });
+  }
+
+  if (action === 'create_crew') {
+    const name = typeof body.name === 'string' ? body.name.trim().slice(0, 60) : '';
+    if (!name) {
+      return NextResponse.json({ error: 'name is required' }, { status: 400 });
+    }
+    const rawAgentId = typeof body.agentId === 'string' && body.agentId.trim() ? body.agentId : name;
+    const agentId = slugifyAgentId(rawAgentId) || `crew-${Date.now().toString(36)}`;
+    const docId = `${clientId}__${agentId}`;
+    const existing = await opsGetDoc<CrewMember>('ops_crew', docId);
+    if (existing) {
+      return NextResponse.json(
+        { error: `Crew member '${agentId}' already exists for this client` },
+        { status: 409 }
+      );
+    }
+
+    const member: CrewMember = {
+      id: docId,
+      clientId,
+      agentId,
+      name,
+      set: VALID_CREW_SETS.has(body.set as CrewSet) ? (body.set as CrewSet) : 'new',
+      model: typeof body.model === 'string' && body.model.trim() ? body.model.trim().slice(0, 60) : 'Grok',
+      engine: VALID_ENGINES.has(body.engine as Exclude<EngineFamily, 'all'>)
+        ? (body.engine as Exclude<EngineFamily, 'all'>)
+        : 'grok',
+      role:
+        typeof body.role === 'string' && body.role.trim()
+          ? body.role.trim().slice(0, 100)
+          : 'Content agent',
+      status: VALID_AGENT_STATUSES.has(body.status as AgentStatus)
+        ? (body.status as AgentStatus)
+        : 'active',
+      statusNote:
+        typeof body.statusNote === 'string' ? body.statusNote.trim().slice(0, 180) || undefined : undefined,
+      usagePct:
+        typeof body.usagePct === 'number' && Number.isFinite(body.usagePct)
+          ? Math.max(0, Math.min(100, Math.round(body.usagePct)))
+          : undefined,
+      resetNote:
+        typeof body.resetNote === 'string' ? body.resetNote.trim().slice(0, 80) || undefined : undefined,
+      updatedAt: now,
+      updatedBy: user.name,
+    };
+
+    await opsSetDoc('ops_crew', docId, member as unknown as Record<string, unknown>);
+    await appendOpsActivity(
+      clientId,
+      user.name,
+      `added crew ${member.name}`,
+      `${member.model} · ${member.set} set`
+    );
+    return NextResponse.json({ ok: true, crew: member }, { status: 201 });
+  }
+
+  if (action === 'delete_crew') {
+    const agentId = typeof body.agentId === 'string' ? body.agentId.trim().toLowerCase() : '';
+    if (!agentId) {
+      return NextResponse.json({ error: 'agentId is required' }, { status: 400 });
+    }
+    const docId = `${clientId}__${agentId}`;
+    const existing = await opsGetDoc<CrewMember>('ops_crew', docId);
+    if (!existing) {
+      return NextResponse.json({ error: 'Crew member not found for this client' }, { status: 404 });
+    }
+    await opsDeleteDoc('ops_crew', docId);
+    await appendOpsActivity(clientId, user.name, `removed crew ${existing.name}`, existing.role);
+    return NextResponse.json({ ok: true, deletedAgentId: agentId }, { status: 200 });
   }
 
   if (action === 'create_card') {

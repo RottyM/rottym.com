@@ -5,6 +5,8 @@ import { X, Check, Trash2, Send, Sparkles, ExternalLink, AlertTriangle } from 'l
 import type {
   AgentStatus,
   CrewMember,
+  CrewSet,
+  EngineFamily,
   PipelineCard,
   PipelineLane,
   PipelineStage,
@@ -42,6 +44,7 @@ export type OpsModalState =
   | { type: 'closed' }
   | { type: 'card'; card: PipelineCard }
   | { type: 'crew'; member: CrewMember }
+  | { type: 'create_crew'; defaultSet: CrewSet }
   | { type: 'desk_paste' };
 
 export function OpsModalHost({
@@ -51,6 +54,8 @@ export function OpsModalHost({
   onUpdateCard,
   onDeleteCard,
   onUpdateCrew,
+  onCreateCrew,
+  onDeleteCrew,
   onDeskPaste,
 }: {
   state: OpsModalState;
@@ -59,6 +64,8 @@ export function OpsModalHost({
   onUpdateCard: (id: string, patch: Record<string, unknown>) => Promise<void>;
   onDeleteCard: (id: string) => Promise<void>;
   onUpdateCrew: (agentId: string, patch: Record<string, unknown>) => Promise<void>;
+  onCreateCrew: (payload: Record<string, unknown>) => Promise<void>;
+  onDeleteCrew: (agentId: string) => Promise<void>;
   onDeskPaste: (raw: string, defaultLane?: PipelineLane) => Promise<void>;
 }) {
   useEffect(() => {
@@ -88,7 +95,9 @@ export function OpsModalHost({
               ? state.card.title
               : state.type === 'crew'
                 ? `Crew: ${state.member.name}`
-                : 'Desk Quick-Paste / Blast Intake'}
+                : state.type === 'create_crew'
+                  ? 'Add Crew Member'
+                  : 'Desk Quick-Paste / Blast Intake'}
           </h2>
           <button
             type="button"
@@ -116,6 +125,15 @@ export function OpsModalHost({
               member={state.member}
               busy={busy}
               onSave={(patch) => onUpdateCrew(state.member.agentId, patch)}
+              onDelete={() => onDeleteCrew(state.member.agentId)}
+            />
+          )}
+          {state.type === 'create_crew' && (
+            <CrewEditorForm
+              key={`create-${state.defaultSet}`}
+              defaultSet={state.defaultSet}
+              busy={busy}
+              onSave={onCreateCrew}
             />
           )}
           {state.type === 'desk_paste' && (
@@ -312,24 +330,106 @@ function CardEditorForm({
   );
 }
 
+const ENGINE_OPTIONS: Array<{ value: Exclude<EngineFamily, 'all'>; label: string }> = [
+  { value: 'grok', label: 'Grok' },
+  { value: 'llama', label: 'Meta / Llama' },
+  { value: 'gemini', label: 'Gemini' },
+  { value: 'claude', label: 'Claude' },
+];
+
+const CREW_SET_OPTIONS: Array<{ value: CrewSet; label: string }> = [
+  { value: 'original', label: 'Original Set' },
+  { value: 'new', label: 'New Set' },
+];
+
 function CrewEditorForm({
   member,
+  defaultSet = 'new',
   busy,
   onSave,
+  onDelete,
 }: {
-  member: CrewMember;
+  member?: CrewMember;
+  defaultSet?: CrewSet;
   busy: boolean;
   onSave: (patch: Record<string, unknown>) => Promise<void>;
+  onDelete?: () => Promise<void>;
 }) {
-  const [status, setStatus] = useState<AgentStatus>(member.status);
-  const [statusNote, setStatusNote] = useState(member.statusNote || '');
-  const [usagePct, setUsagePct] = useState(member.usagePct !== undefined ? String(member.usagePct) : '');
-  const [resetNote, setResetNote] = useState(member.resetNote || '');
+  const isCreate = !member;
+  const [name, setName] = useState(member?.name || '');
+  const [role, setRole] = useState(member?.role || '');
+  const [model, setModel] = useState(member?.model || 'Grok');
+  const [engine, setEngine] = useState<Exclude<EngineFamily, 'all'>>(member?.engine || 'grok');
+  const [setGroup, setSetGroup] = useState<CrewSet>(member?.set || defaultSet);
+  const [status, setStatus] = useState<AgentStatus>(member?.status || 'active');
+  const [statusNote, setStatusNote] = useState(member?.statusNote || '');
+  const [usagePct, setUsagePct] = useState(member?.usagePct !== undefined ? String(member.usagePct) : '');
+  const [resetNote, setResetNote] = useState(member?.resetNote || '');
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   return (
     <div className="space-y-4">
-      <div className="text-xs text-muted-foreground">
-        {member.role} · Engine: <span className="font-mono text-foreground">{member.model}</span> ({member.set} set)
+      {member && (
+        <div className="text-[11px] font-mono text-muted-foreground">
+          Agent ID: <span className="text-foreground">{member.agentId}</span>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className={LABEL_CLS}>Crew Name</label>
+          <input
+            className={INPUT_CLS}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g., Sovereign or Backup Grok 1"
+          />
+        </div>
+        <div>
+          <label className={LABEL_CLS}>Role</label>
+          <input
+            className={INPUT_CLS}
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            placeholder="e.g., LinkedIn drafts & research"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label className={LABEL_CLS}>Model Label</label>
+          <input
+            className={INPUT_CLS}
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            placeholder="e.g., Grok, Meta Muse, Gemini"
+          />
+        </div>
+        <div>
+          <label className={LABEL_CLS}>Engine Family</label>
+          <select
+            className={INPUT_CLS}
+            value={engine}
+            onChange={(e) => setEngine(e.target.value as Exclude<EngineFamily, 'all'>)}
+          >
+            {ENGINE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className={LABEL_CLS}>Crew Set</label>
+          <select
+            className={INPUT_CLS}
+            value={setGroup}
+            onChange={(e) => setSetGroup(e.target.value as CrewSet)}
+          >
+            {CREW_SET_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div>
@@ -374,12 +474,53 @@ function CrewEditorForm({
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-2 border-t border-border">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
+        {!isCreate && onDelete ? (
+          confirmRemove ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={onDelete}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Confirm Remove
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setConfirmRemove(false)}
+                className="px-2.5 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setConfirmRemove(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Remove
+            </button>
+          )
+        ) : (
+          <span />
+        )}
+
         <button
           type="button"
-          disabled={busy}
+          disabled={busy || !name.trim()}
           onClick={() =>
             onSave({
+              name: name.trim(),
+              role: role.trim(),
+              model: model.trim(),
+              engine,
+              set: setGroup,
               status,
               statusNote,
               usagePct: usagePct !== '' ? Number(usagePct) : undefined,
@@ -388,7 +529,7 @@ function CrewEditorForm({
           }
           className="px-4 py-2 rounded-lg text-xs font-semibold bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
         >
-          Update Crew Status
+          {isCreate ? 'Add Crew Member' : 'Save Crew Changes'}
         </button>
       </div>
     </div>

@@ -661,11 +661,13 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
               title="Crew — Original Set"
               members={originalCrew}
               onSelect={(member) => setModal({ type: 'crew', member })}
+              onAdd={() => setModal({ type: 'create_crew', defaultSet: 'original' })}
             />
             <CrewGroupCard
               title="Crew — New Set"
               members={newCrew}
               onSelect={(member) => setModal({ type: 'crew', member })}
+              onAdd={() => setModal({ type: 'create_crew', defaultSet: 'new' })}
             />
           </section>
 
@@ -910,6 +912,14 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
           await postAction({ action: 'update_crew', agentId, ...patch }, 'Updated crew member');
           setModal({ type: 'closed' });
         }}
+        onCreateCrew={async (payload) => {
+          await postAction({ action: 'create_crew', ...payload }, 'Added crew member');
+          setModal({ type: 'closed' });
+        }}
+        onDeleteCrew={async (agentId) => {
+          await postAction({ action: 'delete_crew', agentId }, 'Removed crew member');
+          setModal({ type: 'closed' });
+        }}
         onDeskPaste={async (raw, defaultLane) => {
           await postAction({ action: 'paste', raw, defaultLane }, 'Parsed and landed on board');
           setModal({ type: 'closed' });
@@ -923,16 +933,30 @@ function CrewGroupCard({
   title,
   members,
   onSelect,
+  onAdd,
 }: {
   title: string;
   members: CrewMember[];
   onSelect: (m: CrewMember) => void;
+  onAdd?: () => void;
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3.5 space-y-2.5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">{title}</h2>
-        <span className="text-[11px] font-mono text-muted-foreground">{members.length}</span>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground">{title}</h2>
+          <span className="text-[11px] font-mono text-muted-foreground">{members.length}</span>
+        </div>
+        {onAdd && (
+          <button
+            type="button"
+            onClick={onAdd}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border border-border bg-background hover:border-accent text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Plus className="w-3 h-3" />
+            Add
+          </button>
+        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {members.map((m) => {

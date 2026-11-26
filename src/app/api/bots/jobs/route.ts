@@ -17,6 +17,32 @@ import type { ContentKind, PipelineCard, PipelineLane, PipelineLinks, PipelineSt
 
 const VALID_STAGES = new Set<PipelineStage>(['pulled', 'clearance', 'drafted', 'approved', 'posted']);
 
+const STAGE_RANK: Record<PipelineStage, number> = {
+  pulled: 0,
+  clearance: 1,
+  drafted: 2,
+  approved: 3,
+  posted: 4,
+};
+
+function normalizeTitleKey(raw: string): string {
+  return raw.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function mergeLinks(
+  existing?: PipelineLinks,
+  incoming?: PipelineLinks
+): PipelineLinks | undefined {
+  if (!existing && !incoming) return undefined;
+  const merged: PipelineLinks = {
+    fb: incoming?.fb || existing?.fb,
+    ig: incoming?.ig || existing?.ig,
+    linkedin: incoming?.linkedin || existing?.linkedin,
+    x: incoming?.x || existing?.x,
+  };
+  return Object.values(merged).some(Boolean) ? merged : undefined;
+}
+
 function sanitizeUrl(raw: unknown): string | undefined {
   if (typeof raw !== 'string' || !raw.trim()) return undefined;
   try {
@@ -120,8 +146,11 @@ export async function POST(request: Request) {
   }
 
   await ensureOpsSeeded();
+  const existingCards = await opsQueryByClient<PipelineCard>('ops_pipeline', clientId);
   const now = new Date().toISOString();
+  const results: PipelineCard[] = [];
   const created: PipelineCard[] = [];
+  const deduplicated: PipelineCard[] = [];
 
   for (const itemInput of inputs) {
     const title = typeof itemInput.title === 'string' ? itemInput.title.trim().slice(0, 120) : '';
@@ -166,6 +195,67 @@ export async function POST(request: Request) {
         : undefined);
 
     const sourceUrl = sanitizeUrl(itemInput.sourceUrl || itemInput.url);
+    const sourceFile =
+      typeof itemInput.sourceFile === 'string' ? itemInput.sourceFile.trim().slice(0, 140) || undefined : undefined;
+    const assetFile =
+      typeof itemInput.assetFile === 'string' ? itemInput.assetFile.trim().slice(0, 140) || undefined : undefined;
+    const assetSpec =
+      typeof itemInput.assetSpec === 'string' ? itemInput.assetSpec.trim().slice(0, 60) || undefined : undefined;
+    const note =
+      typeof itemInput.note === 'string' ? itemInput.note.trim().slice(0, 300) || undefined : undefined;
+    const draftCopy = typeof itemInput.draftCopy === 'string' ? itemInput.draftCopy.slice(0, 2400) : '';
+
+    const allowDuplicate = itemInput.allowDuplicate === true;
+    const titleKey = normalizeTitleKey(title);
+    const matchedIndex = allowDuplicate
+      ? -1
+      : existingCards.findIndex((c) => {
+          if (typeof itemInput.id === 'string' && c.id === itemInput.id.trim()) return true;
+          return titleKey.length > 0 && normalizeTitleKey(c.title) === titleKey;
+        });
+
+    if (matchedIndex >= 0) {
+      const existing = existingCards[matchedIndex];
+      const combinedLinks = mergeLinks(existing.links, mergedLinks);
+      const effectiveSourceUrl = sourceUrl || existing.sourceUrl;
+      const nextStage: PipelineStage =
+        safeStage === 'posted'
+          ? 'posted'
+          : STAGE_RANK[safeStage] > STAGE_RANK[existing.stage]
+            ? safeStage
+            : existing.stage;
+
+      const cleanedFlags = (existing.flaggedNotes || []).filter(
+        (flag) => !(effectiveSourceUrl || nextStage === 'posted') || !flag.startsWith('FLAG: Missing verified source URL')
+      );
+      if (!effectiveSourceUrl && nextStage !== 'posted' && cleanedFlags.length === 0) {
+        cleanedFlags.push('FLAG: Missing verified source URL — required before clearance.');
+      }
+
+      const updated: PipelineCard = {
+        ...existing,
+        stage: nextStage,
+        sourceUrl: effectiveSourceUrl,
+        sourceFile: sourceFile || existing.sourceFile,
+        assetFile: assetFile || existing.assetFile,
+        assetSpec: assetSpec || existing.assetSpec,
+        note: note || existing.note,
+        draftCopy: draftCopy.trim() ? draftCopy : existing.draftCopy,
+        links: combinedLinks,
+        flaggedNotes: cleanedFlags.length > 0 ? cleanedFlags : undefined,
+        marleyStatus: nextStage === 'posted' ? 'approved' : existing.marleyStatus,
+        approvedBy: nextStage === 'posted' ? existing.approvedBy || 'Rotty' : existing.approvedBy,
+        readyForRotty: existing.readyForRotty,
+        updatedAt: now,
+      };
+
+      await opsSetDoc('ops_pipeline', updated.id, updated as unknown as Record<string, unknown>);
+      existingCards[matchedIndex] = updated;
+      deduplicated.push(updated);
+      results.push(updated);
+      continue;
+    }
+
     const flaggedNotes: string[] = [];
     if (!sourceUrl && safeStage !== 'posted') {
       flaggedNotes.push('FLAG: Missing verified source URL — required before clearance.');
@@ -195,8 +285,8 @@ export async function POST(request: Request) {
         (typeof itemInput.source === 'string' && itemInput.source.trim().slice(0, 80)) ||
         actor.actorName,
       sourceUrl,
-      note: typeof itemInput.note === 'string' ? itemInput.note.trim().slice(0, 300) || undefined : undefined,
-      draftCopy: typeof itemInput.draftCopy === 'string' ? itemInput.draftCopy.slice(0, 2400) : '',
+      note,
+      draftCopy,
       flaggedNotes: flaggedNotes.length > 0 ? flaggedNotes : undefined,
       marleyStatus: safeStage === 'posted' ? 'approved' : 'pending',
       readyForRotty: false,
@@ -205,34 +295,52 @@ export async function POST(request: Request) {
         typeof itemInput.jobDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(itemInput.jobDate.trim())
           ? itemInput.jobDate.trim()
           : now.slice(0, 10),
-      sourceFile:
-        typeof itemInput.sourceFile === 'string' ? itemInput.sourceFile.trim().slice(0, 140) : undefined,
-      assetFile:
-        typeof itemInput.assetFile === 'string' ? itemInput.assetFile.trim().slice(0, 140) : undefined,
-      assetSpec:
-        typeof itemInput.assetSpec === 'string' ? itemInput.assetSpec.trim().slice(0, 60) : undefined,
+      sourceFile,
+      assetFile,
+      assetSpec,
       links: mergedLinks,
       createdAt: now,
       updatedAt: now,
     };
 
     await opsSetDoc('ops_pipeline', job.id, job as unknown as Record<string, unknown>);
+    existingCards.push(job);
     created.push(job);
+    results.push(job);
   }
+
+  const activityAction =
+    results.length > 1
+      ? `processed ${results.length} jobs (${created.length} new, ${deduplicated.length} merged)`
+      : deduplicated.length === 1
+        ? `merged update into existing card`
+        : results[0].stage === 'posted'
+          ? 'logged live quick-blast post'
+          : `queued ${results[0].lane} job (${results[0].stage})`;
 
   await appendOpsActivity(
     clientId,
     actor.actorName,
-    created.length > 1
-      ? `queued ${created.length} jobs`
-      : created[0].stage === 'posted'
-        ? 'logged live quick-blast post'
-        : `queued ${created[0].lane} job (${created[0].stage})`,
-    created.length > 1 ? created.map((c) => c.title).slice(0, 2).join(', ') : created[0].title
+    activityAction,
+    results.length > 1 ? results.map((c) => c.title).slice(0, 2).join(', ') : results[0].title
   );
 
+  if (results.length === 1) {
+    const isMerged = deduplicated.length === 1;
+    return NextResponse.json(
+      isMerged ? { ok: true, deduplicated: true, job: results[0] } : { ok: true, job: results[0] },
+      { status: isMerged ? 200 : 201, headers: { 'Cache-Control': 'no-store' } }
+    );
+  }
+
   return NextResponse.json(
-    created.length === 1 ? { ok: true, job: created[0] } : { ok: true, count: created.length, jobs: created },
-    { status: 201, headers: { 'Cache-Control': 'no-store' } }
+    {
+      ok: true,
+      count: results.length,
+      createdCount: created.length,
+      deduplicatedCount: deduplicated.length,
+      jobs: results,
+    },
+    { status: created.length > 0 ? 201 : 200, headers: { 'Cache-Control': 'no-store' } }
   );
 }
