@@ -7,7 +7,7 @@ import type {
   PipelineCard,
 } from './types';
 
-export const DEFAULT_OWNER_EMAILS = ['rmendez@rottym.com'];
+export const DEFAULT_OWNER_EMAILS = ['rottym@gmail.com', 'rmendez@rottym.com'];
 
 export const SEED_CLIENTS: ClientWorkspace[] = [
   {
@@ -15,7 +15,7 @@ export const SEED_CLIENTS: ClientWorkspace[] = [
     name: 'RottyM Operations',
     domain: 'rottym.com',
     subtitle: 'AI Crew & Content Engine',
-    memberEmails: ['rmendez@rottym.com'],
+    memberEmails: ['rottym@gmail.com', 'rmendez@rottym.com'],
     lanes: [
       { id: 'linkedin', label: 'LinkedIn', scheduleNote: 'Daily · 8:52 AM ET' },
       { id: 'fb-ig', label: 'FB / IG', scheduleNote: 'Photo-first · 11:05 AM ET' },
@@ -29,7 +29,7 @@ export const SEED_CLIENTS: ClientWorkspace[] = [
     name: 'Test Client — Potomac Auto Spa',
     domain: 'test-client.rottym.com',
     subtitle: 'Isolated multi-client verification board',
-    memberEmails: ['rmendez@rottym.com', 'client-test@rottym.com'],
+    memberEmails: ['rottym@gmail.com', 'rmendez@rottym.com', 'client-test@rottym.com'],
     lanes: [
       { id: 'linkedin', label: 'LinkedIn', scheduleNote: 'Tue/Thu · 9:00 AM ET' },
       { id: 'fb-ig', label: 'FB / IG', scheduleNote: 'Photo-first · 12:00 PM ET' },

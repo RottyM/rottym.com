@@ -38,8 +38,8 @@ rules_version = '2';
 //   - Client SDK reads (`get`, `list`) require a verified Firebase Auth
 //     email (`request.auth != null && request.auth.token.email_verified == true
 //     && request.auth.token.email is string`).
-//   - Owner (`rmendez@rottym.com`, normalized lowercase) can read all `ops_*`
-//     documents across all workspaces.
+//   - Owners (`rottym@gmail.com`, `rmendez@rottym.com`, normalized lowercase)
+//     can read all `ops_*` documents across all workspaces.
 //   - Client workspace members can only read `ops_clients` documents where
 //     their lowercase email is in `memberEmails`, and `ops_*` documents whose
 //     `clientId` references an `ops_clients` document containing their
@@ -176,7 +176,8 @@ service cloud.firestore {
 
     // Command Center owner check (cannot be spoofed via client document data).
     function isOpsOwner() {
-      return isVerifiedOpsUser() && verifiedEmailLower() == 'rmendez@rottym.com';
+      return isVerifiedOpsUser() &&
+        verifiedEmailLower() in ['rottym@gmail.com', 'rmendez@rottym.com'];
     }
 
     // Check membership directly against an ops_clients document's data map.
