@@ -59,6 +59,7 @@ export interface JobAsset {
   credit?: string;
   sourceUrl?: string;
   label?: string;
+  assignedTo?: string;
   status: JobAssetStatus;
   rejectionReason?: string;
   reviewedBy?: string;

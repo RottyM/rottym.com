@@ -712,6 +712,25 @@ export async function POST(request: Request) {
     };
 
     await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
+    const assignmentChanged = Boolean(updated.assignedTo && updated.assignedTo !== existing.assignedTo);
+    if (updated.assignedTo && (body.notifyAssigned === true || assignmentChanged)) {
+      const targetId = updated.assignedTo;
+      const targetCrew = await opsGetDoc<CrewMember>('ops_crew', `${clientId}__${targetId}`);
+      const handle = targetCrew?.name ? targetCrew.name.replace(/\s+/g, '') : targetId;
+      const pingMsg: ChatMessage = {
+        id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        clientId,
+        senderId: 'rotty',
+        senderName: 'Rotty',
+        senderKind: 'operator',
+        text: `@${handle} Assigned "${updated.title}" (${updated.stage}) to you.`,
+        mentions: [targetId],
+        jobId: updated.id,
+        jobTitle: updated.title,
+        createdAt: now,
+      };
+      await opsSetDoc('ops_chat', pingMsg.id, pingMsg as unknown as Record<string, unknown>);
+    }
     const logAction = demotedReady
       ? `returned to Approved crew queue (${completeness.buttonReason || 'incomplete'})`
       : readyForRotty && !existing.readyForRotty
@@ -722,7 +741,9 @@ export async function POST(request: Request) {
             ? 'marked posted'
             : isNoImageException && existing.photoStatus !== 'not_needed'
               ? 'marked no image needed'
-              : `updated card (${updated.stage})`;
+              : assignmentChanged
+                ? `assigned to ${updated.assignedTo}`
+                : `updated card (${updated.stage})`;
     await appendOpsActivity(clientId, user.name, logAction, updated.title);
     return NextResponse.json({ ok: true, card: updated }, { status: 200 });
   }
@@ -1311,6 +1332,9 @@ export async function POST(request: Request) {
     let assets = getCardAssets(existing);
     let activityAction = 'updated assets';
 
+    let assignedToOnAdd = existing.assignedTo;
+    let addedAssetForPing: typeof assets[number] | null = null;
+
     if (action === 'asset_add') {
       const assetObj = (body.asset && typeof body.asset === 'object' ? body.asset : {}) as Record<string, unknown>;
       const parsed = parseNewJobAssetInput(assetObj, {
@@ -1321,7 +1345,13 @@ export async function POST(request: Request) {
       });
       if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
       assets = [...assets, parsed.asset];
-      activityAction = `added asset (${parsed.asset.kind})`;
+      addedAssetForPing = parsed.asset;
+      if (!assignedToOnAdd && parsed.asset.assignedTo) {
+        assignedToOnAdd = parsed.asset.assignedTo;
+      }
+      activityAction = parsed.asset.assignedTo
+        ? `assigned ${parsed.asset.kind} task to ${parsed.asset.assignedTo}`
+        : `added asset (${parsed.asset.kind})`;
     } else if (action === 'asset_update') {
       const assetId = typeof body.assetId === 'string' ? body.assetId.trim() : '';
       const idx = assets.findIndex((a) => a.id === assetId);
@@ -1390,6 +1420,7 @@ export async function POST(request: Request) {
 
     const updated: PipelineCard = {
       ...synced,
+      assignedTo: assignedToOnAdd,
       stage: nextStage,
       readyForRotty: nextReady,
       postIt: nextPostIt,
@@ -1402,6 +1433,25 @@ export async function POST(request: Request) {
     };
 
     await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
+    if (addedAssetForPing?.assignedTo) {
+      const targetId = addedAssetForPing.assignedTo;
+      const targetCrew = await opsGetDoc<CrewMember>('ops_crew', `${clientId}__${targetId}`);
+      const handle = targetCrew?.name ? targetCrew.name.replace(/\s+/g, '') : targetId;
+      const specBit = addedAssetForPing.spec ? ` [${addedAssetForPing.spec}]` : '';
+      const pingMsg: ChatMessage = {
+        id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        clientId,
+        senderId: 'rotty',
+        senderName: 'Rotty',
+        senderKind: 'operator',
+        text: `@${handle} Assigned ${addedAssetForPing.kind.replace('_', ' ')} (${addedAssetForPing.platform.toUpperCase()})${specBit} for "${updated.title}".`,
+        mentions: [targetId],
+        jobId: updated.id,
+        jobTitle: updated.title,
+        createdAt: now,
+      };
+      await opsSetDoc('ops_chat', pingMsg.id, pingMsg as unknown as Record<string, unknown>);
+    }
     await appendOpsActivity(clientId, user.name, activityAction, updated.title);
     return NextResponse.json({ ok: true, card: updated }, { status: 200 });
   }

@@ -1001,11 +1001,39 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                 <OpsDecisionDesk
                   pipeline={pipeline}
                   requests={requests}
+                  crew={crew}
                   lanes={activeClient?.lanes || []}
                   nowMs={nowMs}
                   busy={busy}
                   highlightedIds={highlightedIds}
                   onEditCard={(card) => setModal({ type: 'card', card })}
+                  onAssignCard={async (card, assignedTo) => {
+                    const label = crew.find((c) => c.agentId === assignedTo)?.name || assignedTo || 'Unassigned';
+                    await postAction(
+                      {
+                        action: 'update_card',
+                        id: card.id,
+                        assignedTo: assignedTo || null,
+                        notifyAssigned: Boolean(assignedTo),
+                      },
+                      assignedTo ? `Assigned to ${label}: ${card.title}` : `Cleared assignment: ${card.title}`
+                    );
+                  }}
+                  onAssignAssetTask={async (card, assetPayload) => {
+                    const label =
+                      crew.find((c) => c.agentId === assetPayload.assignedTo)?.name || assetPayload.assignedTo;
+                    await postAction(
+                      {
+                        action: 'asset_add',
+                        id: card.id,
+                        asset: {
+                          ...assetPayload,
+                          status: 'needed',
+                        },
+                      },
+                      `Assigned ${assetPayload.kind.replace('_', ' ')} to ${label}: ${card.title}`
+                    );
+                  }}
                   onDecideRequest={async (req, decision, label) => {
                     await postAction(
                       { action: 'decide_request', id: req.id, decision },

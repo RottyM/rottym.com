@@ -100,9 +100,11 @@ Each job carries an ordered `assets` array (`JobAsset[]`), while legacy `assetUr
 - `kind`: `image` | `video` | `carousel_slide` | `flyer` | `video_frame` | `meme`
 - `platform`: `x` | `linkedin` | `fb` | `ig` | `all`
 - `order` (0-based integer carousel position), `spec` (e.g. `1080x1350`, `9:16`)
-- `altText`, `caption`, `credit`, `sourceUrl`, `label` (e.g. `Illustration`), `rejectionReason`
+- `altText`, `caption`, `credit`, `sourceUrl`, `label` (e.g. `Illustration`), `assignedTo` (optional crew bot id owning this asset), `rejectionReason`
 - `status`: `needed` | `in_progress` | `delivered` | `approved` | `rejected`
 - `addedBy`, `createdAt`, `updatedAt`
+
+*(Note: `GET /api/bots/jobs?mine=true` or `?assignedTo=<bot>` returns jobs where either `card.assignedTo` OR any incomplete `asset.assignedTo` matches that bot.)*
 
 ### Endpoints
 - `GET /api/bots/jobs/{id}/assets` — returns `{ ok, cardId, count, assets }`.

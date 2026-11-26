@@ -215,8 +215,14 @@ export async function GET(request: Request) {
       if (postItParam === 'true' && !item.postIt) return false;
       if (postItParam === 'false' && item.postIt) return false;
       if (assignedFilterMode === 'unassigned' && normalizeAssignedTo(item.assignedTo)) return false;
-      if (assignedFilterMode === 'agent' && normalizeAssignedTo(item.assignedTo) !== assignedFilterAgent) {
-        return false;
+      if (assignedFilterMode === 'agent') {
+        const cardAssigned = normalizeAssignedTo(item.assignedTo) === assignedFilterAgent;
+        const assetAssigned = item.assets?.some(
+          (a) => normalizeAssignedTo(a.assignedTo) === assignedFilterAgent && a.status !== 'approved'
+        );
+        if (!cardAssigned && !assetAssigned) {
+          return false;
+        }
       }
       if (needsWork === 'true') {
         const hasDisc = Boolean(item.discrepancies?.length);

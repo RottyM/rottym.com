@@ -654,7 +654,7 @@ function CardEditorForm({
             <div className="text-xs text-red-600 dark:text-red-400">{uploadError}</div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
             <div>
               <label className={LABEL_CLS}>Kind</label>
               <select
@@ -688,6 +688,21 @@ function CardEditorForm({
               >
                 {ASSET_STATUS_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={LABEL_CLS}>Assigned Bot</label>
+              <select
+                className={INPUT_CLS}
+                value={activeAsset.assignedTo || ''}
+                onChange={(e) => updateAsset(activeAsset.id, { assignedTo: e.target.value || undefined })}
+              >
+                <option value="">Unassigned</option>
+                {crew.map((c) => (
+                  <option key={`asset-assign-${c.agentId}`} value={c.agentId}>
+                    {c.name} ({c.agentId})
+                  </option>
                 ))}
               </select>
             </div>

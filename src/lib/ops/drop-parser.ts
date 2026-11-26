@@ -1501,6 +1501,7 @@ export const ALLOWED_ASSET_FIELDS = new Set([
   'credit',
   'sourceUrl',
   'label',
+  'assignedTo',
   'status',
   'rejectionReason',
 ]);
@@ -1649,6 +1650,9 @@ export function parseNewJobAssetInput(
       ? Math.round(input.order)
       : opts.defaultOrder;
 
+  const assignedTo =
+    input.assignedTo !== undefined ? normalizeAssignedTo(input.assignedTo) : undefined;
+
   const isReviewed = status === 'approved' || status === 'rejected';
   return {
     ok: true,
@@ -1665,6 +1669,7 @@ export function parseNewJobAssetInput(
       credit,
       sourceUrl: sourceUrlCheck.value,
       label,
+      assignedTo,
       status,
       rejectionReason: status === 'rejected' ? rejectionReason : undefined,
       reviewedBy: isReviewed ? opts.addedBy : undefined,
@@ -1772,6 +1777,13 @@ export function applyJobAssetPatch(
       return { ok: false, status: 400, error: 'order must be a non-negative number.' };
     }
     next.order = Math.round(patch.order);
+  }
+
+  if (patch.assignedTo !== undefined) {
+    next.assignedTo =
+      patch.assignedTo === null || patch.assignedTo === ''
+        ? undefined
+        : normalizeAssignedTo(patch.assignedTo);
   }
 
   if (patch.status !== undefined) {
