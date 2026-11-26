@@ -1174,6 +1174,12 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       `Approved (sent to crew queue): ${card.title}`
                     );
                   }}
+                  onMarkReady={async (card) => {
+                    await postAction(
+                      { action: 'update_card', id: card.id, stage: 'approved', readyForRotty: true },
+                      `Marked Ready for Rotty: ${card.title}`
+                    );
+                  }}
                   onSetNoImageNeeded={async (card, enabled) => {
                     await postAction(
                       {

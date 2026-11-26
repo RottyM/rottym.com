@@ -214,6 +214,7 @@ export default function OpsDecisionDesk({
   onAssignAssetTask,
   onSetPostFormat,
   onApproveReady,
+  onMarkReady,
   onSetNoImageNeeded,
   onUpdateAsset,
   onReorderAssets,
@@ -242,6 +243,7 @@ export default function OpsDecisionDesk({
   ) => Promise<void>;
   onSetPostFormat?: (card: PipelineCard, postFormat: PostFormat | null) => Promise<void>;
   onApproveReady: (card: PipelineCard) => Promise<void>;
+  onMarkReady?: (card: PipelineCard) => Promise<void>;
   onSetNoImageNeeded: (card: PipelineCard, enabled: boolean) => Promise<void>;
   onUpdateAsset: (card: PipelineCard, assetId: string, patch: Record<string, unknown>) => Promise<void>;
   onReorderAssets: (card: PipelineCard, assetIds: string[]) => Promise<void>;
@@ -1685,23 +1687,50 @@ export default function OpsDecisionDesk({
                       </button>
                     )
                   ) : selectedCard.stage === 'approved' ? (
-                    <span
-                      title={
-                        selectedCompleteness.canApproveReady
-                          ? 'Complete — waiting on crew to Mark Ready'
-                          : selectedCompleteness.detail || 'Crew completing asset & prep'
-                      }
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border ${
-                        selectedCompleteness.canApproveReady
-                          ? 'border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300'
-                          : 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300'
-                      }`}
-                    >
-                      Approved · Crew queue
-                      {!selectedCompleteness.canApproveReady && selectedCompleteness.buttonReason
-                        ? ` (${selectedCompleteness.buttonReason})`
-                        : ' (awaiting Mark Ready)'}
-                    </span>
+                    selectedCompleteness.canApproveReady ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {onMarkReady && (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={async () => {
+                              const nextKey = nextItemKeyAfter(`post:${selectedCard.id}`);
+                              await onMarkReady(selectedCard);
+                              setSelectedKey(nextKey);
+                              setFocusedAssetId(null);
+                            }}
+                            title="Move to Ready for Rotty queue without firing Post it yet"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-cyan-500/45 bg-cyan-500/15 text-cyan-800 dark:text-cyan-200 hover:bg-cyan-500/25 disabled:opacity-50"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            Mark Ready
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={async () => {
+                            const nextKey = nextItemKeyAfter(`post:${selectedCard.id}`);
+                            await onPostIt(selectedCard);
+                            setSelectedKey(nextKey);
+                            setFocusedAssetId(null);
+                          }}
+                          title="Mark Ready and arm Post it right away"
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          Post it
+                        </button>
+                      </div>
+                    ) : (
+                      <span
+                        title={selectedCompleteness.detail || 'Crew completing asset & prep'}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                      >
+                        Approved · Crew queue
+                        {selectedCompleteness.buttonReason ? ` (${selectedCompleteness.buttonReason})` : ''}
+                      </span>
+                    )
                   ) : (
                     <button
                       type="button"

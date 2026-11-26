@@ -1108,9 +1108,9 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
-      if (existing.stage !== 'approved' || !existing.readyForRotty) {
+      if (existing.stage !== 'approved') {
         return NextResponse.json(
-          { error: 'Post it is only available on Ready for Rotty cards (crew must Mark Ready first).' },
+          { error: 'Post it is only available on Approved cards (Approve draft first).' },
           { status: 400 }
         );
       }

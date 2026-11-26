@@ -978,7 +978,6 @@ function CardEditorForm({
 
         <div className="flex flex-wrap items-center gap-2">
           {card.stage === 'approved' &&
-            Boolean(card.readyForRotty) &&
             completeness.canApproveReady &&
             (!card.postIt ? (
               onPostIt && (
