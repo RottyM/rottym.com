@@ -173,6 +173,15 @@ export async function GET(request: Request) {
   await ensureOpsSeeded();
   const stage = searchParams.get('stage');
   const includeArchived = searchParams.get('includeArchived') === 'true';
+  const activeOnly =
+    searchParams.get('activeOnly') === 'true' || searchParams.get('excludePosted') === 'true';
+  const includePosted = searchParams.get('includePosted') === 'true';
+  const compact = searchParams.get('compact') === 'true';
+  const rawLimit = searchParams.get('limit');
+  const explicitLimit =
+    rawLimit !== null && Number.isFinite(Number(rawLimit))
+      ? Math.max(1, Math.min(200, Math.round(Number(rawLimit))))
+      : null;
   const lane = searchParams.get('lane');
   const channel = searchParams.get('channel');
   const date = searchParams.get('date');
@@ -214,9 +223,10 @@ export async function GET(request: Request) {
   const all = await opsQueryByClient<PipelineCard>('ops_pipeline', clientId);
   const nowMs = Date.now();
 
-  const jobs = all
+  const filteredJobs = all
     .filter((item) => {
       if (!stage && !includeArchived && item.stage === 'archived') return false;
+      if (!stage && activeOnly && item.stage === 'posted') return false;
       if (stage && item.stage !== stage) return false;
       if (lane && item.lane !== lane) return false;
       if (channel && item.channel !== channel) return false;
@@ -248,20 +258,61 @@ export async function GET(request: Request) {
       }
       return true;
     })
-    .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
-    .map((item) => {
-      const migrated = ensureCardAssetsMigrated(item);
+    .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+
+  let postedKept = 0;
+  const boundedJobs =
+    !stage && !activeOnly && !includePosted && !compact && explicitLimit === null
+      ? filteredJobs.filter((item) => {
+          if (item.stage !== 'posted') return true;
+          postedKept += 1;
+          return postedKept <= 10;
+        })
+      : filteredJobs;
+
+  const finalSlice = explicitLimit !== null ? boundedJobs.slice(0, explicitLimit) : boundedJobs;
+
+  const jobs = finalSlice.map((item) => {
+    const migrated = ensureCardAssetsMigrated(item);
+    const assetState = getCardAssetState(migrated);
+    const leaseActive = Boolean(
+      migrated.claimedBy &&
+        migrated.leaseExpiresAt &&
+        new Date(migrated.leaseExpiresAt).getTime() > nowMs
+    );
+    if (compact) {
       return {
-        ...migrated,
-        assetState: getCardAssetState(migrated),
+        id: migrated.id,
+        title: migrated.title,
+        lane: migrated.lane,
+        channel: migrated.channel,
+        stage: migrated.stage,
+        assignedTo: migrated.assignedTo || null,
+        marleyStatus: migrated.marleyStatus,
+        verdictTag: migrated.verdictTag || null,
+        readyForRotty: Boolean(migrated.readyForRotty),
+        postIt: Boolean(migrated.postIt),
+        assetState,
+        photoStatus: migrated.photoStatus || null,
+        assetCount: (migrated.assets || []).length,
+        pendingAssetCount: (migrated.assets || []).filter((a) => a.status !== 'approved').length,
+        sourceUrl: migrated.sourceUrl || null,
+        links: migrated.links || null,
+        discrepanciesCount: (migrated.discrepancies || []).length,
+        artifactsNeededCount: (migrated.artifactsNeeded || []).length,
+        jobDate: migrated.jobDate,
+        updatedAt: migrated.updatedAt,
+        leaseActive,
         autoPostAllowed: false,
-        leaseActive: Boolean(
-          migrated.claimedBy &&
-            migrated.leaseExpiresAt &&
-            new Date(migrated.leaseExpiresAt).getTime() > nowMs
-        ),
       };
-    });
+    }
+    return {
+      ...migrated,
+      assetState,
+      autoPostAllowed: false,
+      leaseActive,
+    };
+  });
 
   return NextResponse.json(
     { clientId, count: jobs.length, jobs },

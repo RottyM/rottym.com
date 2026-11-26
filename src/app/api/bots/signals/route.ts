@@ -7,7 +7,7 @@ import {
   unauthorizedResponse,
 } from '@/lib/ops/auth';
 import { ensureOpsSeeded, opsQueryByClient } from '@/lib/ops/firestore-rest';
-import { getCardAssetState, getPendingPlatforms } from '@/lib/ops/drop-parser';
+import { getCardAssetState, getPendingPlatforms, normalizeAssignedTo } from '@/lib/ops/drop-parser';
 import type { OpsRequest, OpsSignalPayload, PipelineCard } from '@/lib/ops/types';
 
 function toSignalPayload(item: PipelineCard): OpsSignalPayload | null {
@@ -114,6 +114,28 @@ export async function GET(request: Request) {
   await ensureOpsSeeded();
   const dateFilter = searchParams.get('date');
   const format = searchParams.get('format');
+  const signalFilter = (searchParams.get('signal') || '').trim().toLowerCase();
+  const includePosted =
+    searchParams.get('includePosted') === 'true' ||
+    signalFilter === 'posted' ||
+    signalFilter === 'request-done';
+  const compact = searchParams.get('compact') === 'true';
+  const rawAssigned =
+    searchParams.get('mine') === 'true'
+      ? 'me'
+      : searchParams.get('assignedTo')?.trim() || '';
+  const filterAgent =
+    rawAssigned.toLowerCase() === 'me'
+      ? normalizeAssignedTo(actor.user ? actor.user.name : actor.actorName)
+      : rawAssigned
+        ? normalizeAssignedTo(rawAssigned)
+        : undefined;
+  const rawLimit = searchParams.get('limit');
+  const limit =
+    rawLimit !== null && Number.isFinite(Number(rawLimit))
+      ? Math.max(1, Math.min(200, Math.round(Number(rawLimit))))
+      : null;
+
   const [items, requests] = await Promise.all([
     opsQueryByClient<PipelineCard>('ops_pipeline', clientId),
     opsQueryByClient<OpsRequest>('ops_requests', clientId),
@@ -129,9 +151,43 @@ export async function GET(request: Request) {
     .map(requestToSignalPayload)
     .filter((s): s is OpsSignalPayload => Boolean(s));
 
-  const signals = [...jobSignals, ...requestSignals].sort((a, b) =>
-    b.updatedAt.localeCompare(a.updatedAt)
-  );
+  let signals = [...jobSignals, ...requestSignals]
+    .filter((s) => {
+      if (!includePosted && (s.signal === 'posted' || s.signal === 'request-done')) {
+        return false;
+      }
+      if (signalFilter && s.signal !== signalFilter) return false;
+      if (filterAgent && normalizeAssignedTo(s.assignedTo) !== filterAgent) return false;
+      return true;
+    })
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
+  if (limit !== null) {
+    signals = signals.slice(0, limit);
+  }
+
+  if (compact && format !== 'md') {
+    const compactSignals = signals.map((s) => ({
+      id: s.id,
+      kind: s.kind,
+      signal: s.signal,
+      title: s.title,
+      lane: s.lane,
+      stage: s.stage,
+      assignedTo: s.assignedTo,
+      readyForRotty: s.readyForRotty,
+      postIt: s.postIt,
+      assetState: s.assetState,
+      photoStatus: s.photoStatus,
+      sourceUrl: s.sourceUrl,
+      pendingPlatforms: s.pendingPlatforms,
+      updatedAt: s.updatedAt,
+    }));
+    return NextResponse.json(
+      { clientId, count: compactSignals.length, includePosted, compact: true, signals: compactSignals },
+      { status: 200, headers: { 'Cache-Control': 'no-store' } }
+    );
+  }
 
   if (format === 'md') {
     const postItQueue = signals.filter((s) => s.signal === 'post-it');

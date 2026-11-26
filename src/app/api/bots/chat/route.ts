@@ -55,8 +55,8 @@ export async function GET(request: Request) {
   const unreadOnly = searchParams.get('unread') === 'true';
   const peekOnly = searchParams.get('peek') === 'true';
   const includeSelf = searchParams.get('includeSelf') === 'true';
-  const rawLimit = Number(searchParams.get('limit') || '50');
-  const limit = Number.isFinite(rawLimit) ? Math.max(1, Math.min(100, Math.round(rawLimit))) : 50;
+  const rawLimit = Number(searchParams.get('limit') || (since || unreadOnly ? '50' : '20'));
+  const limit = Number.isFinite(rawLimit) ? Math.max(1, Math.min(100, Math.round(rawLimit))) : 20;
 
   const readerId = inferAgentId(actor.user && mention ? mention : actor.actorName);
   const crewDoc = unreadOnly
