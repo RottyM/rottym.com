@@ -6,6 +6,7 @@ import {
   resolveBotTargetClientId,
   unauthorizedResponse,
 } from '@/lib/ops/auth';
+import { resolveInlineAssetBlobUpload } from '@/lib/ops/asset-blob';
 import {
   getCardAssets,
   getCardCompleteness,
@@ -113,7 +114,17 @@ export async function POST(
         { status: 400, headers: NO_STORE_HEADERS }
       );
     }
-    const parsed = parseNewJobAssetInput(rawItem, {
+    const blobResolved = await resolveInlineAssetBlobUpload(rawItem, {
+      clientId: existing.clientId,
+      uploadedBy: actor.actorName,
+    });
+    if (!blobResolved.ok) {
+      return NextResponse.json(
+        { error: blobResolved.error },
+        { status: blobResolved.status, headers: NO_STORE_HEADERS }
+      );
+    }
+    const parsed = parseNewJobAssetInput(blobResolved.item, {
       addedBy: actor.actorName,
       defaultOrder: nextAssets.length,
       canReviewAsset,

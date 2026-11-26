@@ -28,6 +28,7 @@ const ALLOWED_CHAT_FIELDS = new Set([
   'mentions',
   'jobId',
   'replyToId',
+  'senderId',
 ]);
 
 function normalizeMentionKey(raw: string): string {
@@ -114,6 +115,7 @@ export async function POST(request: Request) {
     mentions?: string | string[];
     jobId?: string;
     replyToId?: string;
+    senderId?: string;
   };
   try {
     body = (await request.json()) as typeof body;
@@ -157,6 +159,15 @@ export async function POST(request: Request) {
   }
 
   const senderId = actor.user ? 'rotty' : inferAgentId(actor.actorName);
+  if (typeof body.senderId === 'string' && body.senderId.trim()) {
+    const requestedSender = inferAgentId(body.senderId);
+    if (!actor.user && senderId !== 'bot' && requestedSender !== senderId) {
+      return NextResponse.json(
+        { error: `senderId '${requestedSender}' does not match authenticated bot '${senderId}'.` },
+        { status: 403, headers: NO_STORE_HEADERS }
+      );
+    }
+  }
   const senderCrew = !actor.user
     ? await opsGetDoc<CrewMember>('ops_crew', `${clientId}__${senderId}`)
     : null;

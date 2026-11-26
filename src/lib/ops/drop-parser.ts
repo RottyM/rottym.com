@@ -647,7 +647,7 @@ export const FIELD_MAX_LENGTHS = {
   sourceUrl: 500,
   assetUrl: 500,
   assetFile: 240,
-  assetSpec: 80,
+  assetSpec: 400,
   altText: 500,
   caption: 2400,
   credit: 200,

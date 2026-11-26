@@ -6,6 +6,7 @@ import {
   resolveBotTargetClientId,
   unauthorizedResponse,
 } from '@/lib/ops/auth';
+import { resolveInlineAssetBlobUpload } from '@/lib/ops/asset-blob';
 import {
   applyJobAssetPatch,
   getCardAssets,
@@ -67,10 +68,20 @@ async function handlePatchAsset(
 
   const patch = { ...body };
   delete patch.clientId;
+  const blobResolved = await resolveInlineAssetBlobUpload(patch, {
+    clientId: existing.clientId,
+    uploadedBy: actor.actorName,
+  });
+  if (!blobResolved.ok) {
+    return NextResponse.json(
+      { error: blobResolved.error },
+      { status: blobResolved.status, headers: NO_STORE_HEADERS }
+    );
+  }
   const canReviewAsset = Boolean(actor.user || inferAgentId(actor.actorName) === 'marley');
   const now = new Date().toISOString();
 
-  const patched = applyJobAssetPatch(assets[idx], patch, {
+  const patched = applyJobAssetPatch(assets[idx], blobResolved.item, {
     actorName: actor.actorName,
     canReviewAsset,
     now,
