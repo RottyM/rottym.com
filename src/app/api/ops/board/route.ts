@@ -1114,7 +1114,33 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
-      const postCompleteness = getCardCompleteness(existing);
+      let candidateCard = existing;
+      let postCompleteness = getCardCompleteness(candidateCard);
+      if (postCompleteness.lockReason === 'needs_asset_approval') {
+        const nextAssets = getCardAssets(candidateCard).map((a) =>
+          a.status !== 'approved' && Boolean(a.url?.trim() || a.file?.trim())
+            ? {
+                ...a,
+                status: 'approved' as const,
+                rejectionReason: undefined,
+                reviewedBy: user.name,
+                reviewedAt: now,
+                updatedAt: now,
+              }
+            : a
+        );
+        const synced = syncCardWithAssets(candidateCard, nextAssets);
+        candidateCard = {
+          ...synced,
+          photoStatus: resolveEffectivePhotoStatus({
+            existing: candidateCard.photoStatus,
+            assetFile: synced.assetFile,
+            assetUrl: synced.assetUrl,
+            assetSpec: synced.assetSpec,
+          }),
+        };
+        postCompleteness = getCardCompleteness(candidateCard);
+      }
       const operatorMetaBypass =
         postCompleteness.lockReason === 'needs_alt_text' ||
         postCompleteness.lockReason === 'needs_credit';
@@ -1132,7 +1158,7 @@ export async function POST(request: Request) {
       }
 
       const updated: PipelineCard = {
-        ...existing,
+        ...candidateCard,
         stage: 'approved',
         readyForRotty: true,
         postIt: true,

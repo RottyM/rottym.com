@@ -1802,6 +1802,49 @@ export default function OpsDecisionDesk({
                           Post it
                         </button>
                       </div>
+                    ) : selectedCompleteness.lockReason === 'needs_asset_approval' ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {(() => {
+                          const pendingAssets = selectedCardAssets.filter(
+                            (a) => a.status !== 'approved' && Boolean(a.url?.trim() || a.file?.trim())
+                          );
+                          return (
+                            pendingAssets.length > 0 && (
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={async () => {
+                                  for (const a of pendingAssets) {
+                                    await onUpdateAsset(selectedCard, a.id, { status: 'approved' });
+                                  }
+                                }}
+                                title="Approve delivered visual asset(s) so this card moves to Ready for Post it"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono border border-cyan-500/45 bg-cyan-500/10 text-cyan-800 dark:text-cyan-200 hover:bg-cyan-500/20 disabled:opacity-50"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                {pendingAssets.length === 1
+                                  ? 'Approve asset'
+                                  : `Approve assets (${pendingAssets.length})`}
+                              </button>
+                            )
+                          );
+                        })()}
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={async () => {
+                            const nextKey = nextItemKeyAfter(`post:${selectedCard.id}`);
+                            await onPostIt(selectedCard);
+                            setSelectedKey(nextKey);
+                            setFocusedAssetId(null);
+                          }}
+                          title="Approve delivered asset(s) and arm Post it immediately"
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          Post it
+                        </button>
+                      </div>
                     ) : (selectedCompleteness.lockReason === 'needs_alt_text' ||
                         selectedCompleteness.lockReason === 'needs_credit') ? (
                       <div className="flex flex-wrap items-center gap-2">

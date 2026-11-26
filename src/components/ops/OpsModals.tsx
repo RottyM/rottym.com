@@ -540,6 +540,29 @@ function CardEditorForm({
                         Open link <ExternalLink className="w-3 h-3" />
                       </a>
                     )}
+                    {activeAsset.status !== 'approved' && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateAsset(activeAsset.id, {
+                            status: 'approved',
+                            rejectionReason: undefined,
+                          })
+                        }
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded border border-emerald-500/45 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-[11px] font-mono font-semibold"
+                      >
+                        <Check className="w-3 h-3" /> Approve
+                      </button>
+                    )}
+                    {activeAsset.status !== 'rejected' && (
+                      <button
+                        type="button"
+                        onClick={() => updateAsset(activeAsset.id, { status: 'rejected' })}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-red-500/35 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-[11px] font-mono"
+                      >
+                        <X className="w-3 h-3" /> Reject
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => removeAsset(activeAsset.id)}
@@ -979,6 +1002,7 @@ function CardEditorForm({
         <div className="flex flex-wrap items-center gap-2">
           {card.stage === 'approved' &&
             (completeness.canApproveReady ||
+              completeness.lockReason === 'needs_asset_approval' ||
               completeness.lockReason === 'needs_alt_text' ||
               completeness.lockReason === 'needs_credit') &&
             (!card.postIt ? (

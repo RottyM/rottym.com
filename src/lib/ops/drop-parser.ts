@@ -1378,7 +1378,7 @@ export function splitTextWithUrls(
 ): Array<{ type: 'text' | 'url'; value: string; trailing?: string }> {
   if (!text) return [];
   const out: Array<{ type: 'text' | 'url'; value: string; trailing?: string }> = [];
-  const regex = /https?:\/\/[^\s<>"'`]+/gi;
+  const regex = /https?:\/\/[^\s<>"`]+/gi;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
