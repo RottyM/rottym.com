@@ -2795,7 +2795,9 @@ function CrewChatPanel({
     const el = inputRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 112)}px`;
+    const nextHeight = Math.min(el.scrollHeight, 112);
+    el.style.height = `${nextHeight}px`;
+    el.style.overflowY = el.scrollHeight > 112 ? 'auto' : 'hidden';
   }, [draft]);
 
   useEffect(() => {
@@ -3889,57 +3891,13 @@ function CrewChatPanel({
       )}
 
       <form
-        className="flex items-end gap-1.5 px-3 pb-2.5 pt-1.5 bg-card border-t border-border/70 shrink-0"
+        className="px-2.5 pb-2.5 pt-1.5 bg-card border-t border-border/70 shrink-0"
         onSubmit={async (e) => {
           e.preventDefault();
           await submitMessage();
         }}
       >
-        <button
-          type="button"
-          aria-label="Attach board card"
-          title="Attach a board card to this message"
-          onClick={() => setAttachPickerOpen((prev) => !prev)}
-          className={`h-8 w-8 rounded-xl border inline-flex items-center justify-center shrink-0 transition-colors ${
-            attachedJobId || attachPickerOpen
-              ? 'border-accent bg-accent/15 text-accent'
-              : 'border-border bg-background text-muted-foreground hover:text-foreground hover:border-accent/60'
-          }`}
-        >
-          <Paperclip className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          aria-label="Mention a crew member"
-          title="Open @mention picker"
-          onClick={() => {
-            if (filteredMentions.length > 0) {
-              setMentionDismissed(true);
-              return;
-            }
-            const nextDraft =
-              draft.length === 0 || /\s$/.test(draft)
-                ? `${draft}@`
-                : draft.endsWith('@')
-                  ? draft
-                  : `${draft} @`;
-            setDraft(nextDraft);
-            setCaretPos(nextDraft.length);
-            setMentionDismissed(false);
-            setMentionActiveIndex(0);
-            setFocusInputSeq((n) => n + 1);
-          }}
-          className={`h-8 w-8 rounded-xl border inline-flex items-center justify-center shrink-0 transition-colors ${
-            filteredMentions.length > 0
-              ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'
-              : 'border-border bg-background text-cyan-700 dark:text-cyan-300 hover:border-accent/60'
-          }`}
-        >
-          <AtSign className="w-3.5 h-3.5" />
-        </button>
-
-        <div className="relative flex-1 min-w-0">
+        <div className="relative rounded-xl border border-border bg-background focus-within:border-accent/70 focus-within:ring-1 focus-within:ring-accent/20 transition-colors">
           {filteredMentions.length > 0 && (
             <div
               role="listbox"
@@ -3987,6 +3945,7 @@ function CrewChatPanel({
               })}
             </div>
           )}
+
           <textarea
             ref={inputRef}
             rows={1}
@@ -4037,18 +3996,71 @@ function CrewChatPanel({
                 void submitMessage();
               }
             }}
-            placeholder={`Message ${activeChipLabel} as Rotty (@ mention · Shift+Enter newline)...`}
-            className="w-full px-3 py-2 rounded-xl text-xs bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent resize-none leading-snug max-h-28 overflow-y-auto ops-scroll"
+            placeholder={`Message ${activeChipLabel} as Rotty...`}
+            className="block w-full px-2.5 pt-2 pb-1 text-xs bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none resize-none leading-snug max-h-28 overflow-y-hidden ops-scroll"
           />
+
+          <div className="flex items-center justify-between gap-2 px-1.5 pb-1.5 pt-0.5">
+            <div className="flex items-center gap-1 min-w-0">
+              <button
+                type="button"
+                aria-label="Attach board card"
+                title="Attach a board card to this message"
+                onClick={() => setAttachPickerOpen((prev) => !prev)}
+                className={`h-6 w-6 rounded-md inline-flex items-center justify-center shrink-0 transition-colors ${
+                  attachedJobId || attachPickerOpen
+                    ? 'bg-accent/15 text-accent'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+                }`}
+              >
+                <Paperclip className="w-3 h-3" />
+              </button>
+
+              <button
+                type="button"
+                aria-label="Mention a crew member"
+                title="Open @mention picker"
+                onClick={() => {
+                  if (filteredMentions.length > 0) {
+                    setMentionDismissed(true);
+                    return;
+                  }
+                  const nextDraft =
+                    draft.length === 0 || /\s$/.test(draft)
+                      ? `${draft}@`
+                      : draft.endsWith('@')
+                        ? draft
+                        : `${draft} @`;
+                  setDraft(nextDraft);
+                  setCaretPos(nextDraft.length);
+                  setMentionDismissed(false);
+                  setMentionActiveIndex(0);
+                  setFocusInputSeq((n) => n + 1);
+                }}
+                className={`h-6 w-6 rounded-md inline-flex items-center justify-center shrink-0 transition-colors ${
+                  filteredMentions.length > 0
+                    ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'
+                    : 'text-muted-foreground hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-muted/70'
+                }`}
+              >
+                <AtSign className="w-3 h-3" />
+              </button>
+
+              <span className="hidden sm:inline text-[10px] font-mono text-muted-foreground/60 ml-1 truncate select-none">
+                ⇧↵ newline
+              </span>
+            </div>
+
+            <button
+              type="submit"
+              disabled={busy || !draft.trim()}
+              className="h-6 px-2.5 rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-medium text-[11px] inline-flex items-center justify-center gap-1 shadow-sm disabled:opacity-45 shrink-0 transition-all"
+            >
+              <span>Send</span>
+              <Send className="w-3 h-3" />
+            </button>
+          </div>
         </div>
-        <button
-          type="submit"
-          disabled={busy || !draft.trim()}
-          className="h-8 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-medium text-xs inline-flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 shrink-0 transition-all"
-        >
-          <span className="hidden sm:inline">Send</span>
-          <Send className="w-3.5 h-3.5" />
-        </button>
       </form>
     </section>
   );
