@@ -1555,9 +1555,24 @@ function DeskPasteForm({
         setPdfError('No selectable text or photos found in that PDF.');
         return;
       }
+      const parsedNow = result.text.trim()
+        ? parseAdminPasteBlock(result.text, clientId, defaultLane)
+        : null;
+      const detectedCardCount =
+        parsedNow?.kind === 'desk_list'
+          ? parsedNow.deskList?.length || 0
+          : parsedNow?.kind === 'drop'
+            ? 1
+            : 0;
+      const autoAssignments: Record<string, number | ''> = {};
+      if (result.images.length > 0 && result.images.length === detectedCardCount) {
+        for (let idx = 0; idx < result.images.length; idx++) {
+          autoAssignments[result.images[idx].id] = idx;
+        }
+      }
       setRaw(result.text);
       setPdfImages(result.images);
-      setImageAssignments({});
+      setImageAssignments(autoAssignments);
       setPdfMeta({
         filename: file.name,
         pageCount: result.pageCount,
@@ -1775,7 +1790,7 @@ function DeskPasteForm({
             <span className="text-[11px] font-mono text-foreground">
               Extracted PDF Photos ({pdfImages.length})
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {previewCount > 1 && (
                 <button
                   type="button"
@@ -1792,8 +1807,17 @@ function DeskPasteForm({
                   Auto-match {Math.min(pdfImages.length, previewCount)} in order
                 </button>
               )}
+              {Object.values(imageAssignments).some((v) => typeof v === 'number') && (
+                <button
+                  type="button"
+                  onClick={() => setImageAssignments({})}
+                  className="px-2 py-0.5 rounded border border-border bg-card text-muted-foreground hover:text-foreground text-[10px] font-mono"
+                >
+                  Clear matches
+                </button>
+              )}
               <span className="text-[10px] text-muted-foreground">
-                Assign any photo below to attach it to a landed card
+                {Object.values(imageAssignments).filter((v) => typeof v === 'number').length} of {pdfImages.length} matched
               </span>
             </div>
           </div>
@@ -1875,7 +1899,13 @@ function DeskPasteForm({
           {submitting
             ? 'Uploading & Landing...'
             : preview?.kind === 'desk_list' && previewCount > 0
-              ? `Parse & Land ${previewCount} Card${previewCount === 1 ? '' : 's'}`
+              ? `Parse & Land ${previewCount} Card${previewCount === 1 ? '' : 's'}${
+                  Array.from(assignedCountByCard.values()).reduce((a, b) => a + b, 0) > 0
+                    ? ` (${Array.from(assignedCountByCard.values()).reduce((a, b) => a + b, 0)} photo${
+                        Array.from(assignedCountByCard.values()).reduce((a, b) => a + b, 0) === 1 ? '' : 's'
+                      })`
+                    : ''
+                }`
               : 'Parse & Land on Board'}
         </button>
       </div>
