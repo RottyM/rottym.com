@@ -1714,8 +1714,11 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
           await postAction({ action: 'delete_crew', agentId }, 'Removed crew member');
           setModal({ type: 'closed' });
         }}
-        onDeskPaste={async (raw, defaultLane) => {
-          const ok = await postAction({ action: 'paste', raw, defaultLane }, 'Parsed and landed on board');
+        onDeskPaste={async (raw, defaultLane, attachmentsByIndex) => {
+          const ok = await postAction(
+            { action: 'paste', raw, defaultLane, attachmentsByIndex },
+            'Parsed and landed on board'
+          );
           if (ok) setModal({ type: 'closed' });
         }}
       />

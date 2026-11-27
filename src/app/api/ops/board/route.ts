@@ -47,6 +47,7 @@ import type {
   EngineFamily,
   GateItem,
   GateState,
+  JobAsset,
   MetricsSnapshot,
   OpsRequest,
   PipelineCard,
@@ -957,9 +958,40 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, kind: 'clearance', applied }, { status: 200 });
     }
 
+    const attachmentsRaw =
+      body.attachmentsByIndex && typeof body.attachmentsByIndex === 'object'
+        ? (body.attachmentsByIndex as Record<string, unknown>)
+        : {};
+
+    const buildPasteAssets = (index: number): JobAsset[] => {
+      const list = attachmentsRaw[String(index)];
+      if (!Array.isArray(list)) return [];
+      const built: JobAsset[] = [];
+      for (const entry of list) {
+        if (!entry || typeof entry !== 'object') continue;
+        const item = entry as { url?: unknown; filename?: unknown };
+        const parsedAsset = parseNewJobAssetInput(
+          {
+            kind: 'image',
+            platform: 'all',
+            status: 'delivered',
+            url: item.url,
+            file: item.filename,
+            spec: 'Extracted from PDF — verify credit at clearance',
+          },
+          { addedBy: user.name, defaultOrder: built.length, canReviewAsset: true, now }
+        );
+        if (parsedAsset.ok) built.push(parsedAsset.asset);
+      }
+      return built;
+    };
+
     if (parsed.kind === 'desk_list' && parsed.deskList) {
       const createdCards: PipelineCard[] = [];
-      for (const d of parsed.deskList) {
+      for (let idx = 0; idx < parsed.deskList.length; idx++) {
+        const d = parsed.deskList[idx];
+        const attachedAssets = buildPasteAssets(idx);
+        const synced = syncCardWithAssets({}, attachedAssets);
         const card: PipelineCard = {
           id: `${clientId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           clientId,
@@ -975,7 +1007,11 @@ export async function POST(request: Request) {
           draftCopy: d.draftCopy,
           flaggedNotes: d.flaggedNotes,
           marleyStatus: 'pending',
-          photoStatus: 'missing',
+          assets: attachedAssets.length > 0 ? attachedAssets : undefined,
+          assetUrl: synced.assetUrl,
+          assetFile: synced.assetFile,
+          assetSpec: synced.assetSpec,
+          photoStatus: attachedAssets.length > 0 ? 'attached' : 'missing',
           readyForRotty: false,
           jobDate: d.jobDate,
           sourceFile: d.sourceFile,
@@ -1001,6 +1037,11 @@ export async function POST(request: Request) {
       const d = parsed.drop;
       const safeDropStage: PipelineStage =
         d.stage === 'approved' || d.stage === 'posted' ? 'drafted' : d.stage;
+      const extraAssets = buildPasteAssets(0);
+      const syncedDrop = syncCardWithAssets({}, extraAssets);
+      const effectiveAssetFile = d.assetFile || syncedDrop.assetFile;
+      const effectiveAssetUrl = syncedDrop.assetUrl;
+      const effectiveAssetSpec = d.assetSpec || syncedDrop.assetSpec;
       const card: PipelineCard = {
         id: `${clientId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         clientId,
@@ -1012,15 +1053,19 @@ export async function POST(request: Request) {
         agentId: d.agentId,
         source: d.source,
         sourceUrl: d.sourceUrl,
+        note: d.note,
         draftCopy: d.draftCopy,
         flaggedNotes: d.flaggedNotes,
         marleyStatus: d.marleyStatus,
         readyForRotty: false,
-        assetFile: d.assetFile,
-        assetSpec: d.assetSpec,
+        assets: extraAssets.length > 0 ? extraAssets : undefined,
+        assetFile: effectiveAssetFile,
+        assetUrl: effectiveAssetUrl,
+        assetSpec: effectiveAssetSpec,
         photoStatus: resolveEffectivePhotoStatus({
-          assetFile: d.assetFile,
-          assetSpec: d.assetSpec,
+          assetFile: effectiveAssetFile,
+          assetUrl: effectiveAssetUrl,
+          assetSpec: effectiveAssetSpec,
         }),
         jobDate: d.jobDate,
         sourceFile: d.sourceFile,

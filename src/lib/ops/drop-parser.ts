@@ -579,7 +579,7 @@ export function parseAdminPasteBlock(
   };
 }
 
-function cleanDeskUrl(rawUrl: string): string | undefined {
+export function cleanDeskUrl(rawUrl: string): string | undefined {
   const trimmed = rawUrl.trim().replace(/[.,;:!?)'"\]]+$/, '');
   if (!trimmed) return undefined;
   try {

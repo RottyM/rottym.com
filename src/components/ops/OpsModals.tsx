@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   X,
   Check,
@@ -15,7 +15,10 @@ import {
   ArrowUp,
   ArrowDown,
   Upload,
+  FileText,
+  Loader2,
 } from 'lucide-react';
+import { extractPdfForDesk, type ExtractedPdfImage } from '@/lib/ops/pdf-intake';
 import {
   getCardAssets,
   getCardCompleteness,
@@ -103,6 +106,11 @@ export type OpsModalState =
   | { type: 'create_crew'; defaultSet: CrewSet }
   | { type: 'desk_paste' };
 
+export type DeskPasteAttachmentsByIndex = Record<
+  number,
+  Array<{ url: string; filename?: string }>
+>;
+
 export function OpsModalHost({
   state,
   clientId = 'rottym',
@@ -130,7 +138,11 @@ export function OpsModalHost({
   onUpdateCrew: (agentId: string, patch: Record<string, unknown>) => Promise<void>;
   onCreateCrew: (payload: Record<string, unknown>) => Promise<void>;
   onDeleteCrew: (agentId: string) => Promise<void>;
-  onDeskPaste: (raw: string, defaultLane?: PipelineLane) => Promise<void>;
+  onDeskPaste: (
+    raw: string,
+    defaultLane?: PipelineLane,
+    attachmentsByIndex?: DeskPasteAttachmentsByIndex
+  ) => Promise<void>;
 }) {
   useEffect(() => {
     if (state.type === 'closed') return;
@@ -1484,10 +1496,27 @@ function DeskPasteForm({
 }: {
   clientId: string;
   busy: boolean;
-  onSubmit: (raw: string, defaultLane?: PipelineLane) => Promise<void>;
+  onSubmit: (
+    raw: string,
+    defaultLane?: PipelineLane,
+    attachmentsByIndex?: DeskPasteAttachmentsByIndex
+  ) => Promise<void>;
 }) {
   const [raw, setRaw] = useState('');
   const [defaultLane, setDefaultLane] = useState<PipelineLane>('fb-ig');
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [pdfMeta, setPdfMeta] = useState<{
+    filename: string;
+    pageCount: number;
+    linkCount: number;
+    photoCount: number;
+  } | null>(null);
+  const [pdfImages, setPdfImages] = useState<ExtractedPdfImage[]>([]);
+  const [imageAssignments, setImageAssignments] = useState<Record<string, number | ''>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const preview = useMemo(
     () => (raw.trim() ? parseAdminPasteBlock(raw, clientId, defaultLane) : null),
@@ -1503,11 +1532,154 @@ function DeskPasteForm({
           ? 1
           : 0;
 
+  const assignedCountByCard = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const img of pdfImages) {
+      const idx = imageAssignments[img.id];
+      if (typeof idx === 'number' && idx >= 0) {
+        counts.set(idx, (counts.get(idx) || 0) + 1);
+      }
+    }
+    return counts;
+  }, [pdfImages, imageAssignments]);
+
+  const handlePdfFile = async (file: File | undefined | null) => {
+    if (!file) return;
+    if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') {
+      setPdfError('Please pick or drop a .pdf file.');
+      return;
+    }
+    setPdfError(null);
+    setPdfBusy(true);
+    try {
+      const result = await extractPdfForDesk(file);
+      if (!result.text.trim() && result.images.length === 0) {
+        setPdfError('No selectable text or photos found in that PDF.');
+        return;
+      }
+      setRaw(result.text);
+      setPdfImages(result.images);
+      setImageAssignments({});
+      setPdfMeta({
+        filename: file.name,
+        pageCount: result.pageCount,
+        linkCount: result.linkCount,
+        photoCount: result.images.length,
+      });
+    } catch (err) {
+      setPdfError(err instanceof Error ? err.message : 'Failed to read PDF file.');
+    } finally {
+      setPdfBusy(false);
+      if (pdfInputRef.current) pdfInputRef.current.value = '';
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!raw.trim() || busy || pdfBusy || submitting) return;
+    setPdfError(null);
+    setSubmitting(true);
+    try {
+      const assignedEntries = pdfImages
+        .map((img) => ({ img, idx: imageAssignments[img.id] }))
+        .filter((entry): entry is { img: ExtractedPdfImage; idx: number } => typeof entry.idx === 'number' && entry.idx >= 0);
+
+      let attachmentsByIndex: DeskPasteAttachmentsByIndex | undefined;
+      if (assignedEntries.length > 0) {
+        const uploadedById = new Map<string, { url: string; filename?: string }>();
+        attachmentsByIndex = {};
+        for (const { img, idx } of assignedEntries) {
+          let hosted = uploadedById.get(img.id);
+          if (!hosted) {
+            hosted = await uploadHostedAssetImage(img.file, clientId);
+            uploadedById.set(img.id, hosted);
+          }
+          if (!attachmentsByIndex[idx]) attachmentsByIndex[idx] = [];
+          attachmentsByIndex[idx].push({ url: hosted.url, filename: hosted.filename });
+        }
+      }
+
+      await onSubmit(raw, defaultLane, attachmentsByIndex);
+    } catch (err) {
+      setPdfError(err instanceof Error ? err.message : 'Failed to upload assigned PDF photo.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="space-y-4">
+    <div
+      className="space-y-4"
+      onDragOver={(e) => {
+        if (e.dataTransfer?.types?.includes('Files')) {
+          e.preventDefault();
+          setDragOver(true);
+        }
+      }}
+      onDragLeave={(e) => {
+        if (e.currentTarget === e.target) setDragOver(false);
+      }}
+      onDrop={(e) => {
+        if (!e.dataTransfer?.files?.length) return;
+        e.preventDefault();
+        setDragOver(false);
+        void handlePdfFile(e.dataTransfer.files[0]);
+      }}
+    >
       <p className="text-xs text-muted-foreground leading-relaxed">
-        Paste any numbered/bulleted list from ChatGPT, Gemini, or Grok—or paste a YAML drop or Marley clearance block. Section headers, image badges, Date lines, summaries, and Source links stay grouped onto each story card.
+        Paste any numbered/bulleted list from ChatGPT, Gemini, or Grok, upload a saved ChatGPT <strong>.pdf</strong> export, or paste a YAML drop or Marley clearance block. Section headers, Date lines, summaries, and Source links stay grouped onto each story card.
       </p>
+
+      <div
+        className={`rounded-lg border border-dashed p-3 flex flex-wrap items-center justify-between gap-2 transition-colors ${
+          dragOver
+            ? 'border-accent bg-accent/10'
+            : 'border-border bg-background/60 hover:border-accent/50'
+        }`}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-accent/15 border border-accent/30 text-accent flex items-center justify-center shrink-0">
+            {pdfBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+          </div>
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-foreground truncate">
+              {pdfMeta
+                ? `${pdfMeta.filename}`
+                : 'Import ChatGPT / research PDF (text, links & photos)'}
+            </div>
+            <div className="text-[11px] font-mono text-muted-foreground truncate">
+              {pdfBusy
+                ? 'Extracting text, links, and embedded photos...'
+                : pdfMeta
+                  ? `${pdfMeta.pageCount} page${pdfMeta.pageCount === 1 ? '' : 's'} · ${pdfMeta.linkCount} link${pdfMeta.linkCount === 1 ? '' : 's'} · ${pdfMeta.photoCount} photo${pdfMeta.photoCount === 1 ? '' : 's'}`
+                  : 'Drop a .pdf here or choose a file'}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <input
+            ref={pdfInputRef}
+            type="file"
+            accept="application/pdf,.pdf"
+            className="hidden"
+            onChange={(e) => void handlePdfFile(e.target.files?.[0])}
+          />
+          <button
+            type="button"
+            disabled={pdfBusy || busy || submitting}
+            onClick={() => pdfInputRef.current?.click()}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium border border-border bg-card text-foreground hover:border-accent disabled:opacity-50"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            {pdfMeta ? 'Replace PDF' : 'Upload PDF'}
+          </button>
+        </div>
+      </div>
+
+      {pdfError && (
+        <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-700 dark:text-red-300">
+          {pdfError}
+        </div>
+      )}
 
       <div>
         <label className={LABEL_CLS}>Default Lane for Raw Lists</label>
@@ -1525,7 +1697,7 @@ function DeskPasteForm({
       <div>
         <label className={LABEL_CLS}>Paste List / Drop / Clearance</label>
         <textarea
-          className={`${INPUT_CLS} min-h-[180px] max-h-[280px] font-mono text-xs ops-scroll`}
+          className={`${INPUT_CLS} min-h-[160px] max-h-[240px] font-mono text-xs ops-scroll`}
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
           onPaste={(e) => {
@@ -1564,42 +1736,131 @@ function DeskPasteForm({
           </div>
           {preview.kind === 'desk_list' && preview.deskList && (
             <div className="max-h-32 overflow-y-auto ops-scroll space-y-1 pr-1">
-              {preview.deskList.map((d, i) => (
-                <div
-                  key={`prev-${i}-${d.title.slice(0, 20)}`}
-                  className="flex items-center justify-between gap-2 text-[11px] px-2 py-1 rounded border border-border/70 bg-card/60"
-                >
-                  <span className="truncate text-foreground">
-                    <span className="font-mono text-muted-foreground mr-1">{i + 1}.</span>
-                    {d.title}
-                  </span>
-                  <span
-                    className={`font-mono text-[10px] shrink-0 ${
-                      d.sourceUrl
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-amber-600 dark:text-amber-400'
-                    }`}
+              {preview.deskList.map((d, i) => {
+                const photoCnt = assignedCountByCard.get(i) || 0;
+                return (
+                  <div
+                    key={`prev-${i}-${d.title.slice(0, 20)}`}
+                    className="flex items-center justify-between gap-2 text-[11px] px-2 py-1 rounded border border-border/70 bg-card/60"
                   >
-                    {d.sourceUrl ? d.source || 'URL ✓' : 'No URL'}
-                  </span>
-                </div>
-              ))}
+                    <span className="truncate text-foreground">
+                      <span className="font-mono text-muted-foreground mr-1">{i + 1}.</span>
+                      {d.title}
+                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {photoCnt > 0 && (
+                        <span className="px-1.5 py-0 rounded bg-cyan-500/15 border border-cyan-500/40 text-cyan-700 dark:text-cyan-300 font-mono text-[10px]">
+                          {photoCnt} photo{photoCnt === 1 ? '' : 's'}
+                        </span>
+                      )}
+                      <span
+                        className={`font-mono text-[10px] ${
+                          d.sourceUrl
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-amber-600 dark:text-amber-400'
+                        }`}
+                      >
+                        {d.sourceUrl ? d.source || 'URL ✓' : 'No URL'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
+        </div>
+      )}
+
+      {pdfImages.length > 0 && (
+        <div className="rounded-lg border border-border bg-background/70 p-2.5 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-mono text-foreground">
+              Extracted PDF Photos ({pdfImages.length})
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              Assign any photo below to attach it to a landed card
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto ops-scroll pr-1">
+            {pdfImages.map((img) => {
+              const assignedIdx = imageAssignments[img.id] ?? '';
+              return (
+                <div
+                  key={img.id}
+                  className="rounded-md border border-border bg-card p-1.5 space-y-1.5 flex flex-col"
+                >
+                  <div className="relative aspect-video rounded overflow-hidden bg-muted/60 border border-border/60">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img.previewUrl}
+                      alt={img.filename}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      title="Remove extracted photo"
+                      onClick={() => {
+                        setPdfImages((prev) => prev.filter((p) => p.id !== img.id));
+                        setImageAssignments((prev) => {
+                          const next = { ...prev };
+                          delete next[img.id];
+                          return next;
+                        });
+                      }}
+                      className="absolute top-1 right-1 p-0.5 rounded bg-background/85 border border-border text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="text-[10px] font-mono text-muted-foreground flex items-center justify-between">
+                    <span>p.{img.page} · {img.width}×{img.height}</span>
+                  </div>
+                  <select
+                    aria-label={`Assign ${img.filename} to story card`}
+                    className="w-full px-1.5 py-1 rounded text-[11px] bg-background border border-border text-foreground focus:outline-none focus:border-accent"
+                    value={assignedIdx}
+                    disabled={previewCount === 0}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setImageAssignments((prev) => ({
+                        ...prev,
+                        [img.id]: val === '' ? '' : Number(val),
+                      }));
+                    }}
+                  >
+                    <option value="">Skip / don&apos;t attach</option>
+                    {preview?.kind === 'desk_list' && preview.deskList
+                      ? preview.deskList.map((cardItem, cardIdx) => (
+                          <option key={`opt-${cardIdx}`} value={cardIdx}>
+                            {cardIdx + 1}. {cardItem.title.slice(0, 34)}
+                          </option>
+                        ))
+                      : previewCount === 1 && <option value={0}>1. Single drop card</option>}
+                  </select>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
       <div className="flex justify-end pt-2 border-t border-border">
         <button
           type="button"
-          disabled={busy || !raw.trim()}
-          onClick={() => onSubmit(raw, defaultLane)}
+          disabled={busy || pdfBusy || submitting || !raw.trim()}
+          onClick={() => void handleSubmit()}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
         >
-          <Sparkles className="w-3.5 h-3.5" />
-          {preview?.kind === 'desk_list' && previewCount > 0
-            ? `Parse & Land ${previewCount} Card${previewCount === 1 ? '' : 's'}`
-            : 'Parse & Land on Board'}
+          {submitting ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Sparkles className="w-3.5 h-3.5" />
+          )}
+          {submitting
+            ? 'Uploading & Landing...'
+            : preview?.kind === 'desk_list' && previewCount > 0
+              ? `Parse & Land ${previewCount} Card${previewCount === 1 ? '' : 's'}`
+              : 'Parse & Land on Board'}
         </button>
       </div>
     </div>
