@@ -525,7 +525,7 @@ export default function OpsDecisionDesk({
                     : active && alertMeta
                       ? `${alertMeta.tabBorderCls} font-normal ring-1 ring-current/25`
                       : hasUnseen && !active
-                        ? 'border-amber-500/60 bg-amber-500/10 text-amber-900 dark:text-amber-200'
+                        ? 'border-violet-500/55 bg-violet-500/10 text-violet-900 dark:text-violet-200'
                         : active
                           ? 'border-accent bg-accent/15 text-foreground font-medium'
                           : 'border-border bg-background hover:border-accent/50 text-muted-foreground hover:text-foreground'
@@ -534,7 +534,7 @@ export default function OpsDecisionDesk({
                 {alertMeta ? (
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${alertMeta.dotCls}`} />
                 ) : hasUnseen ? (
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-amber-400" />
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-violet-400" />
                 ) : null}
                 <span>
                   {t.label}{' '}
@@ -551,7 +551,7 @@ export default function OpsDecisionDesk({
               type="button"
               onClick={onMarkAllSeen}
               title="Clear persistent unseen update markers"
-              className="px-2 py-1 rounded-lg text-[10px] font-mono border border-amber-500/45 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20"
+              className="px-2 py-1 rounded-lg text-[10px] font-mono border border-violet-500/45 bg-violet-500/10 text-violet-800 dark:text-violet-300 hover:bg-violet-500/20"
             >
               Mark seen ({unseenIds.size})
             </button>
@@ -637,7 +637,7 @@ export default function OpsDecisionDesk({
                         : selected
                           ? 'border-accent bg-accent/10'
                           : reqUnseen
-                            ? 'border-amber-500/45 border-l-4 border-l-amber-400 bg-amber-500/[0.04] hover:border-accent/50'
+                            ? 'border-cyan-500/45 border-l-4 border-l-cyan-400 bg-cyan-500/[0.04] hover:border-accent/50'
                             : 'border-border bg-background/60 hover:border-accent/50'
                     }`}
                   >
@@ -648,7 +648,7 @@ export default function OpsDecisionDesk({
                             {reqAlert.label}
                           </span>
                         ) : reqUnseen ? (
-                          <span className="px-1 py-0 rounded border border-amber-500/45 bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0 text-[9px] font-normal">
+                          <span className="px-1 py-0 rounded border border-cyan-500/45 bg-cyan-500/15 text-cyan-800 dark:text-cyan-200 shrink-0 text-[9px] font-normal">
                             NEW
                           </span>
                         ) : null}
@@ -724,7 +724,7 @@ export default function OpsDecisionDesk({
                       : selected
                         ? 'border-accent bg-accent/10'
                         : cardUnseen
-                          ? 'border-amber-500/45 border-l-4 border-l-amber-400 bg-amber-500/[0.04] hover:border-accent/50'
+                          ? 'border-violet-500/45 border-l-4 border-l-violet-400 bg-violet-500/[0.04] hover:border-accent/50'
                           : 'border-border bg-background/60 hover:border-accent/50'
                   }`}
                 >
@@ -735,7 +735,7 @@ export default function OpsDecisionDesk({
                           {cardAlert.label}
                         </span>
                       ) : cardUnseen ? (
-                        <span className="px-1 py-0 rounded border border-amber-500/45 bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0 text-[9px] font-normal">
+                        <span className="px-1 py-0 rounded border border-violet-500/45 bg-violet-500/15 text-violet-800 dark:text-violet-200 shrink-0 text-[9px] font-normal">
                           UPDATED
                         </span>
                       ) : null}

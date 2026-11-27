@@ -1193,7 +1193,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                         src={avatarSrc}
                         dotCls={
                           hasConnAlert
-                            ? 'bg-red-500 animate-pulse'
+                            ? 'bg-red-500 ring-2 ring-red-500/30'
                             : isStale
                               ? 'bg-amber-400'
                               : dotCls
@@ -1231,7 +1231,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                     >
                       <span
                         className={`w-2 h-2 rounded-full shrink-0 ${
-                          rosterSummaryStats.hasCrewAlert ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'
+                          rosterSummaryStats.hasCrewAlert ? 'bg-red-500 ring-2 ring-red-500/30' : 'bg-emerald-500'
                         }`}
                       />
                       <span>Crew</span>
@@ -3212,7 +3212,7 @@ function CrewChatPanel({
             <h2 className="text-xs font-medium uppercase tracking-wider font-mono text-foreground">
               Crew Chat
             </h2>
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
             {headerAlertMeta && (
               <span className={`px-1.5 py-0 rounded border text-[9px] font-mono ${headerAlertMeta.badgeCls}`}>
                 {chatAlerts.activeCount} {headerAlertMeta.label}

@@ -2567,7 +2567,7 @@ export interface UpdateAlertMeta {
   dotCls: string;
 }
 
-/** Shared class tokens for temporary update borders/pills (emerald = new, amber = updated). */
+/** Shared class tokens for temporary update borders/pills (cyan = new, violet = updated). */
 export function getUpdateAlertMeta(kind?: UpdateAlertKind): UpdateAlertMeta | null {
   if (!kind) return null;
   if (kind === 'new') {
@@ -2577,7 +2577,7 @@ export function getUpdateAlertMeta(kind?: UpdateAlertKind): UpdateAlertMeta | nu
       cardBorderCls: 'ops-alert-card-new',
       tabBorderCls: 'ops-alert-tab-new',
       badgeCls:
-        'border-emerald-500/50 bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 font-medium',
+        'border-cyan-500/50 bg-cyan-500/15 text-cyan-800 dark:text-cyan-200 font-medium',
       dotCls: 'ops-ping-dot-new',
     };
   }
@@ -2587,7 +2587,7 @@ export function getUpdateAlertMeta(kind?: UpdateAlertKind): UpdateAlertMeta | nu
     cardBorderCls: 'ops-alert-card-updated',
     tabBorderCls: 'ops-alert-tab-updated',
     badgeCls:
-      'border-amber-500/50 bg-amber-500/20 text-amber-800 dark:text-amber-200 font-medium',
+      'border-violet-500/50 bg-violet-500/15 text-violet-800 dark:text-violet-200 font-medium',
     dotCls: 'ops-ping-dot-updated',
   };
 }
