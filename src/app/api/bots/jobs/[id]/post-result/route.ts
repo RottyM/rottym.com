@@ -7,6 +7,7 @@ import {
   unauthorizedResponse,
 } from '@/lib/ops/auth';
 import {
+  findUnknownFields,
   getCardAssets,
   getPendingPlatforms,
   normalizePlatformKey,
@@ -14,6 +15,31 @@ import {
 } from '@/lib/ops/drop-parser';
 import { appendOpsActivity, opsGetDoc, opsSetDoc } from '@/lib/ops/firestore-rest';
 import type { PipelineCard, PipelineLinks, PlatformKey } from '@/lib/ops/types';
+
+const ALLOWED_POST_RESULT_FIELDS = new Set([
+  'clientId',
+  'botName',
+  'status',
+  'externalPostUrl',
+  'external_post_url',
+  'externalUrl',
+  'external_url',
+  'postUrl',
+  'post_url',
+  'liveUrl',
+  'live_url',
+  'url',
+  'link',
+  'permalink',
+  'platform',
+  'targetPlatforms',
+  'platforms',
+  'partial',
+  'links',
+  'postedAssets',
+  'assetIds',
+  'error',
+]);
 
 function sanitizeUrl(raw: unknown): string | undefined {
   if (typeof raw !== 'string' || !raw.trim()) return undefined;
@@ -52,11 +78,21 @@ export async function POST(
     botName?: string;
     status?: 'posted' | 'failed';
     externalPostUrl?: string;
+    external_post_url?: string;
+    externalUrl?: string;
+    external_url?: string;
+    postUrl?: string;
+    post_url?: string;
+    liveUrl?: string;
+    live_url?: string;
+    url?: string;
+    link?: string;
+    permalink?: string;
     platform?: string;
     targetPlatforms?: string[] | string;
     platforms?: string[] | string;
     partial?: boolean;
-    links?: PipelineLinks;
+    links?: Record<string, unknown>;
     postedAssets?: Partial<Record<PlatformKey, string[]>>;
     assetIds?: string[];
     error?: string;
@@ -65,6 +101,21 @@ export async function POST(
     body = (await request.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+  }
+
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'JSON object payload is required' }, { status: 400 });
+  }
+  const unknown = findUnknownFields(body as Record<string, unknown>, ALLOWED_POST_RESULT_FIELDS);
+  if (unknown.length > 0) {
+    return NextResponse.json(
+      {
+        error: `Unknown field(s): ${unknown.join(', ')}`,
+        unknownFields: unknown,
+        allowedFields: Array.from(ALLOWED_POST_RESULT_FIELDS),
+      },
+      { status: 400 }
+    );
   }
 
   if (body.status !== 'posted' && body.status !== 'failed') {
@@ -86,49 +137,58 @@ export async function POST(
       : actor.actorName;
   const ok = body.status === 'posted';
 
-  const singleUrl = sanitizeUrl(body.externalPostUrl);
+  const rawSingleUrl =
+    body.externalPostUrl ??
+    body.external_post_url ??
+    body.postUrl ??
+    body.post_url ??
+    body.liveUrl ??
+    body.live_url ??
+    body.externalUrl ??
+    body.external_url ??
+    body.url ??
+    body.link ??
+    body.permalink;
+  const singleUrl = sanitizeUrl(rawSingleUrl);
   const nextLinks: PipelineLinks = { ...(existing.links || {}) };
-  if (body.links && typeof body.links === 'object') {
-    if (body.links.fb) nextLinks.fb = sanitizeUrl(body.links.fb) || nextLinks.fb;
-    if (body.links.ig) nextLinks.ig = sanitizeUrl(body.links.ig) || nextLinks.ig;
-    if (body.links.linkedin) nextLinks.linkedin = sanitizeUrl(body.links.linkedin) || nextLinks.linkedin;
-    if (body.links.x) nextLinks.x = sanitizeUrl(body.links.x) || nextLinks.x;
+  const touchedPlatforms = new Set<PlatformKey>();
+
+  if (body.links && typeof body.links === 'object' && !Array.isArray(body.links)) {
+    for (const [rawPlat, rawHref] of Object.entries(body.links)) {
+      const plat = normalizePlatformKey(rawPlat);
+      if (!plat) continue;
+      const cleanHref = sanitizeUrl(rawHref);
+      if (cleanHref) {
+        nextLinks[plat] = cleanHref;
+        touchedPlatforms.add(plat);
+      }
+    }
   }
 
   const explicitPlatform = normalizePlatformKey(body.platform);
-  const touchedPlatforms = new Set<PlatformKey>();
-  if (body.links && typeof body.links === 'object') {
-    if (body.links.fb) touchedPlatforms.add('fb');
-    if (body.links.ig) touchedPlatforms.add('ig');
-    if (body.links.linkedin) touchedPlatforms.add('linkedin');
-    if (body.links.x) touchedPlatforms.add('x');
-  }
   if (singleUrl) {
     const inferred = explicitPlatform || inferPlatformFromUrl(singleUrl);
-    if (inferred === 'x') {
-      nextLinks.x = nextLinks.x || singleUrl;
-      touchedPlatforms.add('x');
-    } else if (inferred === 'linkedin') {
-      nextLinks.linkedin = nextLinks.linkedin || singleUrl;
-      touchedPlatforms.add('linkedin');
-    } else if (inferred === 'ig') {
-      nextLinks.ig = nextLinks.ig || singleUrl;
-      touchedPlatforms.add('ig');
-    } else if (inferred === 'fb') {
-      nextLinks.fb = nextLinks.fb || singleUrl;
-      touchedPlatforms.add('fb');
-    } else if (existing.channel === 'linkedin') {
-      nextLinks.linkedin = nextLinks.linkedin || singleUrl;
-      touchedPlatforms.add('linkedin');
-    } else if (existing.channel === 'x') {
-      nextLinks.x = nextLinks.x || singleUrl;
-      touchedPlatforms.add('x');
-    } else {
-      nextLinks.fb = nextLinks.fb || singleUrl;
-      touchedPlatforms.add('fb');
-    }
+    const resolvedPlat: PlatformKey =
+      inferred ||
+      (existing.channel === 'linkedin'
+        ? 'linkedin'
+        : existing.channel === 'x'
+          ? 'x'
+          : 'fb');
+    nextLinks[resolvedPlat] = singleUrl;
+    touchedPlatforms.add(resolvedPlat);
   } else if (explicitPlatform) {
     touchedPlatforms.add(explicitPlatform);
+  }
+
+  if (ok && !Object.values(nextLinks).some(Boolean)) {
+    return NextResponse.json(
+      {
+        error:
+          'At least one valid http(s) live post URL is required when status is "posted" (pass externalPostUrl/url or links.{fb,ig,linkedin,x}).',
+      },
+      { status: 400 }
+    );
   }
 
   const jobAssets = getCardAssets(existing);
@@ -222,7 +282,9 @@ export async function POST(
         ? `Posted ${landedSummary || 'partial'} by ${botName}; awaiting: ${pendingPlatforms.join(', ')}`
         : singleUrl
           ? `Posted by ${botName} (${singleUrl})`
-          : `Posted by ${botName}`,
+          : landedSummary
+            ? `Posted ${landedSummary} by ${botName}`
+            : `Posted by ${botName}`,
     updatedAt: new Date().toISOString(),
   };
 
