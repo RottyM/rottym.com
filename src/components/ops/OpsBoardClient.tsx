@@ -6,6 +6,7 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import {
   AlertTriangle,
+  AtSign,
   Check,
   ChevronDown,
   ChevronRight,
@@ -2681,6 +2682,7 @@ function CrewChatPanel({
   const [mentionActiveIndex, setMentionActiveIndex] = useState(0);
   const [mentionDismissed, setMentionDismissed] = useState(false);
   const [targetMention, setTargetMention] = useState<string>('all');
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [showJumpLatest, setShowJumpLatest] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -2697,6 +2699,7 @@ function CrewChatPanel({
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
   const initializedScrollRef = useRef(false);
   const stickToBottomRef = useRef(true);
   const forceScrollRef = useRef(false);
@@ -2764,6 +2767,24 @@ function CrewChatPanel({
       inputRef.current?.focus();
     }
   }, [replyToMsg, focusInputSeq]);
+
+  useEffect(() => {
+    if (!moreFiltersOpen) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setMoreFiltersOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMoreFiltersOpen(false);
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [moreFiltersOpen]);
 
   useEffect(() => {
     if (!jumpTarget) return;
@@ -3208,8 +3229,24 @@ function CrewChatPanel({
           </div>
         )}
 
-        <nav aria-label="Crew chat filters" className="flex items-center gap-1 overflow-x-auto ops-scroll pb-0.5">
-          {chatTargetChips.map((chip) => {
+        {(() => {
+          const alwaysPinned = new Set(['all', 'rotty', 'marley']);
+          const pinnedChips = chatTargetChips.filter(
+            (chip) =>
+              alwaysPinned.has(chip.key) ||
+              targetMention === chip.key ||
+              Boolean(chatAlerts.channelAlert.get(chip.key))
+          );
+          const overflowChips = chatTargetChips.filter(
+            (chip) => !pinnedChips.some((p) => p.key === chip.key)
+          );
+          const overflowAlertKind = overflowChips.reduce<UpdateAlertKind | undefined>((acc, chip) => {
+            const k = chatAlerts.channelAlert.get(chip.key);
+            if (!k) return acc;
+            return acc === 'new' || k === 'new' ? 'new' : 'updated';
+          }, undefined);
+          const overflowAlertMeta = getUpdateAlertMeta(overflowAlertKind);
+          const renderFilterButton = (chip: (typeof chatTargetChips)[number], inMenu = false) => {
             const active = targetMention === chip.key;
             const chipAlert = getUpdateAlertMeta(chatAlerts.channelAlert.get(chip.key));
             return (
@@ -3221,21 +3258,30 @@ function CrewChatPanel({
                   setTargetMention((prev) =>
                     chip.key === 'all' ? 'all' : prev === chip.key ? 'all' : chip.key
                   );
+                  setMoreFiltersOpen(false);
                 }}
                 title={
                   chip.key === 'all'
                     ? 'Show all crew messages & broadcast to @All'
                     : `Filter & target ${chip.label} (click again for @All)`
                 }
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium border whitespace-nowrap transition-all ${
-                  chipAlert && !active
-                    ? chipAlert.tabBorderCls
-                    : active && chipAlert
-                      ? `${chipAlert.tabBorderCls} font-normal`
-                      : active
-                        ? 'bg-cyan-500/15 border-cyan-500/45 text-cyan-800 dark:text-cyan-200 shadow-sm'
-                        : 'bg-background/70 border-border text-muted-foreground hover:text-foreground hover:border-accent/50'
-                }`}
+                className={
+                  inMenu
+                    ? `w-full px-2.5 py-1.5 flex items-center justify-between gap-2 text-left text-[11px] transition-colors ${
+                        active
+                          ? 'bg-cyan-500/15 text-cyan-800 dark:text-cyan-200 font-medium'
+                          : 'hover:bg-muted/60 text-foreground/90'
+                      }`
+                    : `inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium border whitespace-nowrap transition-all ${
+                        chipAlert && !active
+                          ? chipAlert.tabBorderCls
+                          : active && chipAlert
+                            ? `${chipAlert.tabBorderCls} font-normal`
+                            : active
+                              ? 'bg-cyan-500/15 border-cyan-500/45 text-cyan-800 dark:text-cyan-200 shadow-sm'
+                              : 'bg-background/70 border-border text-muted-foreground hover:text-foreground hover:border-accent/50'
+                      }`
+                }
               >
                 {chip.key === 'all' ? (
                   <>
@@ -3246,17 +3292,57 @@ function CrewChatPanel({
                     </span>
                   </>
                 ) : (
-                  <>
+                  <span className="inline-flex items-center gap-1.5 min-w-0">
                     <span
                       className={`w-1.5 h-1.5 rounded-full shrink-0 ${chipAlert ? chipAlert.dotCls : chip.dotCls}`}
                     />
-                    <span>{chip.label}</span>
-                  </>
+                    <span className="truncate">{chip.label}</span>
+                  </span>
                 )}
               </button>
             );
-          })}
-        </nav>
+          };
+
+          return (
+            <nav aria-label="Crew chat filters" className="relative flex items-center justify-between gap-1.5">
+              <div className="flex flex-wrap items-center gap-1 min-w-0">
+                {pinnedChips.map((chip) => renderFilterButton(chip))}
+              </div>
+              {overflowChips.length > 0 && (
+                <div ref={moreMenuRef} className="relative shrink-0">
+                  <button
+                    type="button"
+                    aria-expanded={moreFiltersOpen}
+                    aria-haspopup="menu"
+                    onClick={() => setMoreFiltersOpen((prev) => !prev)}
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium border whitespace-nowrap transition-colors ${
+                      overflowAlertMeta
+                        ? overflowAlertMeta.tabBorderCls
+                        : moreFiltersOpen
+                          ? 'border-accent bg-accent/15 text-foreground'
+                          : 'bg-background/70 border-border text-muted-foreground hover:text-foreground hover:border-accent/50'
+                    }`}
+                  >
+                    {overflowAlertMeta && (
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${overflowAlertMeta.dotCls}`} />
+                    )}
+                    <span>More</span>
+                    <ChevronDown className={`w-3 h-3 transition-transform ${moreFiltersOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {moreFiltersOpen && (
+                    <div
+                      role="menu"
+                      aria-label="More crew channels"
+                      className="absolute right-0 top-full mt-1 z-30 w-44 rounded-xl border border-border bg-card shadow-xl py-1 max-h-56 overflow-y-auto ops-scroll"
+                    >
+                      {overflowChips.map((chip) => renderFilterButton(chip, true))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </nav>
+          );
+        })()}
       </div>
 
       {/* Chat Feed Area */}
@@ -3351,7 +3437,7 @@ function CrewChatPanel({
                     <article
                       className={`group rounded-xl border bg-background/75 p-2.5 ml-3 border-r-2 transition-all duration-500 ${
                         isFlashed
-                          ? 'border-cyan-500 ring-2 ring-cyan-500/45 bg-cyan-500/10'
+                          ? 'ops-alert-card-new'
                           : msgAlert
                             ? msgAlert.cardBorderCls
                             : `border-border ${senderAccent.accentBorderR}`
@@ -3405,7 +3491,7 @@ function CrewChatPanel({
                     <article
                       className={`group rounded-xl border border-l-4 bg-background/75 p-2.5 transition-all duration-500 ${
                         isFlashed
-                          ? 'border-cyan-500 ring-2 ring-cyan-500/45 bg-cyan-500/10'
+                          ? 'ops-alert-card-new'
                           : msgAlert
                             ? msgAlert.cardBorderCls
                             : `border-border ${operatorBorderL}`
@@ -3538,7 +3624,7 @@ function CrewChatPanel({
                     <article
                       className={`group rounded-xl border bg-background/75 p-2.5 transition-all duration-500 ${
                         isFlashed
-                          ? 'border-cyan-500 ring-2 ring-cyan-500/45 bg-cyan-500/10'
+                          ? 'ops-alert-card-new'
                           : msgAlert
                             ? msgAlert.cardBorderCls
                             : 'border-border'
@@ -3683,23 +3769,7 @@ function CrewChatPanel({
         )}
       </div>
 
-      {/* Quick-Mention Dock + Reply/Card Banners + Multi-line Composer */}
-      <div className="border-t border-border/80 bg-card/95 px-3 py-1.5 flex items-center justify-between gap-2 shrink-0">
-        <div className="flex items-center gap-1.5 overflow-x-auto ops-scroll">
-          <span className="text-[10px] font-mono text-muted-foreground uppercase shrink-0">Tags:</span>
-          {chatTargetChips.filter((c) => c.key !== 'all').map((chip) => (
-            <button
-              key={`tag-${chip.key}`}
-              type="button"
-              onClick={() => appendMentionTag(chip.mentionToken)}
-              className={`px-2 py-0.5 rounded-lg border border-border bg-background/80 hover:border-accent/60 text-[10px] font-medium whitespace-nowrap transition-colors ${chip.tagCls}`}
-            >
-              + {chip.mentionToken}
-            </button>
-          ))}
-        </div>
-      </div>
-
+      {/* Reply/Card Banners + Multi-line Composer */}
       {(replyToMsg || attachedCard || attachPickerOpen) && (
         <div className="px-3 py-1.5 bg-muted/40 border-t border-border/70 space-y-1.5 shrink-0">
           {replyToMsg && (
@@ -3801,6 +3871,36 @@ function CrewChatPanel({
           <Paperclip className="w-3.5 h-3.5" />
         </button>
 
+        <button
+          type="button"
+          aria-label="Mention a crew member"
+          title="Open @mention picker"
+          onClick={() => {
+            if (filteredMentions.length > 0) {
+              setMentionDismissed(true);
+              return;
+            }
+            const nextDraft =
+              draft.length === 0 || /\s$/.test(draft)
+                ? `${draft}@`
+                : draft.endsWith('@')
+                  ? draft
+                  : `${draft} @`;
+            setDraft(nextDraft);
+            setCaretPos(nextDraft.length);
+            setMentionDismissed(false);
+            setMentionActiveIndex(0);
+            setFocusInputSeq((n) => n + 1);
+          }}
+          className={`h-8 w-8 rounded-xl border inline-flex items-center justify-center shrink-0 transition-colors ${
+            filteredMentions.length > 0
+              ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'
+              : 'border-border bg-background text-cyan-700 dark:text-cyan-300 hover:border-accent/60'
+          }`}
+        >
+          <AtSign className="w-3.5 h-3.5" />
+        </button>
+
         <div className="relative flex-1 min-w-0">
           {filteredMentions.length > 0 && (
             <div
@@ -3900,11 +4000,8 @@ function CrewChatPanel({
               }
             }}
             placeholder={`Message ${activeChipLabel} as Rotty (@ mention · Shift+Enter newline)...`}
-            className="w-full pl-3 pr-7 py-2 rounded-xl text-xs bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent resize-none leading-snug max-h-28 overflow-y-auto ops-scroll"
+            className="w-full px-3 py-2 rounded-xl text-xs bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent resize-none leading-snug max-h-28 overflow-y-auto ops-scroll"
           />
-          <span className="absolute right-2 bottom-2 text-[9px] font-mono text-muted-foreground border border-border rounded px-1 pointer-events-none">
-            @
-          </span>
         </div>
         <button
           type="submit"

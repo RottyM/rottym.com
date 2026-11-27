@@ -263,3 +263,226 @@ body {
 .ops-shell .font-semibold {
   font-weight: 500;
 }
+
+/* Command Center understated live-action effects (edge laser sweep + calm aura + radar dot) */
+@keyframes opsTopBeamSweep {
+  0% {
+    transform: translateX(-110%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.95;
+  }
+  58% {
+    transform: translateX(120%);
+    opacity: 0.95;
+  }
+  65%,
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+@keyframes opsCardSheen {
+  0% {
+    transform: translateX(-130%) skewX(-18deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  42% {
+    transform: translateX(220%) skewX(-18deg);
+    opacity: 0.85;
+  }
+  48%,
+  100% {
+    transform: translateX(220%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes opsAuraBreathNew {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.22), 0 4px 14px -4px rgba(16, 185, 129, 0.16);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.42), 0 6px 20px -4px rgba(6, 182, 212, 0.28);
+  }
+}
+
+@keyframes opsAuraBreathUpdated {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.22), 0 4px 14px -4px rgba(245, 158, 11, 0.16);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.44), 0 6px 20px -4px rgba(245, 158, 11, 0.28);
+  }
+}
+
+@keyframes opsRadarRipple {
+  0% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  75%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.ops-alert-card-new,
+.ops-alert-card-updated {
+  position: relative;
+  overflow: hidden;
+}
+
+.ops-alert-card-new {
+  border-color: rgba(5, 150, 105, 0.65) !important;
+  background-color: rgba(16, 185, 129, 0.055) !important;
+  animation: opsAuraBreathNew 3.6s ease-in-out infinite;
+}
+
+[data-theme='dark'] .ops-alert-card-new {
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  background-color: rgba(16, 185, 129, 0.085) !important;
+}
+
+.ops-alert-card-updated {
+  border-color: rgba(217, 119, 6, 0.65) !important;
+  background-color: rgba(245, 158, 11, 0.055) !important;
+  animation: opsAuraBreathUpdated 3.6s ease-in-out infinite;
+}
+
+[data-theme='dark'] .ops-alert-card-updated {
+  border-color: rgba(251, 191, 36, 0.6) !important;
+  background-color: rgba(245, 158, 11, 0.085) !important;
+}
+
+.ops-alert-card-new::before,
+.ops-alert-card-updated::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 48%;
+  height: 2px;
+  pointer-events: none;
+  z-index: 2;
+  animation: opsTopBeamSweep 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.ops-alert-card-new::before {
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.9), rgba(6, 182, 212, 0.95), transparent);
+}
+
+.ops-alert-card-updated::before {
+  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.9), rgba(251, 191, 36, 0.95), transparent);
+}
+
+.ops-alert-card-new::after,
+.ops-alert-card-updated::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 36%;
+  pointer-events: none;
+  z-index: 1;
+  animation: opsCardSheen 5.2s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+.ops-alert-card-new::after {
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.09), transparent);
+}
+
+.ops-alert-card-updated::after {
+  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.09), transparent);
+}
+
+.ops-alert-tab-new,
+.ops-alert-tab-updated {
+  position: relative;
+  overflow: hidden;
+}
+
+.ops-alert-tab-new {
+  border-color: rgba(5, 150, 105, 0.72) !important;
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  color: #065f46 !important;
+  animation: opsAuraBreathNew 3.6s ease-in-out infinite;
+}
+
+[data-theme='dark'] .ops-alert-tab-new {
+  border-color: rgba(52, 211, 153, 0.72) !important;
+  background-color: rgba(16, 185, 129, 0.14) !important;
+  color: #a7f3d0 !important;
+}
+
+.ops-alert-tab-updated {
+  border-color: rgba(217, 119, 6, 0.72) !important;
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  color: #92400e !important;
+  animation: opsAuraBreathUpdated 3.6s ease-in-out infinite;
+}
+
+[data-theme='dark'] .ops-alert-tab-updated {
+  border-color: rgba(251, 191, 36, 0.72) !important;
+  background-color: rgba(245, 158, 11, 0.14) !important;
+  color: #fde68a !important;
+}
+
+.ops-alert-tab-new::after,
+.ops-alert-tab-updated::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 55%;
+  height: 1.5px;
+  pointer-events: none;
+  animation: opsTopBeamSweep 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.ops-alert-tab-new::after {
+  background: linear-gradient(90deg, transparent, #10b981, #22d3ee, transparent);
+}
+
+.ops-alert-tab-updated::after {
+  background: linear-gradient(90deg, transparent, #f59e0b, #fcd34d, transparent);
+}
+
+.ops-ping-dot-new,
+.ops-ping-dot-updated {
+  position: relative;
+}
+
+.ops-ping-dot-new {
+  background-color: #10b981;
+}
+
+.ops-ping-dot-updated {
+  background-color: #f59e0b;
+}
+
+.ops-ping-dot-new::after,
+.ops-ping-dot-updated::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  animation: opsRadarRipple 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.ops-ping-dot-new::after {
+  background-color: rgba(16, 185, 129, 0.65);
+}
+
+.ops-ping-dot-updated::after {
+  background-color: rgba(245, 158, 11, 0.65);
+}
