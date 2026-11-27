@@ -8,13 +8,23 @@ import {
 } from '@/lib/ops/auth';
 import {
   findUnknownFields,
+  formatPlatformShortLabel,
   getCardAssets,
   getPendingPlatforms,
+  inferAgentId,
+  isRateLimitErrorMessage,
   normalizePlatformKey,
   normalizePlatformList,
 } from '@/lib/ops/drop-parser';
 import { appendOpsActivity, opsGetDoc, opsSetDoc } from '@/lib/ops/firestore-rest';
-import type { PipelineCard, PipelineLinks, PlatformKey } from '@/lib/ops/types';
+import type {
+  ChatMessage,
+  ConnectorAlert,
+  CrewMember,
+  PipelineCard,
+  PipelineLinks,
+  PlatformKey,
+} from '@/lib/ops/types';
 
 const ALLOWED_POST_RESULT_FIELDS = new Set([
   'clientId',
@@ -39,6 +49,11 @@ const ALLOWED_POST_RESULT_FIELDS = new Set([
   'postedAssets',
   'assetIds',
   'error',
+  'rateLimited',
+  'caution',
+  'dailyCount',
+  'dailyLimit',
+  'resetAt',
 ]);
 
 function sanitizeUrl(raw: unknown): string | undefined {
@@ -96,6 +111,11 @@ export async function POST(
     postedAssets?: Partial<Record<PlatformKey, string[]>>;
     assetIds?: string[];
     error?: string;
+    rateLimited?: boolean;
+    caution?: boolean;
+    dailyCount?: number;
+    dailyLimit?: number;
+    resetAt?: string;
   };
   try {
     body = (await request.json()) as typeof body;
@@ -149,8 +169,12 @@ export async function POST(
     body.url ??
     body.link ??
     body.permalink;
+  const now = new Date().toISOString();
   const singleUrl = sanitizeUrl(rawSingleUrl);
   const nextLinks: PipelineLinks = { ...(existing.links || {}) };
+  const nextLinkPostedAt: Partial<Record<PlatformKey, string>> = {
+    ...(existing.linkPostedAt || {}),
+  };
   const touchedPlatforms = new Set<PlatformKey>();
 
   if (body.links && typeof body.links === 'object' && !Array.isArray(body.links)) {
@@ -159,6 +183,9 @@ export async function POST(
       if (!plat) continue;
       const cleanHref = sanitizeUrl(rawHref);
       if (cleanHref) {
+        if (nextLinks[plat] !== cleanHref || !nextLinkPostedAt[plat]) {
+          nextLinkPostedAt[plat] = now;
+        }
         nextLinks[plat] = cleanHref;
         touchedPlatforms.add(plat);
       }
@@ -175,6 +202,9 @@ export async function POST(
         : existing.channel === 'x'
           ? 'x'
           : 'fb');
+    if (nextLinks[resolvedPlat] !== singleUrl || !nextLinkPostedAt[resolvedPlat]) {
+      nextLinkPostedAt[resolvedPlat] = now;
+    }
     nextLinks[resolvedPlat] = singleUrl;
     touchedPlatforms.add(resolvedPlat);
   } else if (explicitPlatform) {
@@ -250,9 +280,31 @@ export async function POST(
   const pendingPlatforms = getPendingPlatforms(effectiveTargetPlatforms, nextLinks);
   const waitingOnMorePlatforms =
     ok && (body.partial === true || pendingPlatforms.length > 0);
+  const errorText = typeof body.error === 'string' ? body.error.trim() : '';
+  const isRateLimited =
+    body.rateLimited === true || (!ok && isRateLimitErrorMessage(errorText));
+  const dailyCount =
+    typeof body.dailyCount === 'number' && Number.isFinite(body.dailyCount) && body.dailyCount >= 0
+      ? Math.round(body.dailyCount)
+      : undefined;
+  const dailyLimit =
+    typeof body.dailyLimit === 'number' && Number.isFinite(body.dailyLimit) && body.dailyLimit > 0
+      ? Math.round(body.dailyLimit)
+      : undefined;
+  const resetAt =
+    typeof body.resetAt === 'string' && body.resetAt.trim()
+      ? body.resetAt.trim().slice(0, 80)
+      : undefined;
+  const isCaution =
+    ok &&
+    !isRateLimited &&
+    (body.caution === true ||
+      (dailyCount !== undefined && dailyLimit !== undefined && dailyCount >= dailyLimit));
 
   const nextStage = !ok
-    ? 'drafted'
+    ? isRateLimited
+      ? existing.stage
+      : 'drafted'
     : waitingOnMorePlatforms
       ? existing.stage === 'posted'
         ? 'posted'
@@ -270,14 +322,23 @@ export async function POST(
     ...existing,
     targetPlatforms: effectiveTargetPlatforms,
     stage: nextStage,
-    readyForRotty: !ok ? false : waitingOnMorePlatforms ? existing.readyForRotty : false,
+    readyForRotty: !ok
+      ? isRateLimited
+        ? existing.readyForRotty
+        : false
+      : waitingOnMorePlatforms
+        ? existing.readyForRotty
+        : false,
     postIt: !ok ? false : waitingOnMorePlatforms ? existing.postIt : false,
     claimedBy: undefined,
     leaseExpiresAt: undefined,
     links: Object.values(nextLinks).some(Boolean) ? nextLinks : undefined,
+    linkPostedAt: Object.keys(nextLinkPostedAt).length > 0 ? nextLinkPostedAt : undefined,
     postedAssets: Object.keys(nextPostedAssets).length > 0 ? nextPostedAssets : undefined,
     note: !ok
-      ? `Post failed (${botName}): ${(body.error || 'unknown error').slice(0, 140)}`
+      ? isRateLimited
+        ? `Daily limit hit (${botName}): ${(errorText || 'rate limit reached').slice(0, 140)}${resetAt ? ` · queued for ${resetAt}` : ''}`
+        : `Post failed (${botName}): ${(errorText || 'unknown error').slice(0, 140)}`
       : waitingOnMorePlatforms
         ? `Posted ${landedSummary || 'partial'} by ${botName}; awaiting: ${pendingPlatforms.join(', ')}`
         : singleUrl
@@ -285,15 +346,80 @@ export async function POST(
           : landedSummary
             ? `Posted ${landedSummary} by ${botName}`
             : `Posted by ${botName}`,
-    updatedAt: new Date().toISOString(),
+    updatedAt: now,
   };
 
   await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
+
+  let limitAlert: ConnectorAlert | undefined;
+  if (isRateLimited || isCaution) {
+    const inferredAlertPlat =
+      explicitPlatform ||
+      (pendingPlatforms.length === 1
+        ? pendingPlatforms[0]
+        : existing.channel === 'linkedin'
+          ? 'linkedin'
+          : existing.channel === 'x'
+            ? 'x'
+            : existing.lane === 'fb-ig'
+              ? 'ig'
+              : 'fb');
+    const platLabel = formatPlatformShortLabel(inferredAlertPlat);
+    const ratio =
+      dailyCount !== undefined && dailyLimit !== undefined
+        ? ` (${dailyCount}/${dailyLimit})`
+        : dailyCount !== undefined
+          ? ` (${dailyCount} today)`
+          : '';
+    const alertMsg =
+      errorText && isRateLimited
+        ? errorText.slice(0, 300)
+        : isRateLimited
+          ? `${platLabel} daily limit hit${ratio}${resetAt ? ` — queued remaining for ${resetAt}` : ''}`
+          : `${platLabel} caution line reached${ratio}${resetAt ? ` — holding ${platLabel} until ${resetAt}` : ' — holding remaining as pending'}`;
+    limitAlert = {
+      status: isRateLimited ? 'rate_limit' : 'caution',
+      platform: inferredAlertPlat,
+      count: dailyCount,
+      limit: dailyLimit,
+      resetAt,
+      message: alertMsg,
+      updatedAt: now,
+    };
+
+    const botAgentId = inferAgentId(botName);
+    const crewDoc = await opsGetDoc<CrewMember>('ops_crew', `${existing.clientId}__${botAgentId}`);
+    if (crewDoc) {
+      await opsSetDoc('ops_crew', crewDoc.id, {
+        ...crewDoc,
+        connectorAlert: limitAlert,
+        updatedAt: now,
+        updatedBy: botName,
+      } as unknown as Record<string, unknown>);
+    }
+
+    const chatAlert: ChatMessage = {
+      id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      clientId: existing.clientId,
+      senderId: botAgentId,
+      senderName: botName,
+      senderKind: 'bot',
+      text: `@Rotty ${isRateLimited ? 'DAILY LIMIT' : 'CAP CAUTION'} (${platLabel}): ${alertMsg} — on "${updated.title}".`,
+      mentions: ['rotty'],
+      jobId: updated.id,
+      jobTitle: updated.title,
+      createdAt: now,
+    };
+    await opsSetDoc('ops_chat', chatAlert.id, chatAlert as unknown as Record<string, unknown>);
+  }
+
   await appendOpsActivity(
     existing.clientId,
     botName,
     !ok
-      ? 'reported post failure'
+      ? isRateLimited
+        ? 'hit daily API limit'
+        : 'reported post failure'
       : waitingOnMorePlatforms
         ? `posted ${landedSummary || 'partial'} (awaiting ${pendingPlatforms.join(', ')})`
         : 'reported post live',
@@ -305,6 +431,9 @@ export async function POST(
       ok: true,
       partial: waitingOnMorePlatforms,
       pendingPlatforms,
+      rateLimited: isRateLimited,
+      caution: isCaution,
+      limitAlert,
       job: updated,
     },
     { status: 200, headers: { 'Cache-Control': 'no-store' } }

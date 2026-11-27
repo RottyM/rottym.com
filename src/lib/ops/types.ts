@@ -2,13 +2,22 @@ export type CrewSet = 'original' | 'new';
 
 export type AgentStatus = 'active' | 'stand_down' | 'on_hold' | 'out' | 'on_call';
 
-export type ConnectorAlertStatus = 'ok' | 'disconnected' | 'wrong_account' | 'error';
+export type ConnectorAlertStatus =
+  | 'ok'
+  | 'disconnected'
+  | 'wrong_account'
+  | 'error'
+  | 'rate_limit'
+  | 'caution';
 
 export interface ConnectorAlert {
   status: ConnectorAlertStatus;
   platform?: string;
   account?: string;
   expectedAccount?: string;
+  count?: number;
+  limit?: number;
+  resetAt?: string;
   message: string;
   updatedAt: string;
 }
@@ -212,6 +221,7 @@ export interface PipelineCard {
   postedAssets?: Partial<Record<PlatformKey, string[]>>;
   targetPlatforms?: PlatformKey[];
   links?: PipelineLinks;
+  linkPostedAt?: Partial<Record<PlatformKey, string>>;
   createdAt: string;
   updatedAt: string;
 }

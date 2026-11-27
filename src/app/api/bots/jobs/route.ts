@@ -18,6 +18,8 @@ import {
   getCardAssets,
   getCardCompleteness,
   getPendingPlatforms,
+  getTodayPublishedCounts,
+  IG_DAILY_CAUTION_THRESHOLD,
   inferAgentId,
   laneToChannel,
   normalizeAssignedTo,
@@ -299,6 +301,8 @@ export async function GET(request: Request) {
         pendingAssetCount: (migrated.assets || []).filter((a) => a.status !== 'approved').length,
         sourceUrl: migrated.sourceUrl || null,
         links: migrated.links || null,
+        targetPlatforms: migrated.targetPlatforms || [],
+        pendingPlatforms: getPendingPlatforms(migrated.targetPlatforms, migrated.links),
         discrepanciesCount: (migrated.discrepancies || []).length,
         artifactsNeededCount: (migrated.artifactsNeeded || []).length,
         jobDate: migrated.jobDate,
@@ -315,8 +319,16 @@ export async function GET(request: Request) {
     };
   });
 
+  const todayPublishedCounts = getTodayPublishedCounts(all, nowMs);
+
   return NextResponse.json(
-    { clientId, count: jobs.length, jobs },
+    {
+      clientId,
+      count: jobs.length,
+      todayPublishedCounts,
+      igCautionThreshold: IG_DAILY_CAUTION_THRESHOLD,
+      jobs,
+    },
     { status: 200, headers: NO_STORE_HEADERS }
   );
 }

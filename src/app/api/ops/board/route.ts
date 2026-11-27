@@ -652,6 +652,16 @@ export async function POST(request: Request) {
       ...(linksInput.linkedin !== undefined ? { linkedin: sanitizeUrl(linksInput.linkedin) } : {}),
       ...(linksInput.x !== undefined ? { x: sanitizeUrl(linksInput.x) } : {}),
     };
+    const nextLinkPostedAt: Partial<Record<PlatformKey, string>> = {
+      ...(existing.linkPostedAt || {}),
+    };
+    for (const k of ['fb', 'ig', 'linkedin', 'x'] as PlatformKey[]) {
+      if (mergedLinks[k] && (mergedLinks[k] !== existing.links?.[k] || !nextLinkPostedAt[k])) {
+        nextLinkPostedAt[k] = now;
+      } else if (!mergedLinks[k]) {
+        delete nextLinkPostedAt[k];
+      }
+    }
 
     const nextTargetPlatforms =
       body.targetPlatforms !== undefined
@@ -763,6 +773,7 @@ export async function POST(request: Request) {
           ? existing.approvedBy || user.name
           : existing.approvedBy,
       links: Object.values(mergedLinks).some(Boolean) ? mergedLinks : undefined,
+      linkPostedAt: Object.keys(nextLinkPostedAt).length > 0 ? nextLinkPostedAt : undefined,
       updatedAt: now,
     };
 

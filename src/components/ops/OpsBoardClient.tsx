@@ -66,7 +66,9 @@ import {
   getCardPublishedLinks,
   getEffectiveRequestStatus,
   getPendingPlatforms,
+  getTodayPublishedCounts,
   getUpdateAlertMeta,
+  IG_DAILY_CAUTION_THRESHOLD,
   resolveAvatarRenderUrl,
   splitTextWithUrls,
   type UpdateAlertKind,
@@ -732,14 +734,40 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         needsAsset += 1;
       }
     }
-    const crewAlerts = crew.filter((c) => c.connectorAlert && c.connectorAlert.status !== 'ok').length;
+    const crewAlerts = crew.filter(
+      (c) =>
+        c.connectorAlert &&
+        c.connectorAlert.status !== 'ok' &&
+        c.connectorAlert.status !== 'caution'
+    ).length;
+    const hasAnyCrewAlert = crew.some(
+      (c) => c.connectorAlert && c.connectorAlert.status !== 'ok'
+    );
     return {
       inFlight,
       needsAsset,
       blocked: rejectedAssets + crewAlerts,
-      hasCrewAlert: crewAlerts > 0,
+      hasCrewAlert: hasAnyCrewAlert,
     };
   }, [pipeline, crew]);
+
+  const todayPublishedCounts = useMemo(
+    () => getTodayPublishedCounts(pipeline, nowMs),
+    [pipeline, nowMs]
+  );
+
+  const igCrewAlert = useMemo(
+    () =>
+      crew.find(
+        (c) =>
+          c.connectorAlert &&
+          c.connectorAlert.status !== 'ok' &&
+          (!c.connectorAlert.platform ||
+            c.connectorAlert.platform.toLowerCase() === 'ig' ||
+            c.connectorAlert.platform.toLowerCase() === 'instagram')
+      )?.connectorAlert,
+    [crew]
+  );
 
   const filteredPipeline = useMemo(
     () =>
@@ -1197,6 +1225,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                 const dotCls = STATUS_DOT[m.status] || STATUS_DOT.active;
                 const crewAlert = getUpdateAlertMeta(highlightKinds.get(m.id));
                 const hasConnAlert = Boolean(m.connectorAlert && m.connectorAlert.status !== 'ok');
+                const isCautionOnly = m.connectorAlert?.status === 'caution';
                 const hb = crewHeartbeat.byId.get(m.id);
                 const isStale = Boolean(hb?.isStale && !hasConnAlert);
                 const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
@@ -1221,12 +1250,16 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       inMenu
                         ? `w-full px-2.5 py-1.5 flex items-center justify-between gap-2 text-left text-[11px] transition-colors ${
                             hasConnAlert
-                              ? 'bg-red-500/10 text-red-700 dark:text-red-300'
+                              ? isCautionOnly
+                                ? 'bg-amber-500/10 text-amber-800 dark:text-amber-200'
+                                : 'bg-red-500/10 text-red-700 dark:text-red-300'
                               : 'hover:bg-muted/60 text-foreground/90'
                           }`
                         : `inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-lg border text-[11px] font-medium transition-all duration-500 ${
                             hasConnAlert
-                              ? 'border-red-500/70 bg-red-500/15 text-red-700 dark:text-red-300'
+                              ? isCautionOnly
+                                ? 'border-amber-500/70 bg-amber-500/15 text-amber-800 dark:text-amber-200'
+                                : 'border-red-500/70 bg-red-500/15 text-red-700 dark:text-red-300'
                               : crewAlert
                                 ? crewAlert.cardBorderCls
                                 : isStale
@@ -1345,6 +1378,26 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   </div>
 
                   <div className="hidden sm:flex items-center gap-2 pl-2.5 ml-auto border-l border-border/80 text-[11px] font-mono text-muted-foreground shrink-0">
+                    <span
+                      title={`Published today (ET) — FB: ${todayPublishedCounts.fb} · IG: ${todayPublishedCounts.ig}/${IG_DAILY_CAUTION_THRESHOLD} caution · X: ${todayPublishedCounts.x} · LI: ${todayPublishedCounts.linkedin}`}
+                    >
+                      IG Today:{' '}
+                      <span
+                        className={`font-medium ${
+                          igCrewAlert?.status === 'rate_limit'
+                            ? 'text-red-600 dark:text-red-400'
+                            : todayPublishedCounts.ig >= IG_DAILY_CAUTION_THRESHOLD ||
+                                igCrewAlert?.status === 'caution'
+                              ? 'text-amber-600 dark:text-amber-400'
+                              : todayPublishedCounts.ig >= 12
+                                ? 'text-amber-600 dark:text-amber-400'
+                                : 'text-foreground'
+                        }`}
+                      >
+                        {todayPublishedCounts.ig}/{IG_DAILY_CAUTION_THRESHOLD}
+                      </span>
+                    </span>
+                    <span className="text-border">·</span>
                     <span>
                       In Flight:{' '}
                       <span className="text-foreground font-medium">{rosterSummaryStats.inFlight}</span>
@@ -1383,26 +1436,82 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             .filter((m) => m.connectorAlert && m.connectorAlert.status !== 'ok')
             .map((m) => {
               const alert = m.connectorAlert!;
+              const isCaution = alert.status === 'caution';
               const statusLabel =
                 alert.status === 'wrong_account'
                   ? 'WRONG ACCOUNT'
                   : alert.status === 'disconnected'
                     ? 'DISCONNECTED'
-                    : 'CONNECTOR ERROR';
+                    : alert.status === 'rate_limit'
+                      ? 'DAILY LIMIT'
+                      : alert.status === 'caution'
+                        ? 'CAP CAUTION'
+                        : 'CONNECTOR ERROR';
+              const alertTime = alert.updatedAt
+                ? new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'America/New_York',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  }).format(new Date(alert.updatedAt))
+                : '';
               return (
                 <section
                   key={`conn-alert-${m.id}`}
                   role="alert"
-                  className="rounded-xl border border-red-500/60 bg-red-500/15 px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs text-red-900 dark:text-red-100"
+                  className={`rounded-xl border px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs ${
+                    isCaution
+                      ? 'border-amber-500/60 bg-amber-500/15 text-amber-900 dark:text-amber-100'
+                      : 'border-red-500/60 bg-red-500/15 text-red-900 dark:text-red-100'
+                  }`}
                 >
                   <div className="flex flex-wrap items-center gap-2 min-w-0">
-                    <ShieldAlert className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
-                    <span className="px-1.5 py-0.5 rounded bg-red-600 text-white font-mono text-[10px] font-medium uppercase">
+                    <ShieldAlert
+                      className={`w-4 h-4 shrink-0 ${
+                        isCaution
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}
+                    />
+                    <span
+                      className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-medium uppercase text-white ${
+                        isCaution ? 'bg-amber-600' : 'bg-red-600'
+                      }`}
+                    >
                       {statusLabel}
                     </span>
                     {alert.platform && (
-                      <span className="px-1.5 py-0.5 rounded border border-red-500/40 bg-red-500/10 font-mono text-[10px] uppercase">
+                      <span
+                        className={`px-1.5 py-0.5 rounded border font-mono text-[10px] uppercase ${
+                          isCaution
+                            ? 'border-amber-500/45 bg-amber-500/10'
+                            : 'border-red-500/40 bg-red-500/10'
+                        }`}
+                      >
                         {alert.platform}
+                      </span>
+                    )}
+                    {alert.count !== undefined && (
+                      <span
+                        className={`px-1.5 py-0.5 rounded border font-mono text-[10px] ${
+                          isCaution
+                            ? 'border-amber-500/45 bg-amber-500/10'
+                            : 'border-red-500/40 bg-red-500/10'
+                        }`}
+                      >
+                        {alert.limit !== undefined
+                          ? `${alert.count}/${alert.limit}`
+                          : `${alert.count} today`}
+                      </span>
+                    )}
+                    {alert.resetAt && (
+                      <span
+                        className={`px-1.5 py-0.5 rounded border font-mono text-[10px] ${
+                          isCaution
+                            ? 'border-amber-500/45 bg-amber-500/10'
+                            : 'border-red-500/40 bg-red-500/10'
+                        }`}
+                      >
+                        Resets {alert.resetAt}
                       </span>
                     )}
                     <span className="font-medium">{m.name}:</span>
@@ -1414,6 +1523,9 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                         {alert.expectedAccount ? `expected: ${alert.expectedAccount}` : ''})
                       </span>
                     )}
+                    {alertTime && (
+                      <span className="font-mono text-[10px] opacity-75">· {alertTime} ET</span>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -1421,10 +1533,14 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                     onClick={() =>
                       postAction(
                         { action: 'update_crew', agentId: m.agentId, connectorAlert: null },
-                        `Cleared connector alert for ${m.name}`
+                        `Cleared alert for ${m.name}`
                       )
                     }
-                    className="px-2.5 py-1 rounded-md text-[11px] font-mono font-normal border border-red-500/50 bg-background/80 hover:bg-background text-red-700 dark:text-red-300 disabled:opacity-50 shrink-0"
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-normal border bg-background/80 hover:bg-background disabled:opacity-50 shrink-0 ${
+                      isCaution
+                        ? 'border-amber-500/50 text-amber-800 dark:text-amber-200'
+                        : 'border-red-500/50 text-red-700 dark:text-red-300'
+                    }`}
                   >
                     Clear Alert
                   </button>

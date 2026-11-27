@@ -1547,6 +1547,35 @@ export function todayEasternYmd(nowMs = Date.now()): string {
   }
 }
 
+export const IG_DAILY_CAUTION_THRESHOLD = 15;
+
+export function getTodayPublishedCounts(
+  pipeline: Array<Pick<PipelineCard, 'links' | 'linkPostedAt' | 'updatedAt'>>,
+  nowMs = Date.now()
+): Record<PlatformKey, number> {
+  const today = todayEasternYmd(nowMs);
+  const counts: Record<PlatformKey, number> = { fb: 0, ig: 0, linkedin: 0, x: 0 };
+  const keys: PlatformKey[] = ['fb', 'ig', 'linkedin', 'x'];
+  for (const card of pipeline) {
+    if (!card.links) continue;
+    for (const k of keys) {
+      if (!card.links[k]) continue;
+      const rawTs = card.linkPostedAt?.[k] || card.updatedAt;
+      if (!rawTs) continue;
+      const parsedMs = Date.parse(rawTs);
+      const ymd = Number.isFinite(parsedMs) ? todayEasternYmd(parsedMs) : rawTs.slice(0, 10);
+      if (ymd === today) counts[k] += 1;
+    }
+  }
+  return counts;
+}
+
+export function isRateLimitErrorMessage(raw: string): boolean {
+  return /(?:rate.?limit|daily.?(?:limit|cap|quota)|publishing.?limit|limit\s*(?:reached|hit|exceeded)|cap\s*(?:hit|reached)|too\s+many\s+requests|\b429\b)/i.test(
+    raw
+  );
+}
+
 export function normalizeRelevantUntil(raw: unknown): string | undefined {
   if (typeof raw !== 'string' || !raw.trim()) return undefined;
   const trimmed = raw.trim();
@@ -2503,7 +2532,11 @@ export function parseConnectorAlert(
       ? 'wrong_account'
       : lower.includes('disconnect') || lower.includes('logged out') || lower.includes('dropped')
         ? 'disconnected'
-        : 'error';
+        : isRateLimitErrorMessage(lower)
+          ? 'rate_limit'
+          : lower.includes('caution') || lower.includes('near limit')
+            ? 'caution'
+            : 'error';
     return {
       ok: true,
       value: { status, message: msg, updatedAt: now },
@@ -2512,7 +2545,8 @@ export function parseConnectorAlert(
   if (typeof raw !== 'object' || Array.isArray(raw)) {
     return {
       ok: false,
-      error: 'connectorAlert must be null, a message string, or { status, platform?, account?, expectedAccount?, message }.',
+      error:
+        'connectorAlert must be null, a message string, or { status, platform?, account?, expectedAccount?, count?, limit?, resetAt?, message }.',
     };
   }
 
@@ -2522,11 +2556,24 @@ export function parseConnectorAlert(
     return { ok: true, value: undefined };
   }
   const status: ConnectorAlertStatus =
-    rawStatus === 'wrong_account' || rawStatus === 'disconnected' || rawStatus === 'error'
+    rawStatus === 'wrong_account' ||
+    rawStatus === 'disconnected' ||
+    rawStatus === 'error' ||
+    rawStatus === 'rate_limit' ||
+    rawStatus === 'caution'
       ? rawStatus
-      : rawStatus
-        ? 'error'
-        : 'disconnected';
+      : rawStatus === 'rate_limited' ||
+          rawStatus === 'daily_limit' ||
+          rawStatus === 'limit' ||
+          rawStatus === 'cap' ||
+          rawStatus === 'quota' ||
+          rawStatus === '429'
+        ? 'rate_limit'
+        : rawStatus === 'near_limit' || rawStatus === 'warning'
+          ? 'caution'
+          : rawStatus
+            ? 'error'
+            : 'disconnected';
 
   let platform: string | undefined;
   if (obj.platform !== undefined && obj.platform !== null && obj.platform !== '') {
@@ -2546,6 +2593,20 @@ export function parseConnectorAlert(
     if (!eCheck.ok) return eCheck;
     expectedAccount = eCheck.value || undefined;
   }
+  let count: number | undefined;
+  if (typeof obj.count === 'number' && Number.isFinite(obj.count) && obj.count >= 0) {
+    count = Math.round(obj.count);
+  }
+  let limit: number | undefined;
+  if (typeof obj.limit === 'number' && Number.isFinite(obj.limit) && obj.limit > 0) {
+    limit = Math.round(obj.limit);
+  }
+  let resetAt: string | undefined;
+  if (obj.resetAt !== undefined && obj.resetAt !== null && obj.resetAt !== '') {
+    const rCheck = validateStringLength('connectorAlert.resetAt', obj.resetAt, 80);
+    if (!rCheck.ok) return rCheck;
+    resetAt = rCheck.value || undefined;
+  }
 
   let message = '';
   if (obj.message !== undefined && obj.message !== null) {
@@ -2555,12 +2616,22 @@ export function parseConnectorAlert(
   }
   if (!message) {
     const target = platform ? platform.toUpperCase() : 'Connector';
+    const ratio =
+      count !== undefined && limit !== undefined
+        ? ` (${count}/${limit})`
+        : count !== undefined
+          ? ` (count: ${count})`
+          : '';
     message =
       status === 'wrong_account'
         ? `${target} landed on wrong account${account ? ` (${account})` : ''}${expectedAccount ? ` — expected ${expectedAccount}` : ''}`
         : status === 'disconnected'
           ? `${target} disconnected — reconnect required`
-          : `${target} connection error`;
+          : status === 'rate_limit'
+            ? `${target} daily limit reached${ratio}${resetAt ? ` — resets ${resetAt}` : ''}`
+            : status === 'caution'
+              ? `${target} approaching daily cap${ratio}${resetAt ? ` — holding until ${resetAt}` : ''}`
+              : `${target} connection error`;
   }
 
   return {
@@ -2570,6 +2641,9 @@ export function parseConnectorAlert(
       platform,
       account,
       expectedAccount,
+      count,
+      limit,
+      resetAt,
       message,
       updatedAt: now,
     },
