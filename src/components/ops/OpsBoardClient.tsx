@@ -664,6 +664,57 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
     return postCount + reqCount;
   }, [pipeline, requests, nowMs]);
 
+  const crewHeartbeat = useMemo(() => {
+    const STALE_MS = 60 * 60 * 1000;
+    const chatLatestByAgent = new Map<string, number>();
+    for (const msg of chat) {
+      const ts = msg.createdAt ? new Date(msg.createdAt).getTime() : 0;
+      if (!Number.isFinite(ts) || ts <= 0) continue;
+      const sid = msg.senderId.toLowerCase().replace(/[^a-z0-9]+/g, '');
+      const prev = chatLatestByAgent.get(sid) || 0;
+      if (ts > prev) chatLatestByAgent.set(sid, ts);
+    }
+
+    const formatAge = (ms: number): string => {
+      const mins = Math.max(0, Math.floor(ms / 60000));
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${mins}m`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h`;
+      return `${Math.floor(hrs / 24)}d`;
+    };
+
+    const byId = new Map<
+      string,
+      { lastSeenMs: number | null; ageLabel: string; isStale: boolean }
+    >();
+    const staleNames: string[] = [];
+
+    for (const m of crew) {
+      const candidates: number[] = [];
+      for (const rawTs of [m.updatedAt, m.lastChatReadAt]) {
+        if (rawTs) {
+          const parsed = new Date(rawTs).getTime();
+          if (Number.isFinite(parsed) && parsed > 0) candidates.push(parsed);
+        }
+      }
+      const normId = m.agentId.toLowerCase().replace(/[^a-z0-9]+/g, '');
+      const chatTs = chatLatestByAgent.get(normId);
+      if (chatTs) candidates.push(chatTs);
+
+      const lastSeenMs = candidates.length > 0 ? Math.max(...candidates) : null;
+      const ageMs = lastSeenMs !== null ? Math.max(0, nowMs - lastSeenMs) : Number.POSITIVE_INFINITY;
+      const expectsHeartbeat = m.status === 'active' && normId !== 'antigravity';
+      const isStale = expectsHeartbeat && ageMs >= STALE_MS;
+      const ageLabel = lastSeenMs !== null ? formatAge(ageMs) : 'no ping';
+
+      byId.set(m.id, { lastSeenMs, ageLabel, isStale });
+      if (isStale) staleNames.push(`${m.name} (${ageLabel})`);
+    }
+
+    return { byId, staleCount: staleNames.length, staleNames };
+  }, [crew, chat, nowMs]);
+
   const rosterSummaryStats = useMemo(() => {
     let inFlight = 0;
     let needsAsset = 0;
@@ -1037,26 +1088,41 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   type="button"
                   aria-expanded={crewExpanded}
                   onClick={toggleCrewExpanded}
-                  title={crewExpanded ? 'Collapse crew roster pills' : 'Expand full crew roster pills'}
+                  title={
+                    crewHeartbeat.staleCount > 0
+                      ? `Stale (>60m without check-in): ${crewHeartbeat.staleNames.join(', ')}`
+                      : crewExpanded
+                        ? 'Collapse crew roster pills'
+                        : 'Expand full crew roster pills'
+                  }
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-mono transition-colors shrink-0 ${
                     rosterSummaryStats.hasCrewAlert
                       ? 'border-red-500/60 bg-red-500/15 text-red-700 dark:text-red-300'
-                      : crewExpanded
-                        ? 'border-accent/55 bg-accent/10 text-foreground'
-                        : 'border-border bg-background/70 hover:border-accent/60 text-foreground'
+                      : crewHeartbeat.staleCount > 0
+                        ? 'border-amber-500/45 bg-amber-500/10 text-foreground hover:border-amber-500/70'
+                        : crewExpanded
+                          ? 'border-accent/55 bg-accent/10 text-foreground'
+                          : 'border-border bg-background/70 hover:border-accent/60 text-foreground'
                   }`}
                 >
                   <span
                     className={`w-2 h-2 rounded-full shrink-0 ${
                       rosterSummaryStats.hasCrewAlert
                         ? 'bg-red-500 animate-pulse'
-                        : 'bg-emerald-500'
+                        : crewHeartbeat.staleCount > 0
+                          ? 'bg-amber-400'
+                          : 'bg-emerald-500'
                     }`}
                   />
                   <span>Crew</span>
                   <span className="px-1.5 py-0 rounded bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/35 text-[10px] font-normal">
                     {activeCrewCount}/{crew.length}
                   </span>
+                  {crewHeartbeat.staleCount > 0 && (
+                    <span className="text-[10px] text-amber-600 dark:text-amber-400">
+                      · {crewHeartbeat.staleCount} stale
+                    </span>
+                  )}
                   {crewExpanded ? (
                     <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                   ) : (
@@ -1070,10 +1136,13 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       const dotCls = STATUS_DOT[m.status] || STATUS_DOT.active;
                       const crewAlert = getUpdateAlertMeta(highlightKinds.get(m.id));
                       const hasConnAlert = Boolean(m.connectorAlert && m.connectorAlert.status !== 'ok');
+                      const hb = crewHeartbeat.byId.get(m.id);
+                      const isStale = Boolean(hb?.isStale && !hasConnAlert);
                       const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
                       const tip = [
                         m.name,
                         `${m.role} · ${m.model}`,
+                        hb ? `Last check-in: ${hb.ageLabel}` : undefined,
                         hasConnAlert ? `ALERT: ${m.connectorAlert?.message}` : m.statusNote,
                       ]
                         .filter(Boolean)
@@ -1089,15 +1158,28 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                               ? 'border-red-500/70 bg-red-500/15 text-red-700 dark:text-red-300'
                               : crewAlert
                                 ? crewAlert.cardBorderCls
-                                : 'border-border bg-background/70 hover:border-accent/60'
+                                : isStale
+                                  ? 'border-amber-500/45 bg-amber-500/[0.06] hover:border-amber-500/70'
+                                  : 'border-border bg-background/70 hover:border-accent/60'
                           }`}
                         >
                           <CrewPillAvatar
                             name={m.name}
                             src={avatarSrc}
-                            dotCls={hasConnAlert ? 'bg-red-500 animate-pulse' : dotCls}
+                            dotCls={
+                              hasConnAlert
+                                ? 'bg-red-500 animate-pulse'
+                                : isStale
+                                  ? 'bg-amber-400'
+                                  : dotCls
+                            }
                           />
                           <span className="truncate max-w-[90px]">{m.name}</span>
+                          {isStale && hb && (
+                            <span className="text-[9px] font-mono font-normal text-amber-600 dark:text-amber-400">
+                              {hb.ageLabel}
+                            </span>
+                          )}
                         </button>
                       );
                     })}

@@ -1158,8 +1158,23 @@ function CrewEditorForm({
         </div>
         <div className="text-[11px] text-muted-foreground min-w-0">
           {member ? (
-            <div className="font-mono">
-              Agent ID: <span className="text-foreground">{member.agentId}</span>
+            <div className="font-mono flex flex-wrap items-center gap-x-2">
+              <span>
+                Agent ID: <span className="text-foreground">{member.agentId}</span>
+              </span>
+              {(member.lastChatReadAt || member.updatedAt) && (
+                <span>
+                  · Last ping:{' '}
+                  <span className="text-foreground">
+                    {new Date(
+                      member.lastChatReadAt &&
+                      member.lastChatReadAt > member.updatedAt
+                        ? member.lastChatReadAt
+                        : member.updatedAt
+                    ).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </span>
+              )}
             </div>
           ) : (
             <div>New crew profile card</div>
