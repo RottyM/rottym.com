@@ -968,108 +968,152 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   return (
     <div className="min-h-screen bg-background text-foreground pb-12 overflow-x-clip">
       {/* Top Ops Bar */}
-      <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
-        <div className="max-w-[1440px] mx-auto px-3 sm:px-5 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md">
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-5 py-2 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <Link href="/ops" className="flex items-center gap-2.5 min-w-0">
-              <OpsBrandMark size={30} />
-              <div className="min-w-0">
-                <div className="text-sm font-medium tracking-tight truncate">
-                  {activeClient?.name || 'RottyM Command Center'}
-                </div>
-                <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-2 truncate">
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-accent" />
-                    {etClock || 'ET'}
-                  </span>
-                  <span aria-hidden="true">·</span>
-                  <span className={syncLive ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
-                    {syncLive ? 'Live Firestore Sync' : 'Auto-Sync (4s)'}
-                  </span>
-                </div>
-              </div>
+            <Link href="/ops" className="shrink-0" title="RottyM Command Center">
+              <OpsBrandMark size={28} />
             </Link>
+            <div className="min-w-0 flex flex-col">
+              <div className="flex items-center gap-2 min-w-0">
+                {clients.length > 1 ? (
+                  <label className="inline-flex items-center gap-1 min-w-0">
+                    <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
+                    <select
+                      aria-label="Select client workspace"
+                      value={activeClientId}
+                      onChange={(e) => setActiveClientId(e.target.value)}
+                      className="bg-transparent text-sm font-medium tracking-tight text-foreground focus:outline-none cursor-pointer truncate max-w-[200px]"
+                    >
+                      {clients.map((c) => (
+                        <option key={c.id} value={c.id} className="bg-card text-foreground">
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : (
+                  <Link
+                    href="/ops"
+                    className="text-sm font-medium tracking-tight text-foreground hover:text-accent transition-colors truncate"
+                  >
+                    {activeClient?.name || 'RottyM Command Center'}
+                  </Link>
+                )}
+                <span
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] font-mono shrink-0 ${
+                    syncLive
+                      ? 'border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                      : 'border-amber-500/35 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      syncLive ? 'bg-emerald-500' : 'bg-amber-500'
+                    }`}
+                  />
+                  {syncLive ? 'Live' : '4s Sync'}
+                </span>
+              </div>
+              <div className="text-[10px] font-mono text-muted-foreground inline-flex items-center gap-1.5 truncate">
+                <Clock className="w-2.5 h-2.5 text-accent/80 shrink-0" />
+                <span className="truncate">{etClock || 'ET'}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {clients.length > 0 && (
-              <label className="inline-flex items-center gap-1.5 text-xs">
-                <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
-                <select
-                  aria-label="Select client workspace"
-                  value={activeClientId}
-                  onChange={(e) => setActiveClientId(e.target.value)}
-                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-card border border-border text-foreground max-w-[190px]"
-                >
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {/* Quick Operator Actions */}
+            <div className="inline-flex items-center rounded-lg border border-border bg-card/70 p-0.5 gap-0.5">
+              <button
+                type="button"
+                onClick={() => setModal({ type: 'desk_paste' })}
+                className="inline-flex items-center gap-1 h-6 px-2 rounded-md text-[11px] font-medium text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/15 transition-colors"
+                title="Open Quick Desk Paste"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>Desk Paste</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyPendingForMarley}
+                className="inline-flex items-center gap-1 h-6 px-2 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
+                title="Copy pending queue summary for Marley"
+              >
+                <Copy className="w-3 h-3 text-accent" />
+                <span className="hidden sm:inline">Copy for Marley</span>
+              </button>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setModal({ type: 'desk_paste' })}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:opacity-90"
+            {/* Segmented Mode Switcher */}
+            <nav
+              aria-label="Operations view mode"
+              className="inline-flex items-center rounded-lg border border-border bg-card/70 p-0.5 gap-0.5"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Desk Paste
-            </button>
+              <Link
+                href="/ops"
+                className={`inline-flex items-center h-6 px-2 rounded-md text-[11px] font-medium transition-colors ${
+                  mode === 'board'
+                    ? 'bg-accent/15 text-accent border border-accent/30'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+                }`}
+              >
+                Board
+              </Link>
+              <Link
+                href="/ops/desk"
+                className={`inline-flex items-center gap-1 h-6 px-2 rounded-md text-[11px] font-medium transition-colors ${
+                  mode === 'desk'
+                    ? 'bg-accent/15 text-accent border border-accent/30'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+                }`}
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>AI Desk</span>
+              </Link>
+              <Link
+                href="/ops/admin"
+                className={`inline-flex items-center gap-1 h-6 px-2 rounded-md text-[11px] font-medium transition-colors ${
+                  mode === 'admin'
+                    ? 'bg-accent/15 text-accent border border-accent/30'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+                }`}
+              >
+                <Settings className="w-3 h-3" />
+                <span>Admin</span>
+              </Link>
+            </nav>
 
-            <button
-              type="button"
-              onClick={handleCopyPendingForMarley}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-border bg-card hover:border-accent"
-            >
-              <Copy className="w-3.5 h-3.5 text-accent" />
-              Copy for Marley
-            </button>
-
-            <Link
-              href={mode === 'desk' ? '/ops' : '/ops/desk'}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-border bg-card hover:border-accent"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-accent" />
-              {mode === 'desk' ? 'Board' : 'AI Desk'}
-            </Link>
-
-            <Link
-              href={mode === 'admin' ? '/ops' : '/ops/admin'}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-border bg-card hover:border-accent"
-            >
-              <Settings className="w-3.5 h-3.5 text-accent" />
-              {mode === 'admin' ? 'Board' : 'Admin'}
-            </Link>
-
-            <button
-              type="button"
-              aria-label="Refresh board now"
-              onClick={() => loadBoardViaApi()}
-              className="p-1.5 rounded-lg border border-border bg-card hover:border-accent text-muted-foreground hover:text-foreground"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              aria-label="Toggle theme"
-              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="p-1.5 rounded-lg border border-border bg-card hover:border-accent"
-            >
-              {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            <button
-              type="button"
-              aria-label="Sign out"
-              onClick={() => signOutOps()}
-              className="p-1.5 rounded-lg border border-border bg-card hover:border-red-500/50 text-muted-foreground hover:text-red-500"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            {/* Compact System Utility Capsule */}
+            <div className="inline-flex items-center rounded-lg border border-border bg-card/70 divide-x divide-border/70 overflow-hidden">
+              <button
+                type="button"
+                aria-label="Refresh board now"
+                title="Refresh board now"
+                onClick={() => loadBoardViaApi()}
+                className="h-7 w-7 inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                aria-label="Toggle theme"
+                title="Toggle light/dark theme"
+                onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+                className="h-7 w-7 inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                {resolvedTheme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+              </button>
+              <button
+                type="button"
+                aria-label="Sign out"
+                title="Sign out"
+                onClick={() => signOutOps()}
+                className="h-7 w-7 inline-flex items-center justify-center text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
