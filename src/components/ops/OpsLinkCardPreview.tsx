@@ -81,7 +81,7 @@ export function OpsLinkCardPreview({
   className = '',
 }: {
   url: string;
-  variant?: 'card' | 'thumb';
+  variant?: 'card' | 'horizontal' | 'thumb';
   compact?: boolean;
   className?: string;
 }) {
@@ -132,6 +132,51 @@ export function OpsLinkCardPreview({
       >
         <Globe className="w-3.5 h-3.5 shrink-0" />
       </div>
+    );
+  }
+
+  if (variant === 'horizontal') {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`flex flex-col sm:flex-row items-stretch rounded-lg border border-border bg-card overflow-hidden hover:border-accent/60 transition-colors group ${className}`}
+      >
+        {imageSrc && (
+          <div className="w-full h-28 sm:w-40 sm:h-auto sm:min-h-[84px] sm:max-h-24 shrink-0 overflow-hidden bg-muted/40 border-b sm:border-b-0 sm:border-r border-border/70">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageSrc}
+              alt={preview?.title || domainFallback}
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
+              onError={() => setBrokenImageUrl(imageSrc)}
+            />
+          </div>
+        )}
+        <div className="flex-1 min-w-0 p-2.5 flex flex-col justify-center gap-1">
+          <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-muted-foreground">
+            <span className="inline-flex items-center gap-1 truncate">
+              <Link2 className="w-3 h-3 shrink-0 text-sky-600 dark:text-sky-400" />
+              <span className="truncate">
+                {preview?.siteName || preview?.domain || domainFallback}
+              </span>
+            </span>
+            <ExternalLink className="w-3 h-3 shrink-0 opacity-70 group-hover:text-accent" />
+          </div>
+          <div className="text-xs font-medium text-foreground line-clamp-1 leading-snug">
+            {isLoading
+              ? `Resolving link card (${domainFallback})...`
+              : preview?.title || url}
+          </div>
+          {preview?.description && (
+            <div className="text-[11px] text-muted-foreground line-clamp-2 leading-snug">
+              {preview.description}
+            </div>
+          )}
+        </div>
+      </a>
     );
   }
 

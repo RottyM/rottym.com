@@ -602,7 +602,7 @@ export default function OpsDecisionDesk({
           )}
         </div>
       ) : (
-        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[270px_minmax(0,1fr)] gap-3">
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[290px_minmax(0,1fr)] gap-3">
           {/* Inbox List */}
           <div className="min-h-0 overflow-y-auto overscroll-contain [overflow-anchor:none] ops-scroll pr-1 space-y-1.5 max-h-64 lg:max-h-none">
             {items.map((item) => {
@@ -718,7 +718,7 @@ export default function OpsDecisionDesk({
                       onMarkSeen?.(card.id);
                     }
                   }}
-                  className={`w-full text-left rounded-lg border p-2.5 transition-all duration-300 space-y-1 cursor-pointer ${
+                  className={`w-full text-left rounded-lg border p-2 transition-all duration-300 space-y-1 cursor-pointer ${
                     cardAlert
                       ? cardAlert.cardBorderCls
                       : selected
@@ -728,8 +728,8 @@ export default function OpsDecisionDesk({
                           : 'border-border bg-background/60 hover:border-accent/50'
                   }`}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-1 text-[10px] font-mono">
-                    <div className="flex flex-wrap items-center gap-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1 text-[10px] font-mono min-w-0">
+                    <div className="flex items-center gap-1 min-w-0 overflow-hidden">
                       {cardAlert ? (
                         <span className={`px-1 py-0 rounded border shrink-0 text-[9px] ${cardAlert.badgeCls}`}>
                           {cardAlert.label}
@@ -742,12 +742,14 @@ export default function OpsDecisionDesk({
                       <span className="px-1.5 py-0.2 rounded bg-muted text-foreground uppercase shrink-0">
                         {card.lane}
                       </span>
-                      <span className="px-1.5 py-0.2 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium shrink-0">
+                      <span className="px-1.5 py-0.2 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium truncate">
                         {fmt.primary}{fmt.secondary ? ` · ${fmt.secondary}` : ''}
                       </span>
-                      <span className={`px-1.5 py-0.2 rounded border shrink-0 ${badge.cls}`}>
-                        {badge.label}
-                      </span>
+                      {tab === 'all' && (
+                        <span className={`px-1.5 py-0.2 rounded border shrink-0 ${badge.cls}`}>
+                          {badge.label}
+                        </span>
+                      )}
                       {Boolean(card.artifactsNeeded?.length) && (
                         <span title={`Artifacts needed: ${card.artifactsNeeded?.join(', ')}`}>
                           <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
@@ -759,17 +761,17 @@ export default function OpsDecisionDesk({
                     )}
                   </div>
 
-                  <div className="flex items-start justify-between gap-2.5">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="text-xs font-medium text-foreground line-clamp-2 leading-snug">
                         {card.title}
                       </div>
 
-                      <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-muted-foreground">
-                        <span className="inline-flex items-center gap-1 truncate">
+                      <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono text-muted-foreground min-w-0">
+                        <span className="inline-flex items-center gap-1 min-w-0 truncate">
                           {cardAssets.length > 0 ? (
                             <span
-                              className={`inline-flex items-center gap-1 ${
+                              className={`inline-flex items-center gap-1 truncate ${
                                 hasRejected
                                   ? 'text-red-600 dark:text-red-400 font-medium'
                                   : hasDelivered
@@ -783,26 +785,26 @@ export default function OpsDecisionDesk({
                             >
                               <ImageIcon className="w-2.5 h-2.5 shrink-0" />
                               {hasRejected
-                                ? 'Asset rejected'
+                                ? 'Rejected'
                                 : hasDelivered
                                   ? `Review (${cardAssets.filter((a) => a.status === 'delivered').length})`
                                   : completeness.canApproveReady
-                                    ? `Assets ready (${cardAssets.length})`
+                                    ? `Ready (${cardAssets.length})`
                                     : hasNeeded
-                                      ? 'Asset needed'
+                                      ? 'Needed'
                                       : `${cardAssets.length} ${cardAssets.length === 1 ? 'asset' : 'assets'}`}
                             </span>
                           ) : completeness.assetState === 'not_needed' ? (
-                            <span className="text-sky-700 dark:text-sky-300">
-                              {listArticleUrl ? 'Link card · No photo' : 'No image needed'}
+                            <span className="text-sky-700 dark:text-sky-300 truncate">
+                              {listArticleUrl ? 'Link · Text-only' : 'No image'}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-0.5 text-amber-700 dark:text-amber-300">
-                              <AlertTriangle className="w-2.5 h-2.5" /> Asset missing
+                            <span className="inline-flex items-center gap-0.5 text-amber-700 dark:text-amber-300 truncate">
+                              <AlertTriangle className="w-2.5 h-2.5 shrink-0" /> Missing
                             </span>
                           )}
                         </span>
-                        <span className="truncate">
+                        <span className="shrink-0">
                           {card.agentId} · {card.updatedAt?.slice(11, 16) || card.jobDate || ''}
                         </span>
                       </div>
@@ -859,7 +861,7 @@ export default function OpsDecisionDesk({
               }`}
             >
               {/* Reader Header + Navigation */}
-              <div className="px-3.5 py-2.5 border-b border-border/80 flex flex-wrap items-start justify-between gap-2 bg-card/50 shrink-0">
+              <div className="px-3.5 py-2 border-b border-border/80 flex flex-wrap items-start justify-between gap-2 bg-card/50 shrink-0">
                 <div className="min-w-0 flex-1 space-y-1">
                   {(() => {
                     const fmt = getCardFormatBadges(selectedCard);
@@ -902,29 +904,9 @@ export default function OpsDecisionDesk({
                         <span className={`px-1.5 py-0.5 rounded border ${stageBadge(selectedCard).cls}`}>
                           {stageBadge(selectedCard).label}
                         </span>
-                        <span
-                          className={`px-1.5 py-0.5 rounded border ${
-                            assetStateBadge(selectedCompleteness.assetState).cls
-                          }`}
-                        >
-                          {assetStateBadge(selectedCompleteness.assetState).label}
-                        </span>
                         {selectedCard.verdictTag && (
                           <span className="px-1.5 py-0.5 rounded border border-border bg-card text-foreground uppercase">
                             {selectedCard.verdictTag}
-                          </span>
-                        )}
-                        <span className="text-muted-foreground font-mono">
-                          By {selectedCard.agentId}
-                        </span>
-                        {selectedCard.marleyReviewedBy && (
-                          <span className="text-muted-foreground font-mono">
-                            · Cleared by {selectedCard.marleyReviewedBy}
-                          </span>
-                        )}
-                        {selectedCard.assignedTo && (
-                          <span className="px-1.5 py-0.5 rounded border border-accent/35 bg-accent/10 text-accent">
-                            → {selectedCard.assignedTo}
                           </span>
                         )}
                         {selectedCard.stage === 'posted' &&
@@ -936,17 +918,22 @@ export default function OpsDecisionDesk({
                               Stale note
                             </span>
                           )}
-                        {selectedCard.eventDate && (
-                          <span className="text-muted-foreground">
-                            {isEventCard(selectedCard) ? 'Event' : 'Date'}: {selectedCard.eventDate}
-                          </span>
-                        )}
                       </div>
                     );
                   })()}
                   <h3 className="text-sm font-medium text-foreground leading-snug">
                     {selectedCard.title}
                   </h3>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-mono text-muted-foreground">
+                    <span>By {selectedCard.agentId}</span>
+                    {selectedCard.marleyReviewedBy && <span>· Cleared by {selectedCard.marleyReviewedBy}</span>}
+                    {selectedCard.eventDate && (
+                      <span>· {isEventCard(selectedCard) ? 'Event' : 'Date'}: {selectedCard.eventDate}</span>
+                    )}
+                    {selectedCard.assignedTo && (
+                      <span className="text-accent">· → {selectedCard.assignedTo}</span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
@@ -975,7 +962,7 @@ export default function OpsDecisionDesk({
               </div>
 
               {/* Scrollable Full Draft + Image + Source */}
-              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain [overflow-anchor:none] ops-scroll p-3.5 space-y-3.5">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain [overflow-anchor:none] ops-scroll p-3 space-y-2.5">
                 {/* Published Post Live Links (prominent at top of details) */}
                 {(selectedCard.stage === 'posted' || selectedPublishedLinks.length > 0) && (
                   <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
@@ -1398,46 +1385,40 @@ export default function OpsDecisionDesk({
                       )}
                     </div>
                   ) : selectedCompleteness.noImageNeeded ? (
-                    <div className="p-3 bg-sky-500/5 space-y-2.5">
-                      <div className="text-xs text-sky-700 dark:text-sky-300 text-center">
-                        <span className="font-medium">Text-only post (no image)</span>
-                        {selectedCard.noImageNeededBy ? ` — marked by ${selectedCard.noImageNeededBy}` : ''}.{' '}
-                        {selectedCard.stage !== 'posted' && selectedCard.stage !== 'archived' && (
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={() => onSetNoImageNeeded(selectedCard, false)}
-                            className="underline font-mono ml-1 hover:opacity-80 disabled:opacity-50"
-                          >
-                            Require photo instead
-                          </button>
-                        )}
-                      </div>
+                    <div className="p-2.5 bg-sky-500/5 space-y-2">
                       {(() => {
                         const articleUrl = extractPrimaryArticleUrl(selectedCard);
-                        return articleUrl ? (
-                          <div className="space-y-1 max-w-lg mx-auto">
-                            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                              Article Card Preview (as unfurled on X / FB / LinkedIn)
+                        return (
+                          <>
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-sky-700 dark:text-sky-300">
+                              <span>
+                                <span className="font-medium">Text-only post (no image)</span>
+                                {selectedCard.noImageNeededBy ? ` — marked by ${selectedCard.noImageNeededBy}` : ''}
+                              </span>
+                              {articleUrl && (
+                                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                                  Article Preview (X / FB / LI)
+                                </span>
+                              )}
                             </div>
-                            <OpsLinkCardPreview url={articleUrl} variant="card" />
-                          </div>
-                        ) : null;
+                            {articleUrl && <OpsLinkCardPreview url={articleUrl} variant="horizontal" />}
+                          </>
+                        );
                       })()}
                     </div>
                   ) : (
-                    <div className="px-3 py-3 text-xs text-amber-700 dark:text-amber-300 bg-amber-500/5 space-y-2.5">
+                    <div className="p-2.5 text-xs text-amber-700 dark:text-amber-300 bg-amber-500/5 space-y-2">
                       <div className="text-center">
                         Asset missing{selectedCard.assetSpec ? ` (${selectedCard.assetSpec})` : ''} — assign a bot below, attach an asset, or set &ldquo;No image needed&rdquo;.
                       </div>
                       {(() => {
                         const articleUrl = extractPrimaryArticleUrl(selectedCard);
                         return articleUrl ? (
-                          <div className="space-y-1 max-w-lg mx-auto text-left">
+                          <div className="space-y-1 text-left">
                             <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
                               Article Card Preview (from link)
                             </div>
-                            <OpsLinkCardPreview url={articleUrl} variant="card" />
+                            <OpsLinkCardPreview url={articleUrl} variant="horizontal" />
                           </div>
                         ) : null;
                       })()}
@@ -1784,7 +1765,7 @@ export default function OpsDecisionDesk({
               </div>
 
               {/* Sticky Decision Action Bar */}
-              <div className="px-3.5 py-2.5 border-t border-border bg-card/80 flex flex-wrap items-center justify-between gap-2 shrink-0">
+              <div className="px-3.5 py-2 border-t border-border bg-card/80 flex flex-wrap items-center justify-between gap-2 shrink-0">
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
