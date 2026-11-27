@@ -257,6 +257,9 @@ function CardEditorForm({
   const [uploadingAssetId, setUploadingAssetId] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [artifactsNeededText, setArtifactsNeededText] = useState((card.artifactsNeeded || []).join('\n'));
+  const [discrepancies, setDiscrepancies] = useState<string[]>(card.discrepancies || []);
+  const [unverifiedClaims, setUnverifiedClaims] = useState<string[]>(card.unverifiedClaims || []);
+  const [flaggedNotes, setFlaggedNotes] = useState<string[]>(card.flaggedNotes || []);
   const [noImageNeeded, setNoImageNeeded] = useState(
     card.photoStatus === 'not_needed' && initialAssets.length === 0
   );
@@ -384,6 +387,9 @@ function CardEditorForm({
       assetUrl: synced.assetUrl || '',
       assetSpec: synced.assetSpec || '',
       artifactsNeeded,
+      discrepancies,
+      unverifiedClaims,
+      flaggedNotes,
       photoStatus: effectivePhotoStatus,
       note,
       draftCopy,
@@ -414,26 +420,88 @@ function CardEditorForm({
         </div>
       )}
 
-      {(card.discrepancies?.length || card.unverifiedClaims?.length || card.artifactsNeeded?.length || card.flaggedNotes?.length) ? (
-        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs space-y-1">
-          <div className="font-medium text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-            Flags &amp; Requirements
+      {(() => {
+        const artifactLines = artifactsNeededText
+          .split(/\r?\n/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const flagGroups = [
+          {
+            key: 'discrepancies',
+            prefix: 'Discrepancy: ',
+            items: discrepancies,
+            clearItem: (idx: number) =>
+              setDiscrepancies((prev) => prev.filter((_, itemIdx) => itemIdx !== idx)),
+          },
+          {
+            key: 'unverifiedClaims',
+            prefix: 'Unverified claim: ',
+            items: unverifiedClaims,
+            clearItem: (idx: number) =>
+              setUnverifiedClaims((prev) => prev.filter((_, itemIdx) => itemIdx !== idx)),
+          },
+          {
+            key: 'artifactsNeeded',
+            prefix: 'Artifact needed: ',
+            items: artifactLines,
+            clearItem: (idx: number) =>
+              setArtifactsNeededText(
+                artifactLines.filter((_, itemIdx) => itemIdx !== idx).join('\n')
+              ),
+          },
+          {
+            key: 'flaggedNotes',
+            prefix: '',
+            items: flaggedNotes,
+            clearItem: (idx: number) =>
+              setFlaggedNotes((prev) => prev.filter((_, itemIdx) => itemIdx !== idx)),
+          },
+        ].filter((g) => g.items.length > 0);
+        if (flagGroups.length === 0) return null;
+        return (
+          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="font-medium text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                Flags &amp; Requirements
+              </div>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setDiscrepancies([]);
+                  setUnverifiedClaims([]);
+                  setArtifactsNeededText('');
+                  setFlaggedNotes([]);
+                }}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-amber-500/45 bg-background/80 hover:bg-amber-500/20 text-[10px] font-mono text-amber-800 dark:text-amber-200 disabled:opacity-50"
+              >
+                <X className="w-2.5 h-2.5" />
+                Clear all
+              </button>
+            </div>
+            {flagGroups.map((group) =>
+              group.items.map((entry, idx) => (
+                <div key={`${group.key}-${idx}`} className="flex items-start justify-between gap-2">
+                  <p className="text-foreground/90 min-w-0 break-words">
+                    • {group.prefix}
+                    {entry}
+                  </p>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => group.clearItem(idx)}
+                    className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-amber-500/35 bg-background/70 hover:bg-amber-500/20 text-[10px] font-mono text-amber-800 dark:text-amber-200 disabled:opacity-50"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                    Clear
+                  </button>
+                </div>
+              ))
+            )}
           </div>
-          {card.discrepancies?.map((d, i) => (
-            <p key={`d-${i}`} className="text-foreground/90">• Discrepancy: {d}</p>
-          ))}
-          {card.unverifiedClaims?.map((c, i) => (
-            <p key={`c-${i}`} className="text-foreground/90">• Unverified claim: {c}</p>
-          ))}
-          {card.artifactsNeeded?.map((a, i) => (
-            <p key={`a-${i}`} className="text-foreground/90">• Artifact needed: {a}</p>
-          ))}
-          {card.flaggedNotes?.map((f, i) => (
-            <p key={`f-${i}`} className="text-foreground/90">• {f}</p>
-          ))}
-        </div>
-      ) : null}
+        );
+      })()}
 
       <div className="rounded-lg border border-border bg-background/70 overflow-hidden">
         <div className="px-3 py-1.5 border-b border-border/70 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">

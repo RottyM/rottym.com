@@ -29,6 +29,7 @@ import {
   Sun,
   Trash2,
   Users,
+  X,
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import {
@@ -778,6 +779,52 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
     }
   };
 
+  const approveCardAssets = async (card: PipelineCard) => {
+    const pending = getCardAssets(card).filter(
+      (a) => a.status !== 'approved' && Boolean(a.url?.trim() || a.file?.trim())
+    );
+    if (pending.length === 0) return;
+    setBusy(true);
+    try {
+      for (const asset of pending) {
+        await authorizedFetch('/api/ops/board', {
+          method: 'POST',
+          body: JSON.stringify({
+            clientId: activeClientId,
+            action: 'asset_update',
+            id: card.id,
+            assetId: asset.id,
+            patch: { status: 'approved' },
+          }),
+        });
+      }
+      await loadBoardViaApi();
+      showToast(
+        pending.length === 1
+          ? `Approved asset on: ${card.title}`
+          : `Approved ${pending.length} assets on: ${card.title}`
+      );
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Asset approval failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const clearCardFlags = async (card: PipelineCard) => {
+    await postAction(
+      {
+        action: 'update_card',
+        id: card.id,
+        discrepancies: [],
+        unverifiedClaims: [],
+        artifactsNeeded: [],
+        flaggedNotes: [],
+      },
+      `Cleared all flags on: ${card.title}`
+    );
+  };
+
   const handleCopyPendingForMarley = async () => {
     const pending = pipeline.filter((p) => p.stage === 'pulled' || p.marleyStatus === 'pending');
     const text =
@@ -1379,6 +1426,12 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       `Killed (archived): ${card.title}`
                     );
                   }}
+                  onClearFlags={async (card, patch, label) => {
+                    await postAction(
+                      { action: 'update_card', id: card.id, ...patch },
+                      label || `Cleared flags on: ${card.title}`
+                    );
+                  }}
                   onUpdateAsset={async (card, assetId, patch) => {
                     await postAction(
                       { action: 'asset_update', id: card.id, assetId, patch },
@@ -1620,6 +1673,8 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                                       `Cancelled Post it: ${card.title}`
                                     )
                                   }
+                                  onApproveAssets={() => approveCardAssets(card)}
+                                  onClearFlags={() => clearCardFlags(card)}
                                   onPreviewAsset={(asset) => setLightboxAsset(asset)}
                                   onReorderAssets={async (assetIds) => {
                                     await postAction(
@@ -1663,6 +1718,8 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                             `Cancelled Post it: ${card.title}`
                           )
                         }
+                        onApproveAssets={() => approveCardAssets(card)}
+                        onClearFlags={() => clearCardFlags(card)}
                         onPreviewAsset={(asset) => setLightboxAsset(asset)}
                         onReorderAssets={async (assetIds) => {
                           await postAction(
@@ -1917,6 +1974,8 @@ function PipelineCardTile({
   onReadyForRotty,
   onPostIt,
   onCancelPostIt,
+  onApproveAssets,
+  onClearFlags,
   onPreviewAsset,
   onReorderAssets,
 }: {
@@ -1928,6 +1987,8 @@ function PipelineCardTile({
   onReadyForRotty: () => void;
   onPostIt: () => void;
   onCancelPostIt: () => void;
+  onApproveAssets?: () => Promise<void> | void;
+  onClearFlags?: () => Promise<void> | void;
   onPreviewAsset?: (asset: JobAsset) => void;
   onReorderAssets?: (assetIds: string[]) => Promise<void> | void;
 }) {
@@ -1940,6 +2001,16 @@ function PipelineCardTile({
   ].filter((x): x is { label: string; href: string } => Boolean(x));
 
   const cardAssets = getCardAssets(card);
+  const pendingApprovalAssets = cardAssets.filter(
+    (a) => a.status !== 'approved' && Boolean(a.url?.trim() || a.file?.trim())
+  );
+  const hasCardFlags = Boolean(
+    card.discrepancies?.length ||
+      card.unverifiedClaims?.length ||
+      card.artifactsNeeded?.length ||
+      card.flaggedNotes?.length
+  );
+  const canQuickModify = card.stage !== 'posted' && card.stage !== 'archived';
   const completeness = getCardCompleteness(card);
   const isReady =
     card.stage === 'approved' &&
@@ -2190,54 +2261,82 @@ function PipelineCardTile({
             ))}
         </div>
 
-        {isReady ? (
-          !card.postIt ? (
+        <div className="flex flex-wrap items-center gap-1">
+          {canQuickModify && onClearFlags && hasCardFlags && (
             <button
               type="button"
               disabled={busy}
-              onClick={onPostIt}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-normal bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors"
+              onClick={onClearFlags}
+              title="Clear all flags and requirements on this card"
+              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium border border-amber-500/45 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 disabled:opacity-50"
             >
-              <Send className="w-2.5 h-2.5" />
-              Post it
+              <X className="w-2.5 h-2.5" />
+              Clear flags
             </button>
-          ) : hasActiveClaim ? (
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono border border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-              Claimed · {card.claimedBy}
-            </span>
-          ) : (
+          )}
+          {canQuickModify && onApproveAssets && pendingApprovalAssets.length > 0 && (
             <button
               type="button"
               disabled={busy}
-              onClick={onCancelPostIt}
-              title="Un-click Post it (available until a bot claims it)"
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border border-amber-500/45 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10 disabled:opacity-50 transition-colors"
-            >
-              Cancel Post it
-            </button>
-          )
-        ) : isApprovedQueue ? (
-          <span
-            className="px-1.5 py-0.5 rounded text-[10px] font-mono border border-violet-500/35 bg-violet-500/10 text-violet-700 dark:text-violet-300"
-            title={completeness.detail || 'Crew completing assets and Mark Ready'}
-          >
-            {completeness.canApproveReady ? 'Crew Mark Ready' : 'Crew finishing'}
-          </span>
-        ) : (
-          card.stage !== 'posted' &&
-          card.stage !== 'archived' && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={onReadyForRotty}
-              title="Approve draft and send to Crew Queue"
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border border-accent/40 text-accent hover:bg-accent/10 disabled:opacity-50"
+              onClick={onApproveAssets}
+              title="Approve attached visual asset(s)"
+              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium border border-cyan-500/45 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20 disabled:opacity-50"
             >
               <Check className="w-2.5 h-2.5" />
-              Approve
+              {pendingApprovalAssets.length === 1
+                ? 'Approve asset'
+                : `Approve assets (${pendingApprovalAssets.length})`}
             </button>
-          )
-        )}
+          )}
+          {isReady ? (
+            !card.postIt ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={onPostIt}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-normal bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors"
+              >
+                <Send className="w-2.5 h-2.5" />
+                Post it
+              </button>
+            ) : hasActiveClaim ? (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono border border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                Claimed · {card.claimedBy}
+              </span>
+            ) : (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={onCancelPostIt}
+                title="Un-click Post it (available until a bot claims it)"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border border-amber-500/45 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10 disabled:opacity-50 transition-colors"
+              >
+                Cancel Post it
+              </button>
+            )
+          ) : isApprovedQueue ? (
+            <span
+              className="px-1.5 py-0.5 rounded text-[10px] font-mono border border-violet-500/35 bg-violet-500/10 text-violet-700 dark:text-violet-300"
+              title={completeness.detail || 'Crew completing assets and Mark Ready'}
+            >
+              {completeness.canApproveReady ? 'Crew Mark Ready' : 'Crew finishing'}
+            </span>
+          ) : (
+            card.stage !== 'posted' &&
+            card.stage !== 'archived' && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={onReadyForRotty}
+                title="Approve draft and send to Crew Queue"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border border-accent/40 text-accent hover:bg-accent/10 disabled:opacity-50"
+              >
+                <Check className="w-2.5 h-2.5" />
+                Approve
+              </button>
+            )
+          )}
+        </div>
       </div>
     </div>
   );

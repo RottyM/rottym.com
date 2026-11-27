@@ -654,6 +654,18 @@ export async function POST(request: Request) {
 
     const explicitArtifacts =
       body.artifactsNeeded !== undefined ? cleanBotStringList(body.artifactsNeeded) : undefined;
+    const nextDiscrepancies =
+      body.discrepancies !== undefined
+        ? cleanBotStringList(body.discrepancies) || []
+        : existing.discrepancies;
+    const nextUnverifiedClaims =
+      body.unverifiedClaims !== undefined
+        ? cleanBotStringList(body.unverifiedClaims) || []
+        : existing.unverifiedClaims;
+    const nextFlaggedNotes =
+      body.flaggedNotes !== undefined
+        ? cleanBotStringList(body.flaggedNotes) || []
+        : existing.flaggedNotes;
 
     const nextPostFormat =
       body.postFormat === null || body.postFormat === ''
@@ -690,6 +702,9 @@ export async function POST(request: Request) {
         effectiveAssetSpec,
         Boolean(effectiveAssetFile || effectiveAssetUrl || isNoImageException)
       ),
+      discrepancies: nextDiscrepancies,
+      unverifiedClaims: nextUnverifiedClaims,
+      flaggedNotes: nextFlaggedNotes,
       note: refreshStaleCardNote(nextNote, nextStage),
       draftCopy: nextDraftCopy,
       marleyStatus:
@@ -741,6 +756,16 @@ export async function POST(request: Request) {
       };
       await opsSetDoc('ops_chat', pingMsg.id, pingMsg as unknown as Record<string, unknown>);
     }
+    const prevFlagCount =
+      (existing.discrepancies?.length || 0) +
+      (existing.unverifiedClaims?.length || 0) +
+      (existing.artifactsNeeded?.length || 0) +
+      (existing.flaggedNotes?.length || 0);
+    const nextFlagCount =
+      (updated.discrepancies?.length || 0) +
+      (updated.unverifiedClaims?.length || 0) +
+      (updated.artifactsNeeded?.length || 0) +
+      (updated.flaggedNotes?.length || 0);
     const logAction = demotedReady
       ? `returned to Approved crew queue (${completeness.buttonReason || 'incomplete'})`
       : readyForRotty && !existing.readyForRotty
@@ -753,7 +778,11 @@ export async function POST(request: Request) {
               ? 'marked no image needed'
               : assignmentChanged
                 ? `assigned to ${updated.assignedTo}`
-                : `updated card (${updated.stage})`;
+                : prevFlagCount > nextFlagCount
+                  ? nextFlagCount === 0
+                    ? 'cleared all flags'
+                    : 'cleared flag'
+                  : `updated card (${updated.stage})`;
     await appendOpsActivity(clientId, user.name, logAction, updated.title);
     return NextResponse.json({ ok: true, card: updated }, { status: 200 });
   }

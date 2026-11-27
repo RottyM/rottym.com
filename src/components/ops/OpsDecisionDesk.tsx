@@ -15,6 +15,7 @@ import {
   Inbox,
   Pencil,
   Send,
+  X,
 } from 'lucide-react';
 import {
   extractDriveFileId,
@@ -227,6 +228,7 @@ export default function OpsDecisionDesk({
   onPostIt,
   onCancelPostIt,
   onKillCard,
+  onClearFlags,
   onDecideRequest,
   onToast,
 }: {
@@ -256,6 +258,16 @@ export default function OpsDecisionDesk({
   onPostIt: (card: PipelineCard) => Promise<void>;
   onCancelPostIt: (card: PipelineCard) => Promise<void>;
   onKillCard: (card: PipelineCard) => Promise<void>;
+  onClearFlags?: (
+    card: PipelineCard,
+    patch: {
+      discrepancies?: string[];
+      unverifiedClaims?: string[];
+      artifactsNeeded?: string[];
+      flaggedNotes?: string[];
+    },
+    label?: string
+  ) => Promise<void>;
   onDecideRequest: (req: OpsRequest, decision: string, label: string) => Promise<void>;
   onToast: (msg: string) => void;
 }) {
@@ -390,6 +402,25 @@ export default function OpsDecisionDesk({
   const selectedActiveClaim = Boolean(
     selectedCard?.claimedBy &&
       (!selectedCard.leaseExpiresAt || new Date(selectedCard.leaseExpiresAt).getTime() > nowMs)
+  );
+  const selectedPendingAssets = selectedCardAssets.filter(
+    (a) => a.status !== 'approved' && Boolean(a.url?.trim() || a.file?.trim())
+  );
+  const selectedFlagGroups: Array<{
+    field: 'discrepancies' | 'unverifiedClaims' | 'artifactsNeeded' | 'flaggedNotes';
+    prefix: string;
+    items: string[];
+  }> = selectedCard
+    ? [
+        { field: 'discrepancies' as const, prefix: 'Discrepancy: ', items: selectedCard.discrepancies || [] },
+        { field: 'unverifiedClaims' as const, prefix: 'Unverified claim: ', items: selectedCard.unverifiedClaims || [] },
+        { field: 'artifactsNeeded' as const, prefix: 'Artifact needed: ', items: selectedCard.artifactsNeeded || [] },
+        { field: 'flaggedNotes' as const, prefix: '', items: selectedCard.flaggedNotes || [] },
+      ].filter((g) => g.items.length > 0)
+    : [];
+  const selectedHasFlags = selectedFlagGroups.length > 0;
+  const selectedCanEdit = Boolean(
+    selectedCard && selectedCard.stage !== 'posted' && selectedCard.stage !== 'archived'
   );
 
   const linkList = selectedCard
@@ -1613,27 +1644,69 @@ export default function OpsDecisionDesk({
                     </div>
                   )}
 
-                  {(selectedCard.discrepancies?.length ||
-                    selectedCard.unverifiedClaims?.length ||
-                    selectedCard.artifactsNeeded?.length ||
-                    selectedCard.flaggedNotes?.length) ? (
-                    <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-[11px] space-y-1">
-                      <div className="font-medium text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                        Flags &amp; Requirements
+                  {selectedHasFlags ? (
+                    <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-[11px] space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-medium text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                          Flags &amp; Requirements
+                        </div>
+                        {onClearFlags && selectedCanEdit && (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() =>
+                              onClearFlags(
+                                selectedCard,
+                                {
+                                  discrepancies: [],
+                                  unverifiedClaims: [],
+                                  artifactsNeeded: [],
+                                  flaggedNotes: [],
+                                },
+                                `Cleared all flags on: ${selectedCard.title}`
+                              )
+                            }
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-amber-500/45 bg-background/80 hover:bg-amber-500/20 text-[10px] font-mono text-amber-800 dark:text-amber-200 disabled:opacity-50"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                            Clear all
+                          </button>
+                        )}
                       </div>
-                      {selectedCard.discrepancies?.map((d, i) => (
-                        <p key={`d-${i}`}>• Discrepancy: {d}</p>
-                      ))}
-                      {selectedCard.unverifiedClaims?.map((c, i) => (
-                        <p key={`c-${i}`}>• Unverified claim: {c}</p>
-                      ))}
-                      {selectedCard.artifactsNeeded?.map((a, i) => (
-                        <p key={`a-${i}`}>• Artifact needed: {a}</p>
-                      ))}
-                      {selectedCard.flaggedNotes?.map((f, i) => (
-                        <p key={`f-${i}`}>• {f}</p>
-                      ))}
+                      {selectedFlagGroups.map((group) =>
+                        group.items.map((entry, idx) => (
+                          <div
+                            key={`${group.field}-${idx}`}
+                            className="flex items-start justify-between gap-2"
+                          >
+                            <p className="min-w-0 break-words">
+                              • {group.prefix}
+                              {entry}
+                            </p>
+                            {onClearFlags && selectedCanEdit && (
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() =>
+                                  onClearFlags(
+                                    selectedCard,
+                                    {
+                                      [group.field]: group.items.filter((_, itemIdx) => itemIdx !== idx),
+                                    },
+                                    `Cleared flag on: ${selectedCard.title}`
+                                  )
+                                }
+                                title="Clear this flag"
+                                className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-amber-500/35 bg-background/70 hover:bg-amber-500/20 text-[10px] font-mono text-amber-800 dark:text-amber-200 disabled:opacity-50"
+                              >
+                                <X className="w-2.5 h-2.5" />
+                                Clear
+                              </button>
+                            )}
+                          </div>
+                        ))
+                      )}
                     </div>
                   ) : null}
 
@@ -1744,6 +1817,53 @@ export default function OpsDecisionDesk({
                       Kill
                     </button>
                   )}
+                  {onClearFlags && selectedHasFlags && selectedCanEdit && (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        onClearFlags(
+                          selectedCard,
+                          {
+                            discrepancies: [],
+                            unverifiedClaims: [],
+                            artifactsNeeded: [],
+                            flaggedNotes: [],
+                          },
+                          `Cleared all flags on: ${selectedCard.title}`
+                        )
+                      }
+                      title="Clear all flags and requirements on this card"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-amber-500/45 bg-amber-500/10 text-amber-800 dark:text-amber-200 hover:bg-amber-500/20 disabled:opacity-50"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      Clear flags
+                    </button>
+                  )}
+                  {selectedPendingAssets.length > 0 &&
+                    selectedCanEdit &&
+                    !(
+                      selectedCard.stage === 'approved' &&
+                      !selectedIsReady &&
+                      selectedCompleteness.lockReason === 'needs_asset_approval'
+                    ) && (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={async () => {
+                          for (const a of selectedPendingAssets) {
+                            await onUpdateAsset(selectedCard, a.id, { status: 'approved' });
+                          }
+                        }}
+                        title="Approve attached visual asset(s) on this card"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-cyan-500/45 bg-cyan-500/10 text-cyan-800 dark:text-cyan-200 hover:bg-cyan-500/20 disabled:opacity-50"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        {selectedPendingAssets.length === 1
+                          ? 'Approve asset'
+                          : `Approve assets (${selectedPendingAssets.length})`}
+                      </button>
+                    )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -1851,31 +1971,24 @@ export default function OpsDecisionDesk({
                       </div>
                     ) : selectedCompleteness.lockReason === 'needs_asset_approval' ? (
                       <div className="flex flex-wrap items-center gap-2">
-                        {(() => {
-                          const pendingAssets = selectedCardAssets.filter(
-                            (a) => a.status !== 'approved' && Boolean(a.url?.trim() || a.file?.trim())
-                          );
-                          return (
-                            pendingAssets.length > 0 && (
-                              <button
-                                type="button"
-                                disabled={busy}
-                                onClick={async () => {
-                                  for (const a of pendingAssets) {
-                                    await onUpdateAsset(selectedCard, a.id, { status: 'approved' });
-                                  }
-                                }}
-                                title="Approve delivered visual asset(s) so this card moves to Ready for Post it"
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono border border-cyan-500/45 bg-cyan-500/10 text-cyan-800 dark:text-cyan-200 hover:bg-cyan-500/20 disabled:opacity-50"
-                              >
-                                <Check className="w-3.5 h-3.5" />
-                                {pendingAssets.length === 1
-                                  ? 'Approve asset'
-                                  : `Approve assets (${pendingAssets.length})`}
-                              </button>
-                            )
-                          );
-                        })()}
+                        {selectedPendingAssets.length > 0 && (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={async () => {
+                              for (const a of selectedPendingAssets) {
+                                await onUpdateAsset(selectedCard, a.id, { status: 'approved' });
+                              }
+                            }}
+                            title="Approve delivered visual asset(s) so this card moves to Ready for Post it"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono border border-cyan-500/45 bg-cyan-500/10 text-cyan-800 dark:text-cyan-200 hover:bg-cyan-500/20 disabled:opacity-50"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            {selectedPendingAssets.length === 1
+                              ? 'Approve asset'
+                              : `Approve assets (${selectedPendingAssets.length})`}
+                          </button>
+                        )}
                         <button
                           type="button"
                           disabled={busy}
