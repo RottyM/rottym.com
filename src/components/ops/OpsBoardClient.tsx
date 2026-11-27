@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import {
@@ -2675,6 +2675,7 @@ function CrewChatPanel({
   const [targetMention, setTargetMention] = useState<string>('all');
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [showJumpLatest, setShowJumpLatest] = useState(false);
+  const [chatReady, setChatReady] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleLimit, setVisibleLimit] = useState(60);
@@ -2724,15 +2725,18 @@ function CrewChatPanel({
 
   const lastMessageId = visibleMessages[visibleMessages.length - 1]?.id || '';
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = scrollContainerRef.current;
     if (!el || visibleMessages.length === 0) return;
 
     if (!initializedScrollRef.current) {
+      el.style.scrollBehavior = 'auto';
       el.scrollTop = el.scrollHeight;
+      el.style.scrollBehavior = '';
       initializedScrollRef.current = true;
       stickToBottomRef.current = true;
-      return;
+      const rafId = requestAnimationFrame(() => setChatReady(true));
+      return () => cancelAnimationFrame(rafId);
     }
 
     if (forceScrollRef.current || stickToBottomRef.current) {
@@ -3341,7 +3345,9 @@ function CrewChatPanel({
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className="h-full overflow-y-auto overscroll-contain [overflow-anchor:none] scroll-auto ops-scroll px-2.5 py-2 space-y-2"
+          className={`h-full overflow-y-auto overscroll-contain [overflow-anchor:none] scroll-auto ops-scroll px-2.5 py-2 space-y-2 transition-opacity duration-300 ease-out ${
+            visibleMessages.length > 0 && !chatReady ? 'opacity-0' : 'opacity-100'
+          }`}
         >
           {hiddenCount > 0 && (
             <div className="flex justify-center pb-1">
