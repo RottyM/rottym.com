@@ -1399,13 +1399,11 @@ function htmlClipboardToDeskText(html: string): string | null {
       }
       if (tag === 'a') {
         const href = el.getAttribute('href') || '';
+        if (href && href.includes('images.openai.com')) {
+          return '';
+        }
         const text = (el.textContent || '').replace(/\s*↗\s*/g, '').replace(/\s+/g, ' ').trim();
-        if (
-          href &&
-          /^https?:\/\//i.test(href) &&
-          !href.includes('images.openai.com') &&
-          text
-        ) {
+        if (href && /^https?:\/\//i.test(href) && text) {
           return `[${text}](${href})`;
         }
         return text;
@@ -1773,13 +1771,31 @@ function DeskPasteForm({
 
       {pdfImages.length > 0 && (
         <div className="rounded-lg border border-border bg-background/70 p-2.5 space-y-2">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-[11px] font-mono text-foreground">
               Extracted PDF Photos ({pdfImages.length})
             </span>
-            <span className="text-[10px] text-muted-foreground">
-              Assign any photo below to attach it to a landed card
-            </span>
+            <div className="flex items-center gap-2">
+              {previewCount > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next: Record<string, number | ''> = {};
+                    const limit = Math.min(pdfImages.length, previewCount);
+                    for (let idx = 0; idx < limit; idx++) {
+                      next[pdfImages[idx].id] = idx;
+                    }
+                    setImageAssignments(next);
+                  }}
+                  className="px-2 py-0.5 rounded border border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 text-[10px] font-mono hover:bg-cyan-500/20"
+                >
+                  Auto-match {Math.min(pdfImages.length, previewCount)} in order
+                </button>
+              )}
+              <span className="text-[10px] text-muted-foreground">
+                Assign any photo below to attach it to a landed card
+              </span>
+            </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto ops-scroll pr-1">
             {pdfImages.map((img) => {

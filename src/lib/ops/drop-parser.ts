@@ -563,9 +563,11 @@ export function parseAdminPasteBlock(
   }
 
   const multiItems = parseMultiItemDeskList(text, clientId, defaultLane);
+  const categoryCardCount = (text.match(/^\s*(?:[-*•]\s+)?Category\s*:\s*\S+/gim) || []).length;
   if (
     multiItems.length > 1 ||
-    (multiItems.length === 1 && /^\s*(?:\d+[.)]|#{1,4}\s+)/m.test(text))
+    (multiItems.length === 1 &&
+      (/^\s*(?:\d+[.)]|#{1,4}\s+)/m.test(text) || categoryCardCount >= 1))
   ) {
     return {
       kind: 'desk_list',
@@ -646,6 +648,170 @@ function isMetadataDebrisTitle(title: string): boolean {
   return false;
 }
 
+function parseCategoryCardDeskList(
+  lines: string[],
+  clientId: string,
+  defaultLane?: PipelineLane
+): ParsedDropDocument[] {
+  const nonEmpty = lines.map((l) => l.trim()).filter(Boolean);
+  const catIndices: number[] = [];
+  for (let i = 0; i < nonEmpty.length; i++) {
+    if (/^(?:[-*•]\s+)?category\s*:\s*\S+/i.test(nonEmpty[i])) {
+      catIndices.push(i);
+    }
+  }
+  if (catIndices.length === 0) return [];
+
+  const isBadgeLine = (s: string) =>
+    /^\d{1,2}\s*[·•-]\s+[A-Za-z]/.test(s) && s.split(/\s+/).length <= 8;
+  const isTrailingEditorialStop = (s: string) =>
+    /^(?:my\s+editorial\s+recommendation|editorial\s+recommendation|editorial\s+pillar|one\s+strategic\s+suggestion\s*:|these\s+are\s+my\s+strongest)/i.test(
+      s
+    );
+  const isChipDuplicate = (chip: string, sourceLabel: string) => {
+    const cleanChip = stripMarkdownLinksToText(chip)
+      .toLowerCase()
+      .replace(/[….\s]+$/g, '')
+      .replace(/[^a-z0-9]+/g, '');
+    const cleanSrc = sourceLabel.toLowerCase().replace(/[^a-z0-9]+/g, '');
+    if (!cleanChip || chip.length > 48) return false;
+    if (cleanSrc && (cleanSrc.startsWith(cleanChip) || cleanChip.startsWith(cleanSrc.slice(0, 6)))) {
+      return true;
+    }
+    return false;
+  };
+
+  // Locate each card's start index (optional badge + headline right above Category:)
+  const cardBounds = catIndices.map((catIdx, cardPos) => {
+    const minSearch = cardPos === 0 ? 0 : catIndices[cardPos - 1] + 1;
+    let titleIdx = catIdx - 1;
+    while (titleIdx >= minSearch && isBadgeLine(nonEmpty[titleIdx])) {
+      titleIdx -= 1;
+    }
+    if (titleIdx < minSearch) titleIdx = catIdx - 1;
+    let startIdx = titleIdx;
+    let badgeNote = '';
+    if (titleIdx - 1 >= minSearch && isBadgeLine(nonEmpty[titleIdx - 1])) {
+      badgeNote = nonEmpty[titleIdx - 1];
+      startIdx = titleIdx - 1;
+    }
+    return { startIdx: Math.max(0, startIdx), titleIdx: Math.max(0, titleIdx), catIdx, badgeNote };
+  });
+
+  const today = todayDateTag();
+  const results: ParsedDropDocument[] = [];
+
+  for (let k = 0; k < cardBounds.length; k++) {
+    const { titleIdx, catIdx, badgeNote } = cardBounds[k];
+    const nextStartIdx = k + 1 < cardBounds.length ? cardBounds[k + 1].startIdx : nonEmpty.length;
+
+    const rawTitle = nonEmpty[titleIdx] || `Desk Item ${k + 1}`;
+    const headerLink = extractFirstValidDeskLink(rawTitle);
+    const cleanedTitle = stripMarkdownLinksToText(rawTitle)
+      .replace(/^\d+[.)]\s+/, '')
+      .replace(/\s+[—–-]\s*$/, '')
+      .slice(0, 120);
+    if (!cleanedTitle || isMetadataDebrisTitle(cleanedTitle)) continue;
+
+    const category = nonEmpty[catIdx].replace(/^(?:[-*•]\s+)?category\s*:\s*/i, '').trim().slice(0, 80);
+
+    let dateText = '';
+    let sourceLabel = '';
+    let sourceUrl = headerLink.url;
+    const summaryLines: string[] = [];
+    let sawSource = false;
+
+    for (let j = catIdx + 1; j < nextStartIdx; j++) {
+      const cleanLine = nonEmpty[j].replace(/^\s*[-*•]\s+/, '').trim();
+      if (!cleanLine) continue;
+      if (isTrailingEditorialStop(cleanLine)) break;
+
+      if (sawSource) {
+        const chipLink = extractFirstValidDeskLink(cleanLine);
+        if (chipLink.url && !sourceUrl) {
+          sourceUrl = chipLink.url;
+          if (!sourceLabel && chipLink.label && !/[…]$/.test(chipLink.label)) {
+            sourceLabel = chipLink.label.slice(0, FIELD_MAX_LENGTHS.source);
+          }
+          continue;
+        }
+        if (isChipDuplicate(cleanLine, sourceLabel) || (chipLink.url && cleanLine.length <= 48)) {
+          continue;
+        }
+        // Any remaining prose after the last card's source pill belongs to trailing commentary
+        if (k === cardBounds.length - 1) break;
+      }
+
+      const dateMatch = cleanLine.match(/^(?:date|published)\s*:\s*(.+)$/i);
+      if (dateMatch) {
+        dateText = stripMarkdownLinksToText(dateMatch[1]).slice(0, 80);
+        continue;
+      }
+
+      const sourceMatch = cleanLine.match(/^source\s*:\s*(.+)$/i);
+      if (sourceMatch) {
+        sawSource = true;
+        const srcLink = extractFirstValidDeskLink(sourceMatch[1]);
+        if (srcLink.url) sourceUrl = srcLink.url;
+        const rawSrcText = stripMarkdownLinksToText(sourceMatch[1]).replace(/[·.\s]+$/g, '').trim();
+        const parts = rawSrcText.split(/\s*·\s*/).map((p) => p.trim()).filter(Boolean);
+        if (parts.length >= 2 && !parts[0].startsWith('http')) {
+          sourceLabel = parts[0].slice(0, FIELD_MAX_LENGTHS.source);
+          if (!dateText) dateText = parts.slice(1).join(' · ').slice(0, 80);
+        } else {
+          const lbl = (srcLink.label || rawSrcText).replace(/[.\s]+$/, '').trim();
+          if (lbl) sourceLabel = lbl.slice(0, FIELD_MAX_LENGTHS.source);
+        }
+        continue;
+      }
+
+      const lineLink = extractFirstValidDeskLink(cleanLine);
+      if (!sourceUrl && lineLink.url) sourceUrl = lineLink.url;
+      const cleanedSummary = cleanLine
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi, '$1')
+        .replace(/\s*↗\s*/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (cleanedSummary) summaryLines.push(cleanedSummary);
+    }
+
+    const noteParts = [
+      category ? `Category: ${category}` : '',
+      dateText ? `Date: ${dateText}` : '',
+      badgeNote ? `Tag: ${badgeNote}` : '',
+    ].filter(Boolean);
+    const note = noteParts.length > 0 ? noteParts.join(' · ').slice(0, FIELD_MAX_LENGTHS.note) : undefined;
+    const draftCopy = (summaryLines.join(' ').replace(/\s+/g, ' ').trim() || cleanedTitle).slice(0, 2400);
+    const lane = defaultLane || normalizeLane(`${category}\n${cleanedTitle}\n${draftCopy}`);
+    const cardIdx = results.length + 1;
+
+    results.push({
+      clientId,
+      title: cleanedTitle,
+      lane,
+      channel: laneToChannel(lane),
+      contentType: 'pull',
+      stage: 'pulled',
+      agentId: 'marley',
+      source: sourceLabel || 'Desk quick-paste list',
+      sourceUrl,
+      sourceUrlMissing: !sourceUrl,
+      note,
+      statusTag: 'pending',
+      marleyStatus: 'pending',
+      readyForRotty: false,
+      draftCopy,
+      flaggedNotes: sourceUrl
+        ? []
+        : ['FLAG: Missing verified source URL — required before clearance.'],
+      jobDate: today,
+      sourceFile: `desk-list-${today}-${cardIdx}.md`,
+    });
+  }
+
+  return results;
+}
+
 /**
  * Splits a raw numbered or bulleted list pasted from Gemini, Grok, ChatGPT, or any chat window
  * into individual pulled items ready for Marley clearance, keeping sub-bullets (`Date:`,
@@ -662,6 +828,13 @@ export function parseMultiItemDeskList(
 
   const numberedLineCount = lines.filter((l) => /^\s*\d+[.)]\s+\S+/.test(l)).length;
   const hasNumberedHierarchy = numberedLineCount >= 2;
+  const categoryLineCount = lines.filter((l) =>
+    /^\s*(?:[-*•]\s+)?Category\s*:\s*\S+/i.test(l)
+  ).length;
+  if (!hasNumberedHierarchy && categoryLineCount >= 2) {
+    const cardResults = parseCategoryCardDeskList(lines, clientId, defaultLane);
+    if (cardResults.length > 0) return cardResults;
+  }
   const isMetadataLine = (line: string) =>
     /^\s*(?:[-*•]\s+)?(?:date|source|published|updated|category|summary|why|note|angle|link|url)\s*:/i.test(
       line
@@ -726,7 +899,24 @@ export function parseMultiItemDeskList(
     }
 
     if (activeItem) {
-      activeItem.bodyLines.push(trimmed);
+      const prevEndedWithSource =
+        activeItem.bodyLines.length > 0 &&
+        /^\s*(?:[-*•]\s+)?source\s*:/i.test(activeItem.bodyLines[activeItem.bodyLines.length - 1]);
+      const looksLikePlainCategoryHeading =
+        prevEndedWithSource &&
+        !isMetadataLine(trimmed) &&
+        !cleanDeskUrl(trimmed) &&
+        !/[.!?]$/.test(trimmed) &&
+        trimmed.split(/\s+/).length <= 5;
+      if (looksLikePlainCategoryHeading) {
+        pushActive();
+        const headingClean = trimmed.replace(/\*\*/g, '').replace(/^\d+[.)]\s+/, '').trim();
+        if (headingClean) {
+          blocks.push({ kind: 'heading', headerText: headingClean, bodyLines: [] });
+        }
+      } else {
+        activeItem.bodyLines.push(trimmed);
+      }
     } else {
       // Top-level plain header before first numbered item (e.g., "Motorcycles" or "**Tattoos**")
       const plainHeading = trimmed.replace(/\*\*/g, '').replace(/^\d+[.)]\s+/, '').trim();
@@ -766,12 +956,20 @@ export function parseMultiItemDeskList(
         nextItem.numVal !== undefined &&
         nextItem.numVal <= block.numVal
     );
+    const hasStructuredMetadataInBody = block.bodyLines.some(
+      (bl) =>
+        isMetadataLine(bl) ||
+        Boolean(extractFirstValidDeskLink(bl).url)
+    );
     const looksLikeSectionHeader =
-      block.bodyLines.length === 0 &&
       !headerLink.url &&
-      (isZeroPaddedHeader ||
-        listResetsAfter ||
-        (anyBlockHasBodyOrUrl && wordCount <= 5 && itemBlocks.length > 2));
+      !hasStructuredMetadataInBody &&
+      wordCount <= 6 &&
+      ((block.bodyLines.length === 0 &&
+        (isZeroPaddedHeader ||
+          listResetsAfter ||
+          (anyBlockHasBodyOrUrl && wordCount <= 5 && itemBlocks.length > 2))) ||
+        ((isZeroPaddedHeader || listResetsAfter) && wordCount <= 5));
 
     if (looksLikeSectionHeader) {
       currentCategory = stripMarkdownLinksToText(block.headerText).slice(0, 60);

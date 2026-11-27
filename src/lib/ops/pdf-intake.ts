@@ -33,7 +33,7 @@ export interface ExtractedPdfResult {
   images: ExtractedPdfImage[];
 }
 
-const MIN_EXTRACTED_IMAGE_PX = 64;
+const MIN_EXTRACTED_IMAGE_PX = 44;
 const MAX_CANVAS_SIDE_PX = 1400;
 const MAX_UPLOAD_BYTES = 640 * 1024;
 
