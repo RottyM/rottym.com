@@ -281,6 +281,6 @@ export async function loadClientBoardSnapshot(clientId: string): Promise<{
     gates,
     metrics,
     activity: activity.slice(0, 30),
-    chat: chat.slice(-60),
+    chat: chat.slice(-200),
   };
 }

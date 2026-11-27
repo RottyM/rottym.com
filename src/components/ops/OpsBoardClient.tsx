@@ -13,6 +13,7 @@ import {
   Clock,
   Columns3,
   Copy,
+  CornerUpLeft,
   ExternalLink,
   Inbox,
   Layers,
@@ -20,8 +21,10 @@ import {
   LogOut,
   MessageSquare,
   Moon,
+  Paperclip,
   Plus,
   RefreshCw,
+  Search,
   Send,
   Settings,
   ShieldAlert,
@@ -586,7 +589,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
             setSyncLive(true);
             const list = snap.docs.map((d) => d.data() as ChatMessage);
             list.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
-            applyTrackedUpdate('chat', activeClientId, list.slice(-60), setChat);
+            applyTrackedUpdate('chat', activeClientId, list.slice(-200), setChat);
           }
         )
       );
@@ -823,6 +826,26 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
       },
       `Cleared all flags on: ${card.title}`
     );
+  };
+
+  const handleSendChat = async (
+    text: string,
+    opts?: { to?: string[]; replyToId?: string; jobId?: string }
+  ) => {
+    await postAction(
+      {
+        action: 'post_chat',
+        text,
+        ...(opts?.to ? { to: opts.to } : {}),
+        ...(opts?.replyToId ? { replyToId: opts.replyToId } : {}),
+        ...(opts?.jobId ? { jobId: opts.jobId } : {}),
+      },
+      'Sent message to Crew Chat'
+    );
+  };
+
+  const handleDeleteChat = async (id: string) => {
+    await postAction({ action: 'delete_chat', id }, 'Removed chat message');
   };
 
   const handleCopyPendingForMarley = async () => {
@@ -1461,15 +1484,8 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   highlightKinds={highlightKinds}
                   busy={busy}
                   onOpenJob={(card) => setModal({ type: 'card', card })}
-                  onSend={async (text, to) => {
-                    await postAction(
-                      { action: 'post_chat', text, ...(to ? { to } : {}) },
-                      'Sent message to Crew Chat'
-                    );
-                  }}
-                  onDelete={async (id) => {
-                    await postAction({ action: 'delete_chat', id }, 'Removed chat message');
-                  }}
+                  onSend={handleSendChat}
+                  onDelete={handleDeleteChat}
                 />
               </div>
             </section>
@@ -1527,15 +1543,8 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       highlightKinds={highlightKinds}
                       busy={busy}
                       onOpenJob={(card) => setModal({ type: 'card', card })}
-                      onSend={async (text, to) => {
-                        await postAction(
-                          { action: 'post_chat', text, ...(to ? { to } : {}) },
-                          'Sent message to Crew Chat'
-                        );
-                      }}
-                      onDelete={async (id) => {
-                        await postAction({ action: 'delete_chat', id }, 'Removed chat message');
-                      }}
+                      onSend={handleSendChat}
+                      onDelete={handleDeleteChat}
                     />
                   </div>
                 </section>
@@ -2354,6 +2363,16 @@ const CHAT_TARGET_CHIPS = [
     accentText: 'text-cyan-700 dark:text-cyan-300',
   },
   {
+    key: 'rotty',
+    label: '@Rotty',
+    mentionToken: '@Rotty',
+    dotCls: 'bg-sky-400',
+    tagCls: 'text-sky-700 dark:text-sky-300',
+    accentBorderL: 'border-l-sky-500/80',
+    accentBorderR: 'border-r-sky-500/70',
+    accentText: 'text-sky-700 dark:text-sky-300',
+  },
+  {
     key: 'marley',
     label: '@Marley',
     mentionToken: '@Marley',
@@ -2585,22 +2604,52 @@ function CrewChatAvatar({
   );
 }
 
-function renderLinkifiedText(text: string) {
-  return splitTextWithUrls(text).map((seg, i) =>
-    seg.type === 'url' ? (
-      <a
-        key={`url-${i}`}
-        href={seg.value}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-accent underline underline-offset-2 hover:opacity-85 break-all"
-      >
-        {seg.value}
-      </a>
-    ) : (
-      <span key={`txt-${i}`}>{seg.value}</span>
-    )
-  );
+function renderLinkifiedText(
+  text: string,
+  onMentionClick?: (handle: string) => void
+) {
+  return splitTextWithUrls(text).map((seg, i) => {
+    if (seg.type === 'url') {
+      return (
+        <a
+          key={`url-${i}`}
+          href={seg.value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-accent underline underline-offset-2 hover:opacity-85 break-all"
+        >
+          {seg.value}
+        </a>
+      );
+    }
+    const parts = seg.value.split(/(@[a-zA-Z0-9_-]{2,32})/g);
+    return (
+      <span key={`txt-${i}`}>
+        {parts.map((part, pIdx) => {
+          if (/^@[a-zA-Z0-9_-]{2,32}$/.test(part)) {
+            if (onMentionClick) {
+              return (
+                <button
+                  key={`m-${i}-${pIdx}`}
+                  type="button"
+                  onClick={() => onMentionClick(part)}
+                  className="font-mono font-medium text-cyan-700 dark:text-cyan-300 hover:underline"
+                >
+                  {part}
+                </button>
+              );
+            }
+            return (
+              <span key={`m-${i}-${pIdx}`} className="font-mono font-medium text-cyan-700 dark:text-cyan-300">
+                {part}
+              </span>
+            );
+          }
+          return <span key={`s-${i}-${pIdx}`}>{part}</span>;
+        })}
+      </span>
+    );
+  });
 }
 
 function CrewChatPanel({
@@ -2621,7 +2670,10 @@ function CrewChatPanel({
   busy: boolean;
   tall?: boolean;
   onOpenJob?: (card: PipelineCard) => void;
-  onSend: (text: string, to?: string[]) => Promise<void>;
+  onSend: (
+    text: string,
+    opts?: { to?: string[]; replyToId?: string; jobId?: string }
+  ) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }) {
   const [draft, setDraft] = useState('');
@@ -2630,29 +2682,57 @@ function CrewChatPanel({
   const [mentionDismissed, setMentionDismissed] = useState(false);
   const [targetMention, setTargetMention] = useState<string>('all');
   const [showJumpLatest, setShowJumpLatest] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [visibleLimit, setVisibleLimit] = useState(60);
+  const [replyToMsg, setReplyToMsg] = useState<ChatMessage | null>(null);
+  const [attachedJobId, setAttachedJobId] = useState<string | null>(null);
+  const [attachPickerOpen, setAttachPickerOpen] = useState(false);
+  const [attachFilter, setAttachFilter] = useState('');
+  const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
+  const [expandedMsgIds, setExpandedMsgIds] = useState<Set<string>>(() => new Set());
+  const [flashMsgId, setFlashMsgId] = useState<string | null>(null);
+  const [jumpTarget, setJumpTarget] = useState<{ id: string; nonce: number } | null>(null);
+  const [focusInputSeq, setFocusInputSeq] = useState(0);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const initializedScrollRef = useRef(false);
   const stickToBottomRef = useRef(true);
   const forceScrollRef = useRef(false);
 
   const filteredMessages = useMemo(() => {
-    if (targetMention === 'all') return messages;
-    const targetNorm = normalizeChatHandle(targetMention);
+    const q = searchQuery.trim().toLowerCase();
     return messages.filter((m) => {
-      if (normalizeChatHandle(m.senderId) === targetNorm) return true;
-      if (normalizeChatHandle(m.senderName) === targetNorm) return true;
-      if (m.mentions?.some((tag) => normalizeChatHandle(tag) === targetNorm)) return true;
-      return false;
+      if (targetMention !== 'all') {
+        const targetNorm = normalizeChatHandle(targetMention);
+        const matchesMention =
+          normalizeChatHandle(m.senderId) === targetNorm ||
+          normalizeChatHandle(m.senderName) === targetNorm ||
+          Boolean(m.mentions?.some((tag) => normalizeChatHandle(tag) === targetNorm));
+        if (!matchesMention) return false;
+      }
+      if (q) {
+        const hay = `${m.senderName} ${m.text} ${m.jobTitle || ''} ${(m.mentions || []).join(' ')}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
     });
-  }, [messages, targetMention]);
+  }, [messages, targetMention, searchQuery]);
 
-  const lastMessageId = filteredMessages[filteredMessages.length - 1]?.id || '';
+  const hiddenCount = searchQuery.trim()
+    ? 0
+    : Math.max(0, filteredMessages.length - visibleLimit);
+  const visibleMessages = useMemo(
+    () => (hiddenCount > 0 ? filteredMessages.slice(-visibleLimit) : filteredMessages),
+    [filteredMessages, hiddenCount, visibleLimit]
+  );
+
+  const lastMessageId = visibleMessages[visibleMessages.length - 1]?.id || '';
 
   useEffect(() => {
     const el = scrollContainerRef.current;
-    if (!el || filteredMessages.length === 0) return;
+    if (!el || visibleMessages.length === 0) return;
 
     if (!initializedScrollRef.current) {
       el.scrollTop = el.scrollHeight;
@@ -2670,7 +2750,45 @@ function CrewChatPanel({
     } else {
       setShowJumpLatest(true);
     }
-  }, [lastMessageId, filteredMessages.length]);
+  }, [lastMessageId, visibleMessages.length]);
+
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 112)}px`;
+  }, [draft]);
+
+  useEffect(() => {
+    if (replyToMsg || focusInputSeq > 0) {
+      inputRef.current?.focus();
+    }
+  }, [replyToMsg, focusInputSeq]);
+
+  useEffect(() => {
+    if (!jumpTarget) return;
+    const msgId = jumpTarget.id;
+    let flashTimer: ReturnType<typeof setTimeout> | undefined;
+    const rafId = requestAnimationFrame(() => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+      const safeId =
+        typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(msgId) : msgId.replace(/"/g, '');
+      const targetEl = container.querySelector<HTMLElement>(`[data-chat-msg-id="${safeId}"]`);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setFlashMsgId(msgId);
+        flashTimer = setTimeout(
+          () => setFlashMsgId((prev) => (prev === msgId ? null : prev)),
+          1800
+        );
+      }
+    });
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (flashTimer) clearTimeout(flashTimer);
+    };
+  }, [jumpTarget]);
 
   const handleScroll = () => {
     const el = scrollContainerRef.current;
@@ -2683,11 +2801,27 @@ function CrewChatPanel({
     }
   };
 
+  const msgById = useMemo(() => {
+    const map = new Map<string, ChatMessage>();
+    for (const m of messages) map.set(m.id, m);
+    return map;
+  }, [messages]);
+
   const cardById = useMemo(() => {
     const map = new Map<string, PipelineCard>();
     for (const c of pipeline) map.set(c.id, c);
     return map;
   }, [pipeline]);
+
+  const attachableCards = useMemo(() => {
+    const q = attachFilter.trim().toLowerCase();
+    return pipeline
+      .filter((c) => c.stage !== 'archived')
+      .filter((c) => !q || c.title.toLowerCase().includes(q) || c.lane.toLowerCase().includes(q))
+      .slice(0, 25);
+  }, [pipeline, attachFilter]);
+
+  const attachedCard = attachedJobId ? cardById.get(attachedJobId) || null : null;
 
   const crewInfoByHandle = useMemo(() => {
     const map = new Map<string, { avatar?: string; dotCls: string; statusLabel?: string }>();
@@ -2769,7 +2903,7 @@ function CrewChatPanel({
       const sep = prev.length === 0 || /\s$/.test(prev) ? '' : ' ';
       return `${prev}${sep}${mentionToken} `;
     });
-    inputRef.current?.focus();
+    setFocusInputSeq((n) => n + 1);
   };
 
   const mentionCandidates = useMemo(() => {
@@ -2869,13 +3003,149 @@ function CrewChatPanel({
     });
   };
 
+  const jumpToMessage = (msgId: string) => {
+    const idxInFiltered = filteredMessages.findIndex((item) => item.id === msgId);
+    if (idxInFiltered >= 0 && idxInFiltered < filteredMessages.length - visibleLimit) {
+      setVisibleLimit(filteredMessages.length - idxInFiltered + 10);
+    }
+    setJumpTarget((prev) => ({ id: msgId, nonce: (prev?.nonce || 0) + 1 }));
+  };
+
+  const handleMentionClick = (token: string) => {
+    const norm = normalizeChatHandle(token);
+    const matchingChip = chatTargetChips.find(
+      (c) => c.key !== 'all' && normalizeChatHandle(c.key) === norm
+    );
+    if (matchingChip) {
+      setTargetMention((prev) => (prev === matchingChip.key ? 'all' : matchingChip.key));
+    } else {
+      appendMentionTag(token);
+    }
+  };
+
+  const renderMessageActions = (m: ChatMessage, timeStr: string) => {
+    const isCopied = copiedMsgId === m.id;
+    return (
+      <div className="flex items-center gap-1 shrink-0">
+        <span className="text-[10px] font-mono text-muted-foreground">{timeStr}</span>
+        <button
+          type="button"
+          aria-label="Reply to message"
+          title="Reply in thread"
+          disabled={busy}
+          onClick={() => setReplyToMsg(m)}
+          className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-accent transition-opacity disabled:opacity-40"
+        >
+          <CornerUpLeft className="w-3 h-3" />
+        </button>
+        <button
+          type="button"
+          aria-label="Copy message text"
+          title={isCopied ? 'Copied' : 'Copy message'}
+          onClick={async () => {
+            await navigator.clipboard.writeText(m.text);
+            setCopiedMsgId(m.id);
+            setTimeout(() => setCopiedMsgId((prev) => (prev === m.id ? null : prev)), 1600);
+          }}
+          className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-foreground transition-opacity"
+        >
+          {isCopied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+        </button>
+        <button
+          type="button"
+          aria-label="Delete chat message"
+          disabled={busy}
+          onClick={() => onDelete(m.id)}
+          className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-red-500 transition-opacity disabled:opacity-40"
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      </div>
+    );
+  };
+
+  const renderReplyQuote = (m: ChatMessage) => {
+    if (!m.replyToId) return null;
+    const parent = msgById.get(m.replyToId);
+    if (!parent) {
+      return (
+        <div className="mb-1.5 px-2 py-1 rounded border-l-2 border-border bg-muted/40 text-[10px] text-muted-foreground flex items-center gap-1">
+          <CornerUpLeft className="w-2.5 h-2.5 shrink-0" />
+          <span className="truncate">Replying to earlier message</span>
+        </div>
+      );
+    }
+    return (
+      <button
+        type="button"
+        onClick={() => jumpToMessage(parent.id)}
+        title="Jump to replied message"
+        className="w-full text-left mb-1.5 px-2 py-1 rounded border-l-2 border-cyan-500/60 bg-muted/45 hover:bg-muted/70 text-[10px] text-muted-foreground flex items-center gap-1.5 transition-colors"
+      >
+        <CornerUpLeft className="w-2.5 h-2.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+        <span className="font-medium text-foreground/90 shrink-0">{parent.senderName}:</span>
+        <span className="truncate">{parent.text}</span>
+      </button>
+    );
+  };
+
+  const renderMessageBody = (m: ChatMessage, extraCls = '') => {
+    const isLong = m.text.length > 420 || m.text.split('\n').length > 7;
+    const isExpanded = expandedMsgIds.has(m.id);
+    return (
+      <div className={extraCls}>
+        <p
+          className={`text-xs text-foreground/95 whitespace-pre-wrap break-words leading-relaxed ${
+            isLong && !isExpanded ? 'line-clamp-6' : ''
+          }`}
+        >
+          {renderLinkifiedText(m.text, handleMentionClick)}
+        </p>
+        {isLong && (
+          <button
+            type="button"
+            onClick={() =>
+              setExpandedMsgIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(m.id)) next.delete(m.id);
+                else next.add(m.id);
+                return next;
+              })
+            }
+            className="mt-1 text-[10px] font-mono text-accent hover:underline"
+          >
+            {isExpanded ? 'Show less' : `Show full (${m.text.length} chars)`}
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  const submitMessage = async () => {
+    const trimmed = draft.trim();
+    if (!trimmed || busy) return;
+    const hasExplicitMention = /@[a-zA-Z0-9_-]{2,32}/.test(trimmed);
+    const to = hasExplicitMention && targetMention === 'all' ? undefined : [targetMention];
+    const replyId = replyToMsg?.id;
+    const jobId = attachedJobId || undefined;
+    forceScrollRef.current = true;
+    stickToBottomRef.current = true;
+    setDraft('');
+    setCaretPos(0);
+    setMentionDismissed(false);
+    setReplyToMsg(null);
+    setAttachedJobId(null);
+    setAttachPickerOpen(false);
+    await onSend(trimmed, { to, replyToId: replyId, jobId });
+  };
+
   return (
     <section
       className={`rounded-xl border border-border bg-card flex flex-col overflow-hidden [overflow-anchor:none] ${
         tall ? 'h-[480px] lg:h-[620px]' : 'h-[264px] lg:h-[296px]'
       }`}
     >
-      {/* Top Bar: Header + Filter/Target Pills */}
+      {/* Top Bar: Header + Search + Filter/Target Pills */}
       <div className="px-2.5 pt-2 pb-1.5 border-b border-border/80 bg-card/95 backdrop-blur-sm space-y-1.5 shrink-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -2890,12 +3160,53 @@ function CrewChatPanel({
               </span>
             )}
           </div>
-          <span className="text-[10px] font-mono text-muted-foreground">
-            {targetMention === 'all'
-              ? `${messages.length} msgs`
-              : `${filteredMessages.length}/${messages.length} in ${activeChipLabel}`}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[10px] font-mono text-muted-foreground">
+              {targetMention === 'all' && !searchQuery.trim()
+                ? `${messages.length} msgs`
+                : `${filteredMessages.length}/${messages.length}${targetMention !== 'all' ? ` in ${activeChipLabel}` : ''}`}
+            </span>
+            <button
+              type="button"
+              aria-label="Search crew chat"
+              title="Search chat messages"
+              onClick={() => {
+                setSearchOpen((prev) => {
+                  if (prev) setSearchQuery('');
+                  return !prev;
+                });
+              }}
+              className={`p-1 rounded-md border text-[10px] transition-colors ${
+                searchOpen || searchQuery.trim()
+                  ? 'border-accent/60 bg-accent/15 text-accent'
+                  : 'border-border bg-background/70 text-muted-foreground hover:text-foreground hover:border-accent/50'
+              }`}
+            >
+              <Search className="w-3 h-3" />
+            </button>
+          </div>
         </div>
+
+        {(searchOpen || searchQuery.trim()) && (
+          <div className="flex items-center gap-1.5">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search messages, bots, or card titles..."
+              className="flex-1 min-w-0 px-2.5 py-1 rounded-lg text-[11px] bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+            />
+            {searchQuery.trim() && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="px-2 py-1 rounded-lg text-[10px] font-mono border border-border text-muted-foreground hover:text-foreground"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
 
         <nav aria-label="Crew chat filters" className="flex items-center gap-1 overflow-x-auto ops-scroll pb-0.5">
           {chatTargetChips.map((chip) => {
@@ -2955,7 +3266,19 @@ function CrewChatPanel({
           onScroll={handleScroll}
           className="h-full overflow-y-auto overscroll-contain [overflow-anchor:none] scroll-auto ops-scroll px-2.5 py-2 space-y-2"
         >
-          {filteredMessages.length === 0 ? (
+          {hiddenCount > 0 && (
+            <div className="flex justify-center pb-1">
+              <button
+                type="button"
+                onClick={() => setVisibleLimit((prev) => prev + 60)}
+                className="px-2.5 py-1 rounded-lg text-[10px] font-mono border border-border bg-background/80 hover:border-accent text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Show earlier ({hiddenCount} older)
+              </button>
+            </div>
+          )}
+
+          {visibleMessages.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border bg-background/40 px-3 py-5 text-xs text-muted-foreground text-center">
               {messages.length === 0 ? (
                 <>
@@ -2963,24 +3286,28 @@ function CrewChatPanel({
                 </>
               ) : (
                 <>
-                  No messages in <span className="font-mono text-foreground">{activeChipLabel}</span> yet.{' '}
+                  No matching messages{targetMention !== 'all' ? ` in ${activeChipLabel}` : ''}.{' '}
                   <button
                     type="button"
-                    onClick={() => setTargetMention('all')}
+                    onClick={() => {
+                      setTargetMention('all');
+                      setSearchQuery('');
+                    }}
                     className="text-accent hover:underline font-mono"
                   >
-                    Show @All
+                    Reset filters
                   </button>
                 </>
               )}
             </div>
           ) : (
-            filteredMessages.map((m, idx) => {
+            visibleMessages.map((m, idx) => {
               const dateKey = m.createdAt?.slice(0, 10) || '';
-              const prevDateKey = idx > 0 ? filteredMessages[idx - 1]?.createdAt?.slice(0, 10) || '' : '';
+              const prevDateKey = idx > 0 ? visibleMessages[idx - 1]?.createdAt?.slice(0, 10) || '' : '';
               const showDateDivider = Boolean(dateKey && dateKey !== prevDateKey);
 
               const msgAlert = getUpdateAlertMeta(highlightKinds.get(m.id));
+              const isFlashed = flashMsgId === m.id;
               const isOp = m.senderKind === 'operator';
               const senderInfo =
                 crewInfoByHandle.get(normalizeChatHandle(m.senderId)) ||
@@ -3004,7 +3331,11 @@ function CrewChatPanel({
                   : targetAccent.accentBorderL;
 
               return (
-                <div key={m.id} className="space-y-2.5">
+                <div
+                  key={m.id}
+                  data-chat-msg-id={m.id}
+                  className="space-y-2.5"
+                >
                   {showDateDivider && (
                     <div className="flex items-center justify-center my-1">
                       <div className="h-px bg-border/80 flex-1" />
@@ -3019,7 +3350,11 @@ function CrewChatPanel({
                     /* Compact Crew Reply Card */
                     <article
                       className={`group rounded-xl border bg-background/75 p-2.5 ml-3 border-r-2 transition-all duration-500 ${
-                        msgAlert ? msgAlert.cardBorderCls : `border-border ${senderAccent.accentBorderR}`
+                        isFlashed
+                          ? 'border-cyan-500 ring-2 ring-cyan-500/45 bg-cyan-500/10'
+                          : msgAlert
+                            ? msgAlert.cardBorderCls
+                            : `border-border ${senderAccent.accentBorderR}`
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 pb-1">
@@ -3045,22 +3380,10 @@ function CrewChatPanel({
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-[10px] font-mono text-muted-foreground">{timeStr}</span>
-                          <button
-                            type="button"
-                            aria-label="Delete chat message"
-                            disabled={busy}
-                            onClick={() => onDelete(m.id)}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-red-500 transition-opacity disabled:opacity-40"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
+                        {renderMessageActions(m, timeStr)}
                       </div>
-                      <p className="text-xs text-foreground/95 pl-9 whitespace-pre-wrap break-words leading-relaxed">
-                        {renderLinkifiedText(m.text)}
-                      </p>
+                      {m.replyToId && <div className="pl-9">{renderReplyQuote(m)}</div>}
+                      {renderMessageBody(m, 'pl-9')}
                       {liveLinks.length > 0 && (
                         <div className="pl-9 mt-1.5 flex flex-wrap items-center gap-1.5">
                           {liveLinks.map((l) => (
@@ -3081,7 +3404,11 @@ function CrewChatPanel({
                     /* Operator Dispatch / Assignment Card */
                     <article
                       className={`group rounded-xl border border-l-4 bg-background/75 p-2.5 transition-all duration-500 ${
-                        msgAlert ? msgAlert.cardBorderCls : `border-border ${operatorBorderL}`
+                        isFlashed
+                          ? 'border-cyan-500 ring-2 ring-cyan-500/45 bg-cyan-500/10'
+                          : msgAlert
+                            ? msgAlert.cardBorderCls
+                            : `border-border ${operatorBorderL}`
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 pb-1.5 mb-1.5">
@@ -3104,19 +3431,10 @@ function CrewChatPanel({
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-[10px] font-mono text-muted-foreground">{timeStr}</span>
-                          <button
-                            type="button"
-                            aria-label="Delete chat message"
-                            disabled={busy}
-                            onClick={() => onDelete(m.id)}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-red-500 transition-opacity disabled:opacity-40"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
+                        {renderMessageActions(m, timeStr)}
                       </div>
+
+                      {renderReplyQuote(m)}
 
                       <div className="rounded-lg p-2.5 border border-border/80 bg-muted/40 dark:bg-card/70 space-y-1.5">
                         {(m.jobTitle || cardMeta) && (
@@ -3149,9 +3467,7 @@ function CrewChatPanel({
                           </div>
                         )}
 
-                        <p className="text-xs text-foreground/95 whitespace-pre-wrap break-words leading-snug">
-                          {renderLinkifiedText(m.text)}
-                        </p>
+                        {renderMessageBody(m)}
 
                         {cardMeta && (
                           <div className="pt-1.5 border-t border-border/70 text-[10px] font-mono text-muted-foreground flex flex-wrap items-center gap-1.5">
@@ -3221,7 +3537,11 @@ function CrewChatPanel({
                     /* Bot Structured Report Card */
                     <article
                       className={`group rounded-xl border bg-background/75 p-2.5 transition-all duration-500 ${
-                        msgAlert ? msgAlert.cardBorderCls : 'border-border'
+                        isFlashed
+                          ? 'border-cyan-500 ring-2 ring-cyan-500/45 bg-cyan-500/10'
+                          : msgAlert
+                            ? msgAlert.cardBorderCls
+                            : 'border-border'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/70 mb-2">
@@ -3261,19 +3581,10 @@ function CrewChatPanel({
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-[10px] font-mono text-muted-foreground">{timeStr}</span>
-                          <button
-                            type="button"
-                            aria-label="Delete chat message"
-                            disabled={busy}
-                            onClick={() => onDelete(m.id)}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-red-500 transition-opacity disabled:opacity-40"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
+                        {renderMessageActions(m, timeStr)}
                       </div>
+
+                      {renderReplyQuote(m)}
 
                       <div className="rounded-lg p-2 border border-border/80 bg-muted/35 dark:bg-card/70 space-y-1">
                         {m.jobTitle && (
@@ -3293,9 +3604,7 @@ function CrewChatPanel({
                             )}
                           </div>
                         )}
-                        <p className="text-xs text-foreground/95 whitespace-pre-wrap break-words leading-relaxed">
-                          {renderLinkifiedText(m.text)}
-                        </p>
+                        {renderMessageBody(m)}
                       </div>
 
                       {(cardMeta || liveLinks.length > 0) && (
@@ -3374,7 +3683,7 @@ function CrewChatPanel({
         )}
       </div>
 
-      {/* Quick-Mention Dock + Input Composer */}
+      {/* Quick-Mention Dock + Reply/Card Banners + Multi-line Composer */}
       <div className="border-t border-border/80 bg-card/95 px-3 py-1.5 flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-1.5 overflow-x-auto ops-scroll">
           <span className="text-[10px] font-mono text-muted-foreground uppercase shrink-0">Tags:</span>
@@ -3391,22 +3700,107 @@ function CrewChatPanel({
         </div>
       </div>
 
+      {(replyToMsg || attachedCard || attachPickerOpen) && (
+        <div className="px-3 py-1.5 bg-muted/40 border-t border-border/70 space-y-1.5 shrink-0">
+          {replyToMsg && (
+            <div className="flex items-center justify-between gap-2 text-[11px]">
+              <div className="flex items-center gap-1.5 min-w-0 text-muted-foreground">
+                <CornerUpLeft className="w-3 h-3 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                <span className="font-medium text-foreground shrink-0">
+                  Replying to {replyToMsg.senderName}:
+                </span>
+                <span className="truncate">{replyToMsg.text}</span>
+              </div>
+              <button
+                type="button"
+                aria-label="Cancel reply"
+                onClick={() => setReplyToMsg(null)}
+                className="p-0.5 rounded text-muted-foreground hover:text-foreground shrink-0"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
+          {attachedCard && (
+            <div className="flex items-center justify-between gap-2 text-[11px]">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Paperclip className="w-3 h-3 text-accent shrink-0" />
+                <span className="px-1.5 py-0 rounded bg-muted text-[9px] font-mono uppercase text-foreground shrink-0">
+                  {attachedCard.lane}
+                </span>
+                <span className="truncate text-foreground font-medium">{attachedCard.title}</span>
+              </div>
+              <button
+                type="button"
+                aria-label="Remove attached card"
+                onClick={() => setAttachedJobId(null)}
+                className="p-0.5 rounded text-muted-foreground hover:text-foreground shrink-0"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
+          {attachPickerOpen && (
+            <div className="rounded-lg border border-border bg-card p-1.5 space-y-1">
+              <input
+                type="text"
+                value={attachFilter}
+                onChange={(e) => setAttachFilter(e.target.value)}
+                placeholder="Filter active cards to attach..."
+                className="w-full px-2 py-1 rounded text-[11px] bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+              />
+              <div className="max-h-32 overflow-y-auto ops-scroll space-y-0.5">
+                {attachableCards.length === 0 ? (
+                  <div className="px-2 py-1.5 text-[10px] text-muted-foreground">No matching cards</div>
+                ) : (
+                  attachableCards.map((c) => (
+                    <button
+                      key={`pick-${c.id}`}
+                      type="button"
+                      onClick={() => {
+                        setAttachedJobId(c.id);
+                        setAttachPickerOpen(false);
+                        setAttachFilter('');
+                        inputRef.current?.focus();
+                      }}
+                      className="w-full text-left px-2 py-1 rounded hover:bg-muted/70 flex items-center justify-between gap-2 text-[11px]"
+                    >
+                      <span className="truncate text-foreground">{c.title}</span>
+                      <span className="text-[9px] font-mono uppercase text-muted-foreground shrink-0">
+                        {c.lane} · {c.stage}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <form
-        className="flex items-center gap-2 px-3 pb-2.5 pt-1.5 bg-card border-t border-border/70 shrink-0"
+        className="flex items-end gap-1.5 px-3 pb-2.5 pt-1.5 bg-card border-t border-border/70 shrink-0"
         onSubmit={async (e) => {
           e.preventDefault();
-          const trimmed = draft.trim();
-          if (!trimmed || busy) return;
-          const hasExplicitMention = /@[a-zA-Z0-9_-]{2,32}/.test(trimmed);
-          const to = hasExplicitMention && targetMention === 'all' ? undefined : [targetMention];
-          forceScrollRef.current = true;
-          stickToBottomRef.current = true;
-          setDraft('');
-          setCaretPos(0);
-          setMentionDismissed(false);
-          await onSend(trimmed, to);
+          await submitMessage();
         }}
       >
+        <button
+          type="button"
+          aria-label="Attach board card"
+          title="Attach a board card to this message"
+          onClick={() => setAttachPickerOpen((prev) => !prev)}
+          className={`h-8 w-8 rounded-xl border inline-flex items-center justify-center shrink-0 transition-colors ${
+            attachedJobId || attachPickerOpen
+              ? 'border-accent bg-accent/15 text-accent'
+              : 'border-border bg-background text-muted-foreground hover:text-foreground hover:border-accent/60'
+          }`}
+        >
+          <Paperclip className="w-3.5 h-3.5" />
+        </button>
+
         <div className="relative flex-1 min-w-0">
           {filteredMentions.length > 0 && (
             <div
@@ -3455,8 +3849,9 @@ function CrewChatPanel({
               })}
             </div>
           )}
-          <input
+          <textarea
             ref={inputRef}
+            rows={1}
             value={draft}
             onChange={(e) => {
               setDraft(e.target.value);
@@ -3474,28 +3869,40 @@ function CrewChatPanel({
               setCaretPos(target.selectionStart ?? target.value.length);
             }}
             onKeyDown={(e) => {
-              if (filteredMentions.length === 0) return;
-              if (e.key === 'ArrowDown') {
+              if (filteredMentions.length > 0) {
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setMentionActiveIndex((prev) => (prev + 1) % filteredMentions.length);
+                  return;
+                }
+                if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setMentionActiveIndex(
+                    (prev) => (prev - 1 + filteredMentions.length) % filteredMentions.length
+                  );
+                  return;
+                }
+                if (e.key === 'Enter' || e.key === 'Tab') {
+                  e.preventDefault();
+                  const chosen = filteredMentions[safeMentionIdx] || filteredMentions[0];
+                  if (chosen) insertMentionChoice(chosen.mentionToken);
+                  return;
+                }
+                if (e.key === 'Escape') {
+                  e.preventDefault();
+                  setMentionDismissed(true);
+                  return;
+                }
+              }
+              if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                setMentionActiveIndex((prev) => (prev + 1) % filteredMentions.length);
-              } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                setMentionActiveIndex(
-                  (prev) => (prev - 1 + filteredMentions.length) % filteredMentions.length
-                );
-              } else if (e.key === 'Enter' || e.key === 'Tab') {
-                e.preventDefault();
-                const chosen = filteredMentions[safeMentionIdx] || filteredMentions[0];
-                if (chosen) insertMentionChoice(chosen.mentionToken);
-              } else if (e.key === 'Escape') {
-                e.preventDefault();
-                setMentionDismissed(true);
+                void submitMessage();
               }
             }}
-            placeholder={`Message ${activeChipLabel} as Rotty (type @)...`}
-            className="w-full pl-3 pr-7 py-2 rounded-xl text-xs bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+            placeholder={`Message ${activeChipLabel} as Rotty (@ mention · Shift+Enter newline)...`}
+            className="w-full pl-3 pr-7 py-2 rounded-xl text-xs bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent resize-none leading-snug max-h-28 overflow-y-auto ops-scroll"
           />
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-muted-foreground border border-border rounded px-1 pointer-events-none">
+          <span className="absolute right-2 bottom-2 text-[9px] font-mono text-muted-foreground border border-border rounded px-1 pointer-events-none">
             @
           </span>
         </div>
