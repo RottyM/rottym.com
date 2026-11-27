@@ -352,65 +352,79 @@ export async function POST(
   await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
 
   let limitAlert: ConnectorAlert | undefined;
-  if (isRateLimited || isCaution) {
-    const inferredAlertPlat =
-      explicitPlatform ||
-      (pendingPlatforms.length === 1
-        ? pendingPlatforms[0]
-        : existing.channel === 'linkedin'
-          ? 'linkedin'
-          : existing.channel === 'x'
-            ? 'x'
-            : existing.lane === 'fb-ig'
-              ? 'ig'
-              : 'fb');
-    const platLabel = formatPlatformShortLabel(inferredAlertPlat);
-    const ratio =
-      dailyCount !== undefined && dailyLimit !== undefined
-        ? ` (${dailyCount}/${dailyLimit})`
-        : dailyCount !== undefined
-          ? ` (${dailyCount} today)`
-          : '';
-    const alertMsg =
-      errorText && isRateLimited
-        ? errorText.slice(0, 300)
-        : isRateLimited
-          ? `${platLabel} daily limit hit${ratio}${resetAt ? ` — queued remaining for ${resetAt}` : ''}`
-          : `${platLabel} caution line reached${ratio}${resetAt ? ` — holding ${platLabel} until ${resetAt}` : ' — holding remaining as pending'}`;
-    limitAlert = {
-      status: isRateLimited ? 'rate_limit' : 'caution',
-      platform: inferredAlertPlat,
-      count: dailyCount,
-      limit: dailyLimit,
-      resetAt,
-      message: alertMsg,
-      updatedAt: now,
-    };
-
-    const botAgentId = inferAgentId(botName);
+  const botAgentId = inferAgentId(botName);
+  const inferredCountPlat =
+    explicitPlatform ||
+    (pendingPlatforms.length === 1
+      ? pendingPlatforms[0]
+      : existing.channel === 'linkedin'
+        ? 'linkedin'
+        : existing.channel === 'x'
+          ? 'x'
+          : existing.lane === 'fb-ig'
+            ? 'ig'
+            : 'fb');
+  if (isRateLimited || isCaution || dailyCount !== undefined) {
     const crewDoc = await opsGetDoc<CrewMember>('ops_crew', `${existing.clientId}__${botAgentId}`);
+    if (isRateLimited || isCaution) {
+      const platLabel = formatPlatformShortLabel(inferredCountPlat);
+      const ratio =
+        dailyCount !== undefined && dailyLimit !== undefined
+          ? ` (${dailyCount}/${dailyLimit})`
+          : dailyCount !== undefined
+            ? ` (${dailyCount} today)`
+            : '';
+      const alertMsg =
+        errorText && isRateLimited
+          ? errorText.slice(0, 300)
+          : isRateLimited
+            ? `${platLabel} daily limit hit${ratio}${resetAt ? ` — queued remaining for ${resetAt}` : ''}`
+            : `${platLabel} caution line reached${ratio}${resetAt ? ` — holding ${platLabel} until ${resetAt}` : ' — holding remaining as pending'}`;
+      limitAlert = {
+        status: isRateLimited ? 'rate_limit' : 'caution',
+        platform: inferredCountPlat,
+        count: dailyCount,
+        limit: dailyLimit,
+        resetAt,
+        message: alertMsg,
+        updatedAt: now,
+      };
+
+      const chatAlert: ChatMessage = {
+        id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        clientId: existing.clientId,
+        senderId: botAgentId,
+        senderName: botName,
+        senderKind: 'bot',
+        text: `@Rotty ${isRateLimited ? 'DAILY LIMIT' : 'CAP CAUTION'} (${platLabel}): ${alertMsg} — on "${updated.title}".`,
+        mentions: ['rotty'],
+        jobId: updated.id,
+        jobTitle: updated.title,
+        createdAt: now,
+      };
+      await opsSetDoc('ops_chat', chatAlert.id, chatAlert as unknown as Record<string, unknown>);
+    }
+
     if (crewDoc) {
+      const nextDailyCounts =
+        dailyCount !== undefined
+          ? {
+              ...(crewDoc.dailyCounts || {}),
+              [inferredCountPlat]: {
+                count: dailyCount,
+                limit: dailyLimit,
+                asOf: now,
+              },
+            }
+          : crewDoc.dailyCounts;
       await opsSetDoc('ops_crew', crewDoc.id, {
         ...crewDoc,
-        connectorAlert: limitAlert,
+        ...(limitAlert ? { connectorAlert: limitAlert } : {}),
+        ...(nextDailyCounts ? { dailyCounts: nextDailyCounts } : {}),
         updatedAt: now,
         updatedBy: botName,
       } as unknown as Record<string, unknown>);
     }
-
-    const chatAlert: ChatMessage = {
-      id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      clientId: existing.clientId,
-      senderId: botAgentId,
-      senderName: botName,
-      senderKind: 'bot',
-      text: `@Rotty ${isRateLimited ? 'DAILY LIMIT' : 'CAP CAUTION'} (${platLabel}): ${alertMsg} — on "${updated.title}".`,
-      mentions: ['rotty'],
-      jobId: updated.id,
-      jobTitle: updated.title,
-      createdAt: now,
-    };
-    await opsSetDoc('ops_chat', chatAlert.id, chatAlert as unknown as Record<string, unknown>);
   }
 
   await appendOpsActivity(

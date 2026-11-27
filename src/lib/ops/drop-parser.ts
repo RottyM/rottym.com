@@ -1550,58 +1550,28 @@ export function todayEasternYmd(nowMs = Date.now()): string {
 export const IG_DAILY_CAUTION_THRESHOLD = 15;
 
 export function getTodayPublishedCounts(
-  pipeline: Array<
-    Pick<PipelineCard, 'stage' | 'lane' | 'postFormat' | 'targetPlatforms' | 'links' | 'linkPostedAt' | 'updatedAt'>
-  >,
+  pipeline: Array<Pick<PipelineCard, 'links' | 'linkPostedAt' | 'updatedAt'>>,
   nowMs = Date.now()
 ): Record<PlatformKey, number> {
   const today = todayEasternYmd(nowMs);
   const counts: Record<PlatformKey, number> = { fb: 0, ig: 0, linkedin: 0, x: 0 };
   const keys: PlatformKey[] = ['fb', 'ig', 'linkedin', 'x'];
-  const isTodayTs = (rawTs?: string): boolean => {
-    if (!rawTs) return false;
-    const parsedMs = Date.parse(rawTs);
-    const ymd = Number.isFinite(parsedMs) ? todayEasternYmd(parsedMs) : rawTs.slice(0, 10);
-    return ymd === today;
-  };
-
   for (const card of pipeline) {
-    let anyRecordedLink = false;
-    if (card.links) {
-      for (const k of keys) {
-        if (!card.links[k]) continue;
-        anyRecordedLink = true;
-        if (isTodayTs(card.linkPostedAt?.[k] || card.updatedAt)) {
-          counts[k] += 1;
-        }
-      }
-    }
-
-    // Legacy or linkless cards marked posted today still count toward their target/lane platforms.
-    if (!anyRecordedLink && card.stage === 'posted' && isTodayTs(card.updatedAt)) {
-      if (card.targetPlatforms && card.targetPlatforms.length > 0) {
-        for (const k of card.targetPlatforms) {
-          counts[k] += 1;
-        }
-      } else if (card.postFormat === 'fb_only') {
-        counts.fb += 1;
-      } else if (card.postFormat === 'ig_only') {
-        counts.ig += 1;
-      } else if (card.lane === 'fb-ig') {
-        counts.fb += 1;
-        counts.ig += 1;
-      } else if (card.lane === 'linkedin') {
-        counts.linkedin += 1;
-      } else if (card.lane === 'x') {
-        counts.x += 1;
-      }
+    if (!card.links) continue;
+    for (const k of keys) {
+      if (!card.links[k]) continue;
+      const rawTs = card.linkPostedAt?.[k] || card.updatedAt;
+      if (!rawTs) continue;
+      const parsedMs = Date.parse(rawTs);
+      const ymd = Number.isFinite(parsedMs) ? todayEasternYmd(parsedMs) : rawTs.slice(0, 10);
+      if (ymd === today) counts[k] += 1;
     }
   }
   return counts;
 }
 
 export function isRateLimitErrorMessage(raw: string): boolean {
-  return /(?:rate.?limit|daily.?(?:limit|cap|quota)|publishing.?limit|limit\s*(?:reached|hit|exceeded)|cap\s*(?:hit|reached)|too\s+many\s+requests|\b429\b)/i.test(
+  return /(?:rate.?limit|daily.?(?:limit|cap|quota)|publishing.?limit|post.?limit|tweet.?limit|usage.?cap|quota.?exceeded|limit\s*(?:reached|hit|exceeded)|cap\s*(?:hit|reached)|too\s+many\s+requests|\b429\b)/i.test(
     raw
   );
 }

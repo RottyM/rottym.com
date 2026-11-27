@@ -149,6 +149,12 @@ export interface ClientWorkspace {
   updatedAt: string;
 }
 
+export interface DailyPlatformCount {
+  count: number;
+  limit?: number;
+  asOf: string;
+}
+
 export interface CrewMember {
   id: string;
   clientId: string;
@@ -163,6 +169,7 @@ export interface CrewMember {
   status: AgentStatus;
   statusNote?: string;
   connectorAlert?: ConnectorAlert;
+  dailyCounts?: Partial<Record<PlatformKey, DailyPlatformCount>>;
   usagePct?: number;
   resetNote?: string;
   lastChatReadAt?: string;

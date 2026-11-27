@@ -71,6 +71,7 @@ import {
   IG_DAILY_CAUTION_THRESHOLD,
   resolveAvatarRenderUrl,
   splitTextWithUrls,
+  todayEasternYmd,
   type UpdateAlertKind,
 } from '@/lib/ops/drop-parser';
 import { OpsAssetLightbox, OpsAssetThumb, assetPlatformLabel } from './OpsAssetThumb';
@@ -756,18 +757,81 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
     [pipeline, nowMs]
   );
 
-  const igCrewAlert = useMemo(
-    () =>
-      crew.find(
-        (c) =>
-          c.connectorAlert &&
-          c.connectorAlert.status !== 'ok' &&
-          (!c.connectorAlert.platform ||
-            c.connectorAlert.platform.toLowerCase() === 'ig' ||
-            c.connectorAlert.platform.toLowerCase() === 'instagram')
-      )?.connectorAlert,
-    [crew]
-  );
+  const platformAlertsToday = useMemo(() => {
+    const map: Partial<Record<PlatformKey, CrewMember['connectorAlert']>> = {};
+    const normPlat = (raw?: string): PlatformKey | null => {
+      const s = (raw || '').trim().toLowerCase();
+      if (s === 'fb' || s === 'facebook') return 'fb';
+      if (s === 'ig' || s === 'instagram') return 'ig';
+      if (s === 'linkedin' || s === 'li') return 'linkedin';
+      if (s === 'x' || s === 'twitter') return 'x';
+      return null;
+    };
+    for (const c of crew) {
+      if (!c.connectorAlert || c.connectorAlert.status === 'ok') continue;
+      const pk = normPlat(c.connectorAlert.platform);
+      if (pk && !map[pk]) {
+        map[pk] = c.connectorAlert;
+      }
+    }
+    return map;
+  }, [crew]);
+
+  const botReportedToday = useMemo(() => {
+    const today = todayEasternYmd(nowMs);
+    const isToday = (iso?: string) => {
+      if (!iso) return false;
+      const ms = Date.parse(iso);
+      return Number.isFinite(ms) ? todayEasternYmd(ms) === today : iso.slice(0, 10) === today;
+    };
+    const normPlat = (raw?: string): PlatformKey | null => {
+      const s = (raw || '').trim().toLowerCase();
+      if (s === 'fb' || s === 'facebook') return 'fb';
+      if (s === 'ig' || s === 'instagram') return 'ig';
+      if (s === 'linkedin' || s === 'li') return 'linkedin';
+      if (s === 'x' || s === 'twitter') return 'x';
+      return null;
+    };
+    const best: Partial<
+      Record<PlatformKey, { count: number; limit?: number; asOf: string; actor: string }>
+    > = {};
+    for (const m of crew) {
+      for (const pk of ['fb', 'ig', 'linkedin', 'x'] as PlatformKey[]) {
+        const entry = m.dailyCounts?.[pk];
+        if (entry && isToday(entry.asOf)) {
+          const prev = best[pk];
+          if (!prev || entry.asOf > prev.asOf) {
+            best[pk] = {
+              count: entry.count,
+              limit: entry.limit,
+              asOf: entry.asOf,
+              actor: m.name,
+            };
+          }
+        }
+      }
+      if (
+        m.connectorAlert &&
+        m.connectorAlert.status !== 'ok' &&
+        m.connectorAlert.count !== undefined &&
+        isToday(m.connectorAlert.updatedAt)
+      ) {
+        const pk = normPlat(m.connectorAlert.platform);
+        if (pk) {
+          const prev = best[pk];
+          if (!prev || m.connectorAlert.updatedAt > prev.asOf) {
+            best[pk] = {
+              count: m.connectorAlert.count,
+              limit: m.connectorAlert.limit,
+              asOf: m.connectorAlert.updatedAt,
+              actor: m.name,
+            };
+          }
+        }
+      }
+    }
+    return best;
+  }, [crew, nowMs]);
 
   const filteredPipeline = useMemo(
     () =>
@@ -1379,25 +1443,49 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
 
                   <div className="hidden sm:flex items-center gap-2 pl-2.5 ml-auto border-l border-border/80 text-[11px] font-mono text-muted-foreground shrink-0">
                     {(() => {
-                      const igToday = Math.max(todayPublishedCounts.ig, igCrewAlert?.count ?? 0);
+                      const igBot = botReportedToday.ig;
+                      const xBot = botReportedToday.x;
+                      const igAlert = platformAlertsToday.ig;
+                      const xAlert = platformAlertsToday.x;
+                      const igVal = igBot ? igBot.count : todayPublishedCounts.ig;
+                      const xVal = xBot ? xBot.count : todayPublishedCounts.x;
+                      const igLimit = igBot?.limit ?? IG_DAILY_CAUTION_THRESHOLD;
+                      const xLimit = xBot?.limit;
+                      const tipLines = [
+                        `Verified links logged in Ops today (ET): IG ${todayPublishedCounts.ig} · X ${todayPublishedCounts.x} · FB ${todayPublishedCounts.fb} · LI ${todayPublishedCounts.linkedin}`,
+                        igBot
+                          ? `IG bot count (${igBot.actor}): ${igBot.count}${igBot.limit ? `/${igBot.limit}` : `/${IG_DAILY_CAUTION_THRESHOLD} caution`}`
+                          : 'IG count shows verified IG URLs logged in Ops (bots can report true account count via dailyCounts.ig).',
+                        xBot
+                          ? `X bot count (${xBot.actor}): ${xBot.count}${xBot.limit ? `/${xBot.limit}` : ''}`
+                          : 'X count shows verified X URLs logged in Ops (bots can report true account count/limit via dailyCounts.x).',
+                      ];
+                      const igCls =
+                        igAlert?.status === 'rate_limit'
+                          ? 'text-red-600 dark:text-red-400'
+                          : igAlert?.status === 'caution' || igVal >= igLimit
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-foreground';
+                      const xCls =
+                        xAlert?.status === 'rate_limit'
+                          ? 'text-red-600 dark:text-red-400'
+                          : xAlert?.status === 'caution' || (xLimit !== undefined && xVal >= xLimit)
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-foreground';
                       return (
-                        <span
-                          title={`Published today (ET) — FB: ${todayPublishedCounts.fb} · IG: ${igToday}/${IG_DAILY_CAUTION_THRESHOLD} caution · X: ${todayPublishedCounts.x} · LI: ${todayPublishedCounts.linkedin}`}
-                        >
-                          IG Today:{' '}
-                          <span
-                            className={`font-medium ${
-                              igCrewAlert?.status === 'rate_limit'
-                                ? 'text-red-600 dark:text-red-400'
-                                : igToday >= IG_DAILY_CAUTION_THRESHOLD ||
-                                    igCrewAlert?.status === 'caution'
-                                  ? 'text-amber-600 dark:text-amber-400'
-                                  : igToday >= 12
-                                    ? 'text-amber-600 dark:text-amber-400'
-                                    : 'text-foreground'
-                            }`}
-                          >
-                            {igToday}/{IG_DAILY_CAUTION_THRESHOLD}
+                        <span className="inline-flex items-center gap-1.5" title={tipLines.join('\n')}>
+                          <span>
+                            {igBot ? 'IG' : 'IG Links'}{' '}
+                            <span className={`font-medium ${igCls}`}>
+                              {igVal}/{igLimit}
+                            </span>
+                          </span>
+                          <span className="text-border">·</span>
+                          <span>
+                            {xBot ? 'X' : 'X Links'}{' '}
+                            <span className={`font-medium ${xCls}`}>
+                              {xLimit !== undefined ? `${xVal}/${xLimit}` : xVal}
+                            </span>
                           </span>
                         </span>
                       );
