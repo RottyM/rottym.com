@@ -1886,13 +1886,17 @@ export interface CardCompletenessResult {
     | null;
   buttonReason: string | null;
   detail: string | null;
+  warning: string | null;
+  missingCreditCount: number;
 }
 
 /**
  * Evaluates whether a pipeline card satisfies the completeness gate to enter Ready for Rotty.
  * Requires final copy AND either:
  * - Rotty's explicit "No image needed" exception (photoStatus === 'not_needed' with 0 assets), OR
- * - At least one asset where EVERY asset is delivered+approved and has altText and credit.
+ * - At least one asset where EVERY asset is delivered+approved and has altText.
+ * Missing credit emits a non-blocking warning (allowed for official maker/press material
+ * or story art when origin is noted on the card; still required when a photographer is named).
  */
 export function getCardCompleteness(
   card: Partial<
@@ -1907,6 +1911,11 @@ export function getCardCompleteness(
   const noImageNeeded = assets.length === 0 && !hasAsset && card.photoStatus === 'not_needed';
   const assetState: CardAssetState = hasAsset ? 'attached' : noImageNeeded ? 'not_needed' : 'missing';
   const hasCopy = Boolean(card.draftCopy?.trim());
+  const missingCreditCount = assets.filter((a) => !a.credit?.trim()).length;
+  const creditWarning =
+    missingCreditCount > 0
+      ? `${missingCreditCount} asset${missingCreditCount === 1 ? '' : 's'} missing credit — allowed for official/maker/art if origin is noted on the card; required if a photographer is named.`
+      : null;
 
   if (!hasCopy && assets.length === 0 && !noImageNeeded) {
     return {
@@ -1918,7 +1927,9 @@ export function getCardCompleteness(
       assetCount: 0,
       lockReason: 'needs_copy_and_photo',
       buttonReason: 'Needs copy & photo',
-      detail: 'Final draft copy and an approved asset with alt text + credit (or explicit "No image needed") are required.',
+      detail: 'Final draft copy and an approved asset with alt text (or explicit "No image needed") are required.',
+      warning: null,
+      missingCreditCount: 0,
     };
   }
 
@@ -1932,7 +1943,9 @@ export function getCardCompleteness(
       assetCount: 0,
       lockReason: 'needs_photo',
       buttonReason: 'Needs photo',
-      detail: 'Attach and approve at least one asset (with alt text + credit) or explicitly set "No image needed".',
+      detail: 'Attach and approve at least one asset with alt text or explicitly set "No image needed".',
+      warning: null,
+      missingCreditCount: 0,
     };
   }
 
@@ -1949,6 +1962,8 @@ export function getCardCompleteness(
         lockReason: 'asset_rejected',
         buttonReason: 'Asset rejected',
         detail: `${rejected.length} asset${rejected.length === 1 ? ' is' : 's are'} rejected — replace or remove before Ready for Rotty.`,
+        warning: creditWarning,
+        missingCreditCount,
       };
     }
 
@@ -1966,6 +1981,8 @@ export function getCardCompleteness(
         lockReason: 'needs_photo',
         buttonReason: 'Needs photo',
         detail: `${undelivered.length} asset${undelivered.length === 1 ? ' is' : 's are'} still pending delivery.`,
+        warning: creditWarning,
+        missingCreditCount,
       };
     }
 
@@ -1981,6 +1998,8 @@ export function getCardCompleteness(
         lockReason: 'needs_asset_approval',
         buttonReason: 'Needs asset approval',
         detail: `${unapproved.length} asset${unapproved.length === 1 ? '' : 's'} awaiting Marley/Rotty approval.`,
+        warning: creditWarning,
+        missingCreditCount,
       };
     }
 
@@ -1996,21 +2015,8 @@ export function getCardCompleteness(
         lockReason: 'needs_alt_text',
         buttonReason: 'Needs alt text',
         detail: `${missingAlt.length} asset${missingAlt.length === 1 ? '' : 's'} missing required alt text.`,
-      };
-    }
-
-    const missingCredit = assets.filter((a) => !a.credit?.trim());
-    if (missingCredit.length > 0) {
-      return {
-        assetState,
-        hasAsset,
-        hasCopy,
-        noImageNeeded,
-        canApproveReady: false,
-        assetCount: assets.length,
-        lockReason: 'needs_credit',
-        buttonReason: 'Needs credit',
-        detail: `${missingCredit.length} asset${missingCredit.length === 1 ? '' : 's'} missing required credit.`,
+        warning: creditWarning,
+        missingCreditCount,
       };
     }
   }
@@ -2026,6 +2032,8 @@ export function getCardCompleteness(
       lockReason: 'needs_copy',
       buttonReason: 'Needs copy',
       detail: 'Final draft copy is required before marking Ready for Rotty.',
+      warning: creditWarning,
+      missingCreditCount,
     };
   }
 
@@ -2039,6 +2047,8 @@ export function getCardCompleteness(
     lockReason: null,
     buttonReason: null,
     detail: null,
+    warning: creditWarning,
+    missingCreditCount,
   };
 }
 

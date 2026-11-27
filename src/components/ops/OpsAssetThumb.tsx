@@ -393,7 +393,7 @@ export function OpsAssetLightbox({
           <div>
             <span className="font-mono text-[10px] uppercase text-muted-foreground mr-1.5">Credit:</span>
             <span className={asset.credit ? 'text-foreground' : 'text-amber-600 dark:text-amber-300'}>
-              {asset.credit || 'Missing credit'}
+              {asset.credit || 'No credit (note origin if official/art)'}
             </span>
             {asset.sourceUrl && (
               <>

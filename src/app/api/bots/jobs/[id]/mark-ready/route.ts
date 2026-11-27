@@ -128,7 +128,11 @@ export async function POST(
   await appendOpsActivity(existing.clientId, actor.actorName, 'marked Ready for Rotty', updated.title);
 
   return NextResponse.json(
-    { ok: true, job: { ...updated, autoPostAllowed: false } },
+    {
+      ok: true,
+      ...(completeness.warning ? { warning: completeness.warning } : {}),
+      job: { ...updated, autoPostAllowed: false },
+    },
     { status: 200, headers: NO_STORE_HEADERS }
   );
 }

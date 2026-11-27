@@ -1022,6 +1022,14 @@ export default function OpsDecisionDesk({
                           {selectedCompleteness.buttonReason}
                         </span>
                       )}
+                      {selectedCompleteness.warning && (
+                        <span
+                          title={selectedCompleteness.warning}
+                          className="px-1.5 py-0 rounded border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                        >
+                          Credit warning
+                        </span>
+                      )}
                       {selectedCard.assignedTo && (
                         <span className="px-1.5 py-0 rounded border border-accent/35 bg-accent/10 text-accent">
                           Assigned → {selectedCard.assignedTo}
@@ -1253,7 +1261,7 @@ export default function OpsDecisionDesk({
                                     : 'text-amber-600 dark:text-amber-300'
                                 }
                               >
-                                {focusedAsset.credit || 'Missing (required for Ready)'}
+                                {focusedAsset.credit || 'None (optional if origin noted; mandatory if photographer named)'}
                               </span>
                               {focusedAsset.sourceUrl && (
                                 <>
@@ -2005,12 +2013,11 @@ export default function OpsDecisionDesk({
                           Post it
                         </button>
                       </div>
-                    ) : (selectedCompleteness.lockReason === 'needs_alt_text' ||
-                        selectedCompleteness.lockReason === 'needs_credit') ? (
+                    ) : selectedCompleteness.lockReason === 'needs_alt_text' ? (
                       <div className="flex flex-wrap items-center gap-2">
                         {(() => {
                           const targetAsset =
-                            selectedCardAssets.find((a) => !a.altText?.trim() || !a.credit?.trim()) ||
+                            selectedCardAssets.find((a) => !a.altText?.trim()) ||
                             focusedAsset;
                           return (
                             targetAsset && (
@@ -2020,7 +2027,7 @@ export default function OpsDecisionDesk({
                                 onClick={() => openAssetMetaEditor(targetAsset)}
                                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono border border-amber-500/45 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 disabled:opacity-50"
                               >
-                                Fix Alt / Credit
+                                Fix Alt Text
                               </button>
                             )
                           );
@@ -2034,7 +2041,7 @@ export default function OpsDecisionDesk({
                             setSelectedKey(nextKey);
                             setFocusedAssetId(null);
                           }}
-                          title="Copy and approved visual are ready — fire Post it now without waiting for alt text/credit"
+                          title="Copy and approved visual are ready — fire Post it now without waiting for alt text"
                           className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 shadow-xs"
                         >
                           <Send className="w-3.5 h-3.5" />

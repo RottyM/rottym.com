@@ -870,7 +870,7 @@ function CardEditorForm({
               />
             </div>
             <div>
-              <label className={LABEL_CLS}>Credit (Required for Ready)</label>
+              <label className={LABEL_CLS}>Credit (Mandatory if photographer named)</label>
               <input
                 className={INPUT_CLS}
                 value={activeAsset.credit || ''}
