@@ -20,9 +20,11 @@ import {
 } from 'lucide-react';
 import { extractPdfForDesk, type ExtractedPdfImage } from '@/lib/ops/pdf-intake';
 import {
+  formatPlatformShortLabel,
   getCardAssets,
   getCardCompleteness,
   getCardPublishedLinks,
+  inferLinkPlatformFromUrl,
   parseAdminPasteBlock,
   POST_FORMAT_LABELS,
   resolveAvatarRenderUrl,
@@ -1021,74 +1023,97 @@ function CardEditorForm({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className={LABEL_CLS}>Facebook URL</label>
-          <div className="flex gap-1.5">
-            <input className={INPUT_CLS} value={fbLink} onChange={(e) => setFbLink(e.target.value)} placeholder="https://facebook.com/..." />
-            {fbLink.trim() && (
-              <a
-                href={fbLink.trim()}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Open Facebook URL"
-                className="px-2.5 flex items-center rounded-lg border border-border hover:border-accent text-muted-foreground hover:text-accent"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            )}
-          </div>
-        </div>
-        <div>
-          <label className={LABEL_CLS}>Instagram URL</label>
-          <div className="flex gap-1.5">
-            <input className={INPUT_CLS} value={igLink} onChange={(e) => setIgLink(e.target.value)} placeholder="https://instagram.com/..." />
-            {igLink.trim() && (
-              <a
-                href={igLink.trim()}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Open Instagram URL"
-                className="px-2.5 flex items-center rounded-lg border border-border hover:border-accent text-muted-foreground hover:text-accent"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            )}
-          </div>
-        </div>
-        <div>
-          <label className={LABEL_CLS}>LinkedIn URL</label>
-          <div className="flex gap-1.5">
-            <input className={INPUT_CLS} value={liLink} onChange={(e) => setLiLink(e.target.value)} placeholder="https://linkedin.com/..." />
-            {liLink.trim() && (
-              <a
-                href={liLink.trim()}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Open LinkedIn URL"
-                className="px-2.5 flex items-center rounded-lg border border-border hover:border-accent text-muted-foreground hover:text-accent"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            )}
-          </div>
-        </div>
-        <div>
-          <label className={LABEL_CLS}>X URL</label>
-          <div className="flex gap-1.5">
-            <input className={INPUT_CLS} value={xLink} onChange={(e) => setXLink(e.target.value)} placeholder="https://x.com/..." />
-            {xLink.trim() && (
-              <a
-                href={xLink.trim()}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Open X URL"
-                className="px-2.5 flex items-center rounded-lg border border-border hover:border-accent text-muted-foreground hover:text-accent"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            )}
-          </div>
-        </div>
+        {(
+          [
+            {
+              key: 'fb',
+              label: 'Facebook URL',
+              value: fbLink,
+              setValue: setFbLink,
+              placeholder: 'https://facebook.com/...',
+            },
+            {
+              key: 'ig',
+              label: 'Instagram URL',
+              value: igLink,
+              setValue: setIgLink,
+              placeholder: 'https://instagram.com/...',
+            },
+            {
+              key: 'linkedin',
+              label: 'LinkedIn URL',
+              value: liLink,
+              setValue: setLiLink,
+              placeholder: 'https://linkedin.com/...',
+            },
+            {
+              key: 'x',
+              label: 'X URL',
+              value: xLink,
+              setValue: setXLink,
+              placeholder: 'https://x.com/...',
+            },
+          ] as Array<{
+            key: PlatformKey;
+            label: string;
+            value: string;
+            setValue: (v: string) => void;
+            placeholder: string;
+          }>
+        ).map((field) => {
+          const detected = inferLinkPlatformFromUrl(field.value);
+          const mismatch = detected && detected !== field.key ? detected : null;
+          const moveTargetSetter =
+            mismatch === 'fb'
+              ? setFbLink
+              : mismatch === 'ig'
+                ? setIgLink
+                : mismatch === 'linkedin'
+                  ? setLiLink
+                  : mismatch === 'x'
+                    ? setXLink
+                    : null;
+          return (
+            <div key={field.key}>
+              <label className={LABEL_CLS}>{field.label}</label>
+              <div className="flex gap-1.5">
+                <input
+                  className={INPUT_CLS}
+                  value={field.value}
+                  onChange={(e) => field.setValue(e.target.value)}
+                  placeholder={field.placeholder}
+                />
+                {field.value.trim() && (
+                  <a
+                    href={field.value.trim()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Open ${field.label}`}
+                    className="px-2.5 flex items-center rounded-lg border border-border hover:border-accent text-muted-foreground hover:text-accent"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
+              {mismatch && moveTargetSetter && (
+                <div className="mt-1 flex items-center justify-between gap-2 text-[10px] font-mono text-amber-700 dark:text-amber-300">
+                  <span>Looks like a {formatPlatformShortLabel(mismatch)} link</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = field.value.trim();
+                      moveTargetSetter(url);
+                      field.setValue('');
+                    }}
+                    className="underline hover:text-foreground shrink-0"
+                  >
+                    Move to {formatPlatformShortLabel(mismatch)} URL
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className="pt-2 border-t border-border flex flex-wrap items-center justify-between gap-2">

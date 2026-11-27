@@ -9,8 +9,8 @@ import {
 import {
   findUnknownFields,
   inferAgentId,
-  normalizePlatformKey,
   parseConnectorAlert,
+  parseDailyCountsPatch,
   sanitizeAvatarUrl,
 } from '@/lib/ops/drop-parser';
 import {
@@ -20,7 +20,7 @@ import {
   opsQueryByClient,
   opsSetDoc,
 } from '@/lib/ops/firestore-rest';
-import type { AgentStatus, CrewMember, DailyPlatformCount, PlatformKey } from '@/lib/ops/types';
+import type { AgentStatus, CrewMember } from '@/lib/ops/types';
 
 const VALID_STATUSES = new Set<AgentStatus>(['active', 'stand_down', 'on_hold', 'out', 'on_call']);
 const NO_STORE_HEADERS = {
@@ -181,43 +181,13 @@ async function handleCrewUpdate(request: Request) {
     nextConnectorAlert = alertCheck.value;
   }
 
-  let nextDailyCounts: Partial<Record<PlatformKey, DailyPlatformCount>> | undefined =
-    existing.dailyCounts;
+  let nextDailyCounts = existing.dailyCounts;
   if (body.dailyCounts !== undefined) {
-    if (body.dailyCounts === null) {
-      nextDailyCounts = undefined;
-    } else if (typeof body.dailyCounts === 'object' && !Array.isArray(body.dailyCounts)) {
-      const merged: Partial<Record<PlatformKey, DailyPlatformCount>> = {
-        ...(existing.dailyCounts || {}),
-      };
-      for (const [rawPlat, rawVal] of Object.entries(body.dailyCounts)) {
-        const plat = normalizePlatformKey(rawPlat);
-        if (!plat) continue;
-        if (rawVal === null) {
-          delete merged[plat];
-        } else if (typeof rawVal === 'number' && Number.isFinite(rawVal) && rawVal >= 0) {
-          merged[plat] = { count: Math.round(rawVal), asOf: now };
-        } else if (rawVal && typeof rawVal === 'object' && !Array.isArray(rawVal)) {
-          const obj = rawVal as Record<string, unknown>;
-          if (typeof obj.count === 'number' && Number.isFinite(obj.count) && obj.count >= 0) {
-            merged[plat] = {
-              count: Math.round(obj.count),
-              limit:
-                typeof obj.limit === 'number' && Number.isFinite(obj.limit) && obj.limit > 0
-                  ? Math.round(obj.limit)
-                  : undefined,
-              asOf: typeof obj.asOf === 'string' && obj.asOf.trim() ? obj.asOf.trim().slice(0, 64) : now,
-            };
-          }
-        }
-      }
-      nextDailyCounts = Object.keys(merged).length > 0 ? merged : undefined;
-    } else {
-      return NextResponse.json(
-        { error: 'dailyCounts must be null or an object keyed by platform (fb, ig, linkedin, x).' },
-        { status: 400, headers: NO_STORE_HEADERS }
-      );
+    const countsCheck = parseDailyCountsPatch(body.dailyCounts, existing.dailyCounts, now);
+    if (!countsCheck.ok) {
+      return NextResponse.json({ error: countsCheck.error }, { status: 400, headers: NO_STORE_HEADERS });
     }
+    nextDailyCounts = countsCheck.value;
   }
 
   const updated: CrewMember = {

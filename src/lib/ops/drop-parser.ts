@@ -5,6 +5,7 @@ import type {
   ConnectorAlert,
   ConnectorAlertStatus,
   ContentKind,
+  DailyPlatformCount,
   GateState,
   JobAsset,
   JobAssetKind,
@@ -1574,6 +1575,60 @@ export function isRateLimitErrorMessage(raw: string): boolean {
   return /(?:rate.?limit|daily.?(?:limit|cap|quota)|publishing.?limit|post.?limit|tweet.?limit|usage.?cap|quota.?exceeded|limit\s*(?:reached|hit|exceeded)|cap\s*(?:hit|reached)|too\s+many\s+requests|\b429\b)/i.test(
     raw
   );
+}
+
+export function inferLinkPlatformFromUrl(raw: string): PlatformKey | null {
+  const clean = raw.trim();
+  if (!clean) return null;
+  try {
+    const host = new URL(clean).hostname.toLowerCase();
+    if (host.includes('instagram.com')) return 'ig';
+    if (host.includes('facebook.com') || host.includes('fb.watch') || host === 'fb.me') return 'fb';
+    if (host.includes('linkedin.com')) return 'linkedin';
+    if (host === 'x.com' || host.endsWith('.x.com') || host.includes('twitter.com')) return 'x';
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+export function parseDailyCountsPatch(
+  raw: unknown,
+  existing: Partial<Record<PlatformKey, DailyPlatformCount>> | undefined,
+  now: string
+):
+  | { ok: true; value: Partial<Record<PlatformKey, DailyPlatformCount>> | undefined }
+  | { ok: false; error: string } {
+  if (raw === null) return { ok: true, value: undefined };
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    return {
+      ok: false,
+      error: 'dailyCounts must be null or an object keyed by platform (fb, ig, linkedin, x).',
+    };
+  }
+  const merged: Partial<Record<PlatformKey, DailyPlatformCount>> = { ...(existing || {}) };
+  for (const [rawPlat, rawVal] of Object.entries(raw as Record<string, unknown>)) {
+    const plat = normalizePlatformKey(rawPlat);
+    if (!plat) continue;
+    if (rawVal === null) {
+      delete merged[plat];
+    } else if (typeof rawVal === 'number' && Number.isFinite(rawVal) && rawVal >= 0) {
+      merged[plat] = { count: Math.round(rawVal), asOf: now };
+    } else if (rawVal && typeof rawVal === 'object' && !Array.isArray(rawVal)) {
+      const obj = rawVal as Record<string, unknown>;
+      if (typeof obj.count === 'number' && Number.isFinite(obj.count) && obj.count >= 0) {
+        merged[plat] = {
+          count: Math.round(obj.count),
+          limit:
+            typeof obj.limit === 'number' && Number.isFinite(obj.limit) && obj.limit > 0
+              ? Math.round(obj.limit)
+              : undefined,
+          asOf: typeof obj.asOf === 'string' && obj.asOf.trim() ? obj.asOf.trim().slice(0, 64) : now,
+        };
+      }
+    }
+  }
+  return { ok: true, value: Object.keys(merged).length > 0 ? merged : undefined };
 }
 
 export function normalizeRelevantUntil(raw: unknown): string | undefined {

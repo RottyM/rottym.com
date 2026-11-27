@@ -143,6 +143,242 @@ function useEasternClock(): string {
   return clock;
 }
 
+function PlatformDailyCounter({
+  busy,
+  todayPublishedCounts,
+  botReportedToday,
+  platformAlertsToday,
+  hasOwnerFor,
+  onSaveCount,
+  onToggleLimit,
+}: {
+  busy: boolean;
+  todayPublishedCounts: Record<PlatformKey, number>;
+  botReportedToday: Partial<
+    Record<PlatformKey, { count: number; limit?: number; asOf: string; actor: string }>
+  >;
+  platformAlertsToday: Partial<Record<PlatformKey, CrewMember['connectorAlert']>>;
+  hasOwnerFor: (plat: 'ig' | 'x') => boolean;
+  onSaveCount: (plat: 'ig' | 'x', nextCount: number | null, nextCap?: number) => Promise<boolean>;
+  onToggleLimit: (plat: 'ig' | 'x', countVal: number, capVal?: number) => Promise<boolean>;
+}) {
+  const [openPlat, setOpenPlat] = useState<'ig' | 'x' | null>(null);
+  const [draftCount, setDraftCount] = useState('');
+  const [draftCap, setDraftCap] = useState('');
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!openPlat) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpenPlat(null);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenPlat(null);
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [openPlat]);
+
+  const igBot = botReportedToday.ig;
+  const xBot = botReportedToday.x;
+  const igAlert = platformAlertsToday.ig;
+  const xAlert = platformAlertsToday.x;
+  const igVal = igBot ? igBot.count : todayPublishedCounts.ig;
+  const xVal = xBot ? xBot.count : todayPublishedCounts.x;
+  const igLimit = igBot?.limit ?? IG_DAILY_CAUTION_THRESHOLD;
+  const xLimit = xBot?.limit;
+
+  const igCls =
+    igAlert?.status === 'rate_limit'
+      ? 'text-red-600 dark:text-red-400'
+      : igAlert?.status === 'caution' || igVal >= igLimit
+        ? 'text-amber-600 dark:text-amber-400'
+        : 'text-foreground';
+  const xCls =
+    xAlert?.status === 'rate_limit'
+      ? 'text-red-600 dark:text-red-400'
+      : xAlert?.status === 'caution' || (xLimit !== undefined && xVal >= xLimit)
+        ? 'text-amber-600 dark:text-amber-400'
+        : 'text-foreground';
+
+  const openEditor = (plat: 'ig' | 'x') => {
+    if (openPlat === plat) {
+      setOpenPlat(null);
+      return;
+    }
+    const currentVal = plat === 'ig' ? igVal : xVal;
+    const currentCap = plat === 'ig' ? igLimit : xLimit;
+    setDraftCount(String(currentVal));
+    setDraftCap(currentCap !== undefined ? String(currentCap) : '');
+    setOpenPlat(plat);
+  };
+
+  const activeBot = openPlat ? botReportedToday[openPlat] : undefined;
+  const activeAlert = openPlat ? platformAlertsToday[openPlat] : undefined;
+  const activeVal = openPlat === 'ig' ? igVal : xVal;
+
+  return (
+    <div ref={containerRef} className="relative inline-flex items-center gap-1.5">
+      <button
+        type="button"
+        onClick={() => openEditor('ig')}
+        title={`Click to adjust IG count/limit\nOps IG links today: ${todayPublishedCounts.ig}\n${igBot ? `Reported (${igBot.actor}): ${igBot.count}/${igLimit}` : 'Not yet synced by bot — click to set real count'}`}
+        className={`px-1.5 py-0.5 rounded border transition-colors ${
+          openPlat === 'ig'
+            ? 'border-accent bg-accent/15'
+            : 'border-transparent hover:border-border hover:bg-background/80'
+        }`}
+      >
+        {igBot ? 'IG' : 'IG Links'}{' '}
+        <span className={`font-medium ${igCls}`}>
+          {igVal}/{igLimit}
+        </span>
+      </button>
+      <span className="text-border">·</span>
+      <button
+        type="button"
+        onClick={() => openEditor('x')}
+        title={`Click to adjust X count/limit\nOps X links today: ${todayPublishedCounts.x}\n${xBot ? `Reported (${xBot.actor}): ${xBot.count}${xLimit !== undefined ? `/${xLimit}` : ''}` : 'Not yet synced by bot — click to set real count/limit'}`}
+        className={`px-1.5 py-0.5 rounded border transition-colors ${
+          openPlat === 'x'
+            ? 'border-accent bg-accent/15'
+            : 'border-transparent hover:border-border hover:bg-background/80'
+        }`}
+      >
+        {xBot ? 'X' : 'X Links'}{' '}
+        <span className={`font-medium ${xCls}`}>
+          {xLimit !== undefined ? `${xVal}/${xLimit}` : xVal}
+        </span>
+      </button>
+
+      {openPlat && (
+        <div className="absolute right-0 top-full mt-1.5 z-30 w-72 rounded-xl border border-border bg-card shadow-xl p-3 space-y-2.5 text-left text-xs font-sans text-foreground">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[11px] uppercase tracking-wider font-medium">
+              {openPlat === 'ig' ? 'Instagram' : 'X'} Today (ET)
+            </span>
+            <button
+              type="button"
+              onClick={() => setOpenPlat(null)}
+              className="text-muted-foreground hover:text-foreground"
+              aria-label="Close platform counter"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="text-[11px] font-mono text-muted-foreground space-y-0.5">
+            <div>
+              Ops verified links: IG {todayPublishedCounts.ig} · FB {todayPublishedCounts.fb} · X{' '}
+              {todayPublishedCounts.x} · LI {todayPublishedCounts.linkedin}
+            </div>
+            {activeBot && (
+              <div className="text-foreground/90">
+                Synced count ({activeBot.actor}): {activeBot.count}
+              </div>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[10px] font-mono uppercase text-muted-foreground mb-1">
+                Count Today
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={draftCount}
+                onChange={(e) => setDraftCount(e.target.value)}
+                className="w-full rounded-md border border-border bg-background px-2 py-1 text-xs font-mono focus:outline-none focus:border-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-mono uppercase text-muted-foreground mb-1">
+                {openPlat === 'ig' ? 'Caution Line' : 'Cap (Opt)'}
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={draftCap}
+                onChange={(e) => setDraftCap(e.target.value)}
+                placeholder={openPlat === 'ig' ? '15' : 'None'}
+                className="w-full rounded-md border border-border bg-background px-2 py-1 text-xs font-mono focus:outline-none focus:border-accent"
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={async () => {
+                const n = Number(draftCount);
+                const cap = draftCap.trim() ? Number(draftCap) : undefined;
+                if (!Number.isFinite(n) || n < 0) return;
+                if (await onSaveCount(openPlat, n, cap)) setOpenPlat(null);
+              }}
+              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
+            >
+              Save Count
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={async () => {
+                const cap = draftCap.trim() ? Number(draftCap) : undefined;
+                if (await onSaveCount(openPlat, activeVal + 1, cap)) setOpenPlat(null);
+              }}
+              className="px-2 py-1 rounded-md text-[11px] font-mono border border-border bg-background hover:border-accent disabled:opacity-50"
+            >
+              +1
+            </button>
+            {activeBot && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={async () => {
+                  if (await onSaveCount(openPlat, null)) setOpenPlat(null);
+                }}
+                className="px-2 py-1 rounded-md text-[11px] font-mono border border-border bg-background text-muted-foreground hover:text-foreground disabled:opacity-50"
+              >
+                Use Ops Links
+              </button>
+            )}
+          </div>
+          {hasOwnerFor(openPlat) && (
+            <div className="pt-2 border-t border-border/70 flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={async () => {
+                  const n = Number(draftCount);
+                  const countVal = Number.isFinite(n) && n >= 0 ? Math.round(n) : activeVal;
+                  const capVal = draftCap.trim()
+                    ? Math.round(Number(draftCap))
+                    : openPlat === 'ig'
+                      ? 15
+                      : undefined;
+                  if (await onToggleLimit(openPlat, countVal, capVal)) setOpenPlat(null);
+                }}
+                className={`px-2 py-1 rounded-md text-[11px] font-mono border transition-colors disabled:opacity-50 ${
+                  activeAlert?.status === 'rate_limit'
+                    ? 'border-border bg-background text-foreground hover:border-accent'
+                    : 'border-red-500/45 bg-red-500/10 text-red-700 dark:text-red-300 hover:bg-red-500/20'
+                }`}
+              >
+                {activeAlert?.status === 'rate_limit' ? 'Clear Limit Banner' : 'Flag Limit Hit'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'desk' }) {
   const { resolvedTheme, setTheme } = useTheme();
   const etClock = useEasternClock();
@@ -869,6 +1105,87 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
     }
   };
 
+  const resolveLimitOwnerAgentId = (plat: 'ig' | 'x'): string | null => {
+    const preferred = plat === 'ig' ? ['marley', 'pixel'] : ['sovereign', 'marley'];
+    for (const id of preferred) {
+      if (crew.some((c) => c.agentId === id)) return id;
+    }
+    return crew[0]?.agentId || null;
+  };
+
+  const saveDailyPlatformCount = async (
+    plat: 'ig' | 'x',
+    nextCount: number | null,
+    nextCap?: number
+  ): Promise<boolean> => {
+    const targetAgent = resolveLimitOwnerAgentId(plat);
+    if (!targetAgent) {
+      showToast('No crew member found to save platform count.');
+      return false;
+    }
+    const patch =
+      nextCount === null
+        ? { [plat]: null }
+        : {
+            [plat]: {
+              count: Math.max(0, Math.round(nextCount)),
+              ...(nextCap !== undefined && nextCap > 0 ? { limit: Math.round(nextCap) } : {}),
+              asOf: new Date().toISOString(),
+            },
+          };
+    return postAction(
+      { action: 'update_crew', agentId: targetAgent, dailyCounts: patch },
+      nextCount === null
+        ? `Reset ${plat.toUpperCase()} count to Ops links`
+        : `Updated ${plat.toUpperCase()} today count to ${nextCount}`
+    );
+  };
+
+  const toggleDailyLimitBanner = async (
+    plat: 'ig' | 'x',
+    countVal: number,
+    capVal?: number
+  ): Promise<boolean> => {
+    const targetAgent = resolveLimitOwnerAgentId(plat);
+    if (!targetAgent) {
+      showToast('No crew member found to save platform limit.');
+      return false;
+    }
+    const activeAlert = platformAlertsToday[plat];
+    const nextAlert =
+      activeAlert?.status === 'rate_limit'
+        ? null
+        : {
+            status: 'rate_limit',
+            platform: plat,
+            count: countVal,
+            ...(capVal ? { limit: capVal } : {}),
+            resetAt: plat === 'ig' ? '~8:30 AM' : undefined,
+            message: `${plat.toUpperCase()} daily limit hit (${countVal}${capVal ? `/${capVal}` : ''})`,
+          };
+    return postAction(
+      {
+        action: 'update_crew',
+        agentId: targetAgent,
+        connectorAlert: nextAlert,
+        ...(nextAlert
+          ? {
+              dailyCounts: {
+                [plat]: {
+                  count: countVal,
+                  ...(capVal ? { limit: capVal } : {}),
+                  asOf: new Date().toISOString(),
+                },
+              },
+            }
+          : {}),
+      },
+      nextAlert
+        ? `Flagged ${plat.toUpperCase()} daily limit hit`
+        : `Cleared ${plat.toUpperCase()} limit flag`
+    );
+  };
+
   const approveCardAssets = async (card: PipelineCard) => {
     const pending = getCardAssets(card).filter(
       (a) => a.status !== 'approved' && Boolean(a.url?.trim() || a.file?.trim())
@@ -1442,54 +1759,15 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   </div>
 
                   <div className="hidden sm:flex items-center gap-2 pl-2.5 ml-auto border-l border-border/80 text-[11px] font-mono text-muted-foreground shrink-0">
-                    {(() => {
-                      const igBot = botReportedToday.ig;
-                      const xBot = botReportedToday.x;
-                      const igAlert = platformAlertsToday.ig;
-                      const xAlert = platformAlertsToday.x;
-                      const igVal = igBot ? igBot.count : todayPublishedCounts.ig;
-                      const xVal = xBot ? xBot.count : todayPublishedCounts.x;
-                      const igLimit = igBot?.limit ?? IG_DAILY_CAUTION_THRESHOLD;
-                      const xLimit = xBot?.limit;
-                      const tipLines = [
-                        `Verified links logged in Ops today (ET): IG ${todayPublishedCounts.ig} · X ${todayPublishedCounts.x} · FB ${todayPublishedCounts.fb} · LI ${todayPublishedCounts.linkedin}`,
-                        igBot
-                          ? `IG bot count (${igBot.actor}): ${igBot.count}${igBot.limit ? `/${igBot.limit}` : `/${IG_DAILY_CAUTION_THRESHOLD} caution`}`
-                          : 'IG count shows verified IG URLs logged in Ops (bots can report true account count via dailyCounts.ig).',
-                        xBot
-                          ? `X bot count (${xBot.actor}): ${xBot.count}${xBot.limit ? `/${xBot.limit}` : ''}`
-                          : 'X count shows verified X URLs logged in Ops (bots can report true account count/limit via dailyCounts.x).',
-                      ];
-                      const igCls =
-                        igAlert?.status === 'rate_limit'
-                          ? 'text-red-600 dark:text-red-400'
-                          : igAlert?.status === 'caution' || igVal >= igLimit
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-foreground';
-                      const xCls =
-                        xAlert?.status === 'rate_limit'
-                          ? 'text-red-600 dark:text-red-400'
-                          : xAlert?.status === 'caution' || (xLimit !== undefined && xVal >= xLimit)
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-foreground';
-                      return (
-                        <span className="inline-flex items-center gap-1.5" title={tipLines.join('\n')}>
-                          <span>
-                            {igBot ? 'IG' : 'IG Links'}{' '}
-                            <span className={`font-medium ${igCls}`}>
-                              {igVal}/{igLimit}
-                            </span>
-                          </span>
-                          <span className="text-border">·</span>
-                          <span>
-                            {xBot ? 'X' : 'X Links'}{' '}
-                            <span className={`font-medium ${xCls}`}>
-                              {xLimit !== undefined ? `${xVal}/${xLimit}` : xVal}
-                            </span>
-                          </span>
-                        </span>
-                      );
-                    })()}
+                    <PlatformDailyCounter
+                      busy={busy}
+                      todayPublishedCounts={todayPublishedCounts}
+                      botReportedToday={botReportedToday}
+                      platformAlertsToday={platformAlertsToday}
+                      hasOwnerFor={(plat) => Boolean(resolveLimitOwnerAgentId(plat))}
+                      onSaveCount={saveDailyPlatformCount}
+                      onToggleLimit={toggleDailyLimitBanner}
+                    />
                     <span className="text-border">·</span>
                     <span>
                       In Flight:{' '}

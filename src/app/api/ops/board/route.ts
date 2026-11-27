@@ -23,6 +23,7 @@ import {
   normalizePostFormat,
   parseAdminPasteBlock,
   parseConnectorAlert,
+  parseDailyCountsPatch,
   parseNewJobAssetInput,
   refreshStaleCardNote,
   resolveEffectivePhotoStatus,
@@ -164,6 +165,15 @@ export async function POST(request: Request) {
       nextConnectorAlert = alertCheck.value;
     }
 
+    let nextDailyCounts = existing.dailyCounts;
+    if (body.dailyCounts !== undefined) {
+      const countsCheck = parseDailyCountsPatch(body.dailyCounts, existing.dailyCounts, now);
+      if (!countsCheck.ok) {
+        return NextResponse.json({ error: countsCheck.error }, { status: 400 });
+      }
+      nextDailyCounts = countsCheck.value;
+    }
+
     const updated: CrewMember = {
       ...existing,
       name: nextName,
@@ -179,6 +189,7 @@ export async function POST(request: Request) {
           ? body.statusNote.trim().slice(0, 180) || undefined
           : existing.statusNote,
       connectorAlert: nextConnectorAlert,
+      dailyCounts: nextDailyCounts,
       usagePct:
         body.usagePct === null
           ? undefined
@@ -675,7 +686,7 @@ export async function POST(request: Request) {
       nextTargetPlatforms?.some((p) => Boolean(mergedLinks[p]))
     );
     const autoPromotePosted =
-      body.targetPlatforms !== undefined &&
+      (body.targetPlatforms !== undefined || body.links !== undefined) &&
       body.stage === undefined &&
       nextStage !== 'posted' &&
       nextStage !== 'archived' &&
@@ -711,9 +722,10 @@ export async function POST(request: Request) {
           ? normalizePostFormat(body.postFormat)
           : existing.postFormat;
 
-    const cleanedNote = autoPromotePosted
-      ? nextNote?.replace(/;\s*awaiting:[^.\n]*/i, '').trim() || undefined
-      : nextNote;
+    const cleanedNote =
+      effectiveStage === 'posted' && pendingAfterUpdate.length === 0
+        ? nextNote?.replace(/;\s*awaiting:[^.\n]*/i, '').trim() || undefined
+        : nextNote;
 
     const updated: PipelineCard = {
       ...existing,
