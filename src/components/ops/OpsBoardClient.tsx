@@ -57,11 +57,14 @@ import type {
   PipelineStage,
 } from '@/lib/ops/types';
 import {
+  formatCardPlatformBadge,
+  formatPlatformShortLabel,
   getCardAssets,
   getCardCompleteness,
   getCardFormatBadges,
   getCardPublishedLinks,
   getEffectiveRequestStatus,
+  getPendingPlatforms,
   getUpdateAlertMeta,
   resolveAvatarRenderUrl,
   splitTextWithUrls,
@@ -2093,7 +2096,16 @@ function PipelineCardTile({
     >
       <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono">
         <div className="flex items-center gap-1 min-w-0">
-          <span className="px-1.5 py-0.5 rounded bg-muted text-foreground uppercase">{card.lane}</span>
+          <span
+            className="px-1.5 py-0.5 rounded bg-muted text-foreground uppercase"
+            title={
+              card.targetPlatforms?.length
+                ? `Targets: ${card.targetPlatforms.map(formatPlatformShortLabel).join(', ')}`
+                : undefined
+            }
+          >
+            {formatCardPlatformBadge(card)}
+          </span>
           {card.verdictTag && (
             <span className="px-1.5 py-0.5 rounded border border-border bg-card text-foreground/90 uppercase">
               {card.verdictTag}
@@ -3624,21 +3636,36 @@ function CrewChatPanel({
                         )}
                       </div>
 
-                      {(linkedCard || liveLinks.length > 0) && (
+                      {(linkedCard || liveLinks.length > 0) && (() => {
+                        const chatPendingPlatforms =
+                          linkedCard && linkedCard.stage !== 'posted'
+                            ? getPendingPlatforms(linkedCard.targetPlatforms, linkedCard.links)
+                            : [];
+                        return (
                         <div className="flex items-center justify-between gap-2 mt-2 pt-0.5 text-[11px]">
                           <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                             {liveLinks.length > 0 ? (
-                              liveLinks.map((l) => (
-                                <a
-                                  key={`chat-${m.id}-${l.platform}`}
-                                  href={l.href}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono text-emerald-700 dark:text-emerald-300 hover:underline"
-                                >
-                                  {l.shortLabel} Live <ExternalLink className="w-2.5 h-2.5" />
-                                </a>
-                              ))
+                              <>
+                                {liveLinks.map((l) => (
+                                  <a
+                                    key={`chat-${m.id}-${l.platform}`}
+                                    href={l.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono text-emerald-700 dark:text-emerald-300 hover:underline"
+                                  >
+                                    {l.shortLabel} Live <ExternalLink className="w-2.5 h-2.5" />
+                                  </a>
+                                ))}
+                                {chatPendingPlatforms.map((p) => (
+                                  <span
+                                    key={`chat-${m.id}-pending-${p}`}
+                                    className="inline-flex items-center px-1.5 py-0.5 rounded border border-amber-500/45 bg-amber-500/15 text-[10px] font-mono text-amber-800 dark:text-amber-200"
+                                  >
+                                    {formatPlatformShortLabel(p)} pending
+                                  </span>
+                                ))}
+                              </>
                             ) : cardMeta ? (
                               <span className="text-muted-foreground inline-flex items-center gap-1.5 truncate">
                                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cardMeta.footerDot}`} />
@@ -3657,7 +3684,8 @@ function CrewChatPanel({
                             </button>
                           )}
                         </div>
-                      )}
+                        );
+                      })()}
                     </article>
                   ) : (
                     /* Bot Structured Report Card */

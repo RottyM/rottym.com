@@ -1504,6 +1504,26 @@ export function getPendingPlatforms(
   return targetPlatforms.filter((p) => !links?.[p]);
 }
 
+export function formatPlatformShortLabel(platform: PlatformKey): string {
+  return platform === 'linkedin' ? 'LI' : platform.toUpperCase();
+}
+
+export function formatCardPlatformBadge(
+  card: Pick<PipelineCard, 'lane' | 'targetPlatforms'>
+): string {
+  if (card.targetPlatforms && card.targetPlatforms.length > 0) {
+    if (
+      card.targetPlatforms.length === 2 &&
+      card.targetPlatforms.includes('fb') &&
+      card.targetPlatforms.includes('ig')
+    ) {
+      return 'FB-IG';
+    }
+    return card.targetPlatforms.map(formatPlatformShortLabel).join(' + ');
+  }
+  return card.lane.toUpperCase();
+}
+
 export function normalizePhotoStatus(raw: unknown): PhotoStatus | undefined {
   if (typeof raw !== 'string' || !raw.trim()) return undefined;
   const clean = raw.trim().toLowerCase().replace(/[\s-]+/g, '_');

@@ -19,11 +19,14 @@ import {
 } from 'lucide-react';
 import {
   extractDriveFileId,
+  formatCardPlatformBadge,
+  formatPlatformShortLabel,
   getCardAssets,
   getCardCompleteness,
   getCardFormatBadges,
   getCardPublishedLinks,
   getEffectiveRequestStatus,
+  getPendingPlatforms,
   getUpdateAlertMeta,
   isEventCard,
   POST_FORMAT_LABELS,
@@ -433,6 +436,10 @@ export default function OpsDecisionDesk({
       ].filter((x): x is { label: string; href: string } => Boolean(x))
     : [];
   const selectedPublishedLinks = selectedCard ? getCardPublishedLinks(selectedCard) : [];
+  const selectedPendingPlatforms =
+    selectedCard && selectedCard.stage !== 'posted'
+      ? getPendingPlatforms(selectedCard.targetPlatforms, selectedCard.links)
+      : [];
   const selectedRequestStatus = selectedRequest ? getEffectiveRequestStatus(selectedRequest, nowMs) : null;
   const selectedLinkedCard = selectedRequest?.jobId
     ? pipeline.find((c) => c.id === selectedRequest.jobId) || null
@@ -692,6 +699,10 @@ export default function OpsDecisionDesk({
               const completeness = getCardCompleteness(card);
               const cardAssets = getCardAssets(card);
               const cardLiveLinks = getCardPublishedLinks(card);
+              const cardPendingPlatforms =
+                card.stage !== 'posted'
+                  ? getPendingPlatforms(card.targetPlatforms, card.links)
+                  : [];
               const fmt = getCardFormatBadges(card);
               const hasDelivered = cardAssets.some((a) => a.status === 'delivered');
               const hasRejected = cardAssets.some((a) => a.status === 'rejected');
@@ -739,8 +750,15 @@ export default function OpsDecisionDesk({
                           UPDATED
                         </span>
                       ) : null}
-                      <span className="px-1.5 py-0.2 rounded bg-muted text-foreground uppercase shrink-0">
-                        {card.lane}
+                      <span
+                        className="px-1.5 py-0.2 rounded bg-muted text-foreground uppercase shrink-0"
+                        title={
+                          card.targetPlatforms?.length
+                            ? `Targets: ${card.targetPlatforms.map(formatPlatformShortLabel).join(', ')}`
+                            : undefined
+                        }
+                      >
+                        {formatCardPlatformBadge(card)}
                       </span>
                       <span className="px-1.5 py-0.2 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium truncate">
                         {fmt.primary}{fmt.secondary ? ` · ${fmt.secondary}` : ''}
@@ -821,7 +839,7 @@ export default function OpsDecisionDesk({
                     )}
                   </div>
 
-                  {cardLiveLinks.length > 0 && (
+                  {(cardLiveLinks.length > 0 || cardPendingPlatforms.length > 0) && (
                     <div className="flex flex-wrap items-center gap-1 pt-0.5">
                       {cardLiveLinks.map((l) => (
                         <a
@@ -833,8 +851,17 @@ export default function OpsDecisionDesk({
                           title={`Preview ${l.label} post: ${l.href}`}
                           className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-[10px] font-mono text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 hover:underline"
                         >
-                          {l.shortLabel} <ExternalLink className="w-2.5 h-2.5" />
+                          {l.shortLabel} ✓ <ExternalLink className="w-2.5 h-2.5" />
                         </a>
+                      ))}
+                      {cardPendingPlatforms.map((p) => (
+                        <span
+                          key={`list-pending-${p}`}
+                          title={`Still missing live post on ${formatPlatformShortLabel(p)}`}
+                          className="inline-flex items-center px-1.5 py-0.5 rounded border border-amber-500/45 bg-amber-500/15 text-[10px] font-mono text-amber-800 dark:text-amber-200"
+                        >
+                          {formatPlatformShortLabel(p)} pending
+                        </span>
                       ))}
                       {card.postedAssets && Object.keys(card.postedAssets).length > 0 && (
                         <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-300">
@@ -872,8 +899,15 @@ export default function OpsDecisionDesk({
                             {readerAlert.label}
                           </span>
                         )}
-                        <span className="px-1.5 py-0.5 rounded bg-muted text-foreground uppercase">
-                          {selectedCard.lane}
+                        <span
+                          className="px-1.5 py-0.5 rounded bg-muted text-foreground uppercase"
+                          title={
+                            selectedCard.targetPlatforms?.length
+                              ? `Target platforms: ${selectedCard.targetPlatforms.map(formatPlatformShortLabel).join(', ')}`
+                              : undefined
+                          }
+                        >
+                          {formatCardPlatformBadge(selectedCard)}
                         </span>
                         {onSetPostFormat && selectedCard.stage !== 'posted' && selectedCard.stage !== 'archived' ? (
                           <select
@@ -963,34 +997,68 @@ export default function OpsDecisionDesk({
 
               {/* Scrollable Full Draft + Image + Source */}
               <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain [overflow-anchor:none] ops-scroll p-3 space-y-2.5">
-                {/* Published Post Live Links (prominent at top of details) */}
-                {(selectedCard.stage === 'posted' || selectedPublishedLinks.length > 0) && (
-                  <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[11px] font-mono font-normal uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
-                      {selectedPublishedLinks.length > 0 ? 'Live Published Post' : 'Published'}
-                    </span>
-                    {selectedPublishedLinks.length > 0 ? (
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {selectedPublishedLinks.map((l) => (
-                          <a
-                            key={`${l.platform}-${l.href}`}
-                            href={l.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={l.href}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-normal bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
-                          >
-                            Preview {l.label} <ExternalLink className="w-3 h-3" />
-                          </a>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-[11px] text-muted-foreground">
-                        No live post URL saved on this card — click Edit to add one.
+                {/* Published Post Live Links / Partial-Post Progress (prominent at top of details) */}
+                {(selectedCard.stage === 'posted' ||
+                  selectedPublishedLinks.length > 0 ||
+                  selectedPendingPlatforms.length > 0) && (() => {
+                  const isPartial =
+                    selectedCard.stage !== 'posted' &&
+                    (selectedPendingPlatforms.length > 0 || selectedPublishedLinks.length > 0);
+                  const pendingLabels = selectedPendingPlatforms.map(formatPlatformShortLabel).join(', ');
+                  return (
+                    <div
+                      className={`rounded-lg border px-3 py-2 flex flex-wrap items-center justify-between gap-2 ${
+                        isPartial
+                          ? 'border-amber-500/45 bg-amber-500/10'
+                          : 'border-emerald-500/40 bg-emerald-500/10'
+                      }`}
+                    >
+                      <span
+                        className={`text-[11px] font-mono font-medium uppercase tracking-wider ${
+                          isPartial
+                            ? 'text-amber-700 dark:text-amber-300'
+                            : 'text-emerald-700 dark:text-emerald-300'
+                        }`}
+                      >
+                        {isPartial
+                          ? selectedPendingPlatforms.length > 0
+                            ? `Partial Post · Missing ${pendingLabels}`
+                            : 'Live Link Logged · Awaiting Completion'
+                          : selectedPublishedLinks.length > 0
+                            ? 'Live Published Post'
+                            : 'Published'}
                       </span>
-                    )}
-                  </div>
-                )}
+                      {selectedPublishedLinks.length > 0 || selectedPendingPlatforms.length > 0 ? (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {selectedPublishedLinks.map((l) => (
+                            <a
+                              key={`${l.platform}-${l.href}`}
+                              href={l.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={l.href}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-normal bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
+                            >
+                              Preview {l.label} <ExternalLink className="w-3 h-3" />
+                            </a>
+                          ))}
+                          {selectedPendingPlatforms.map((p) => (
+                            <span
+                              key={`top-pending-${p}`}
+                              className="inline-flex items-center px-2.5 py-1 rounded-md border border-amber-500/50 bg-amber-500/15 text-xs font-mono font-medium text-amber-800 dark:text-amber-200"
+                            >
+                              {formatPlatformShortLabel(p)} pending
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground">
+                          No live post URL saved on this card — click Edit to add one.
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Multi-Asset Preview & Carousel Strip */}
                 <div className="rounded-lg border border-border bg-card overflow-hidden">
