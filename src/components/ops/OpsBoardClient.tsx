@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import {
@@ -74,27 +74,13 @@ import OpsDeskPanel from './OpsDeskPanel';
 import { extractPrimaryArticleUrl, OpsLinkCardPreview } from './OpsLinkCardPreview';
 import { OpsModalHost, type OpsModalState } from './OpsModals';
 
-const CREW_EXPANDED_KEY = 'rottym_ops_crew_expanded';
-const CREW_EXPANDED_EVENT = 'ops-crew-expanded-changed';
-
-function subscribeCrewExpanded(cb: () => void) {
-  window.addEventListener(CREW_EXPANDED_EVENT, cb);
-  window.addEventListener('storage', cb);
-  return () => {
-    window.removeEventListener(CREW_EXPANDED_EVENT, cb);
-    window.removeEventListener('storage', cb);
-  };
-}
-
-function getCrewExpandedSnapshot(): boolean {
-  try {
-    return window.localStorage.getItem(CREW_EXPANDED_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-const getCrewExpandedServerSnapshot = () => false;
+const CORE_CREW_IDS = new Set([
+  'marley',
+  'sovereign',
+  'pixel',
+  'cheatcode',
+  'antigravity',
+]);
 
 type BoardColumnId = PipelineStage | 'ready';
 
@@ -176,23 +162,28 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   const [syncLive, setSyncLive] = useState(false);
   const [opsView, setOpsView] = useState<'desk' | 'board'>('desk');
   const [deckCollapsed, setDeckCollapsed] = useState(false);
-  const crewExpanded = useSyncExternalStore(
-    subscribeCrewExpanded,
-    getCrewExpandedSnapshot,
-    getCrewExpandedServerSnapshot
-  );
+  const [crewMoreOpen, setCrewMoreOpen] = useState(false);
+  const crewMoreMenuRef = useRef<HTMLDivElement | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [laneFilter, setLaneFilter] = useState<PipelineLane | 'all'>('all');
 
-  const toggleCrewExpanded = useCallback(() => {
-    const next = !getCrewExpandedSnapshot();
-    try {
-      window.localStorage.setItem(CREW_EXPANDED_KEY, next ? '1' : '0');
-    } catch {
-      // ignore storage errors
-    }
-    window.dispatchEvent(new Event(CREW_EXPANDED_EVENT));
-  }, []);
+  useEffect(() => {
+    if (!crewMoreOpen) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      if (crewMoreMenuRef.current && !crewMoreMenuRef.current.contains(e.target as Node)) {
+        setCrewMoreOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setCrewMoreOpen(false);
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [crewMoreOpen]);
 
   useEffect(() => {
     const t = setInterval(() => setNowMs(Date.now()), 15000);
@@ -669,7 +660,7 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
   }, [pipeline, requests, nowMs]);
 
   const crewHeartbeat = useMemo(() => {
-    const STALE_MS = 60 * 60 * 1000;
+    const STALE_MS = 24 * 60 * 60 * 1000;
     const chatLatestByAgent = new Map<string, number>();
     for (const msg of chat) {
       const ts = msg.createdAt ? new Date(msg.createdAt).getTime() : 0;
@@ -1144,78 +1135,48 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
               </div>
             )}
 
-            {opsView === 'desk' ? (
-              <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1 justify-start">
-                <button
-                  type="button"
-                  aria-expanded={crewExpanded}
-                  onClick={toggleCrewExpanded}
-                  title={
-                    crewHeartbeat.staleCount > 0
-                      ? `Stale (>60m without check-in): ${crewHeartbeat.staleNames.join(', ')}`
-                      : crewExpanded
-                        ? 'Collapse crew roster pills'
-                        : 'Expand full crew roster pills'
-                  }
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-mono transition-colors shrink-0 ${
-                    rosterSummaryStats.hasCrewAlert
-                      ? 'border-red-500/60 bg-red-500/15 text-red-700 dark:text-red-300'
-                      : crewHeartbeat.staleCount > 0
-                        ? 'border-amber-500/45 bg-amber-500/10 text-foreground hover:border-amber-500/70'
-                        : crewExpanded
-                          ? 'border-accent/55 bg-accent/10 text-foreground'
-                          : 'border-border bg-background/70 hover:border-accent/60 text-foreground'
-                  }`}
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      rosterSummaryStats.hasCrewAlert
-                        ? 'bg-red-500 animate-pulse'
-                        : crewHeartbeat.staleCount > 0
-                          ? 'bg-amber-400'
-                          : 'bg-emerald-500'
-                    }`}
-                  />
-                  <span>Crew</span>
-                  <span className="px-1.5 py-0 rounded bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/35 text-[10px] font-normal">
-                    {activeCrewCount}/{crew.length}
-                  </span>
-                  {crewHeartbeat.staleCount > 0 && (
-                    <span className="text-[10px] text-amber-600 dark:text-amber-400">
-                      · {crewHeartbeat.staleCount} stale
-                    </span>
-                  )}
-                  {crewExpanded ? (
-                    <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-                  )}
-                </button>
-
-                {crewExpanded && (
-                  <>
-                    {sortedCrew.map((m) => {
-                      const dotCls = STATUS_DOT[m.status] || STATUS_DOT.active;
-                      const crewAlert = getUpdateAlertMeta(highlightKinds.get(m.id));
-                      const hasConnAlert = Boolean(m.connectorAlert && m.connectorAlert.status !== 'ok');
-                      const hb = crewHeartbeat.byId.get(m.id);
-                      const isStale = Boolean(hb?.isStale && !hasConnAlert);
-                      const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
-                      const tip = [
-                        m.name,
-                        `${m.role} · ${m.model}`,
-                        hb ? `Last check-in: ${hb.ageLabel}` : undefined,
-                        hasConnAlert ? `ALERT: ${m.connectorAlert?.message}` : m.statusNote,
-                      ]
-                        .filter(Boolean)
-                        .join(' — ');
-                      return (
-                        <button
-                          key={m.id}
-                          type="button"
-                          title={tip}
-                          onClick={() => setModal({ type: 'crew', member: m })}
-                          className={`inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-lg border text-[11px] font-medium transition-all duration-500 ${
+            {opsView === 'desk' ? (() => {
+              const coreCrew = sortedCrew.filter((m) => {
+                const norm = m.agentId.toLowerCase().replace(/[^a-z0-9]+/g, '');
+                const hasConnAlert = Boolean(m.connectorAlert && m.connectorAlert.status !== 'ok');
+                const hasLiveAlert = Boolean(highlightKinds.get(m.id));
+                return CORE_CREW_IDS.has(norm) || hasConnAlert || hasLiveAlert;
+              });
+              const overflowCrew = sortedCrew.filter(
+                (m) => !coreCrew.some((c) => c.id === m.id)
+              );
+              const renderCrewPill = (m: CrewMember, inMenu = false) => {
+                const dotCls = STATUS_DOT[m.status] || STATUS_DOT.active;
+                const crewAlert = getUpdateAlertMeta(highlightKinds.get(m.id));
+                const hasConnAlert = Boolean(m.connectorAlert && m.connectorAlert.status !== 'ok');
+                const hb = crewHeartbeat.byId.get(m.id);
+                const isStale = Boolean(hb?.isStale && !hasConnAlert);
+                const avatarSrc = resolveAvatarRenderUrl(m.avatarUrl);
+                const tip = [
+                  m.name,
+                  `${m.role} · ${m.model}`,
+                  hb ? `Last check-in: ${hb.ageLabel}` : undefined,
+                  hasConnAlert ? `ALERT: ${m.connectorAlert?.message}` : m.statusNote,
+                ]
+                  .filter(Boolean)
+                  .join(' — ');
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    title={tip}
+                    onClick={() => {
+                      setCrewMoreOpen(false);
+                      setModal({ type: 'crew', member: m });
+                    }}
+                    className={
+                      inMenu
+                        ? `w-full px-2.5 py-1.5 flex items-center justify-between gap-2 text-left text-[11px] transition-colors ${
+                            hasConnAlert
+                              ? 'bg-red-500/10 text-red-700 dark:text-red-300'
+                              : 'hover:bg-muted/60 text-foreground/90'
+                          }`
+                        : `inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-lg border text-[11px] font-medium transition-all duration-500 ${
                             hasConnAlert
                               ? 'border-red-500/70 bg-red-500/15 text-red-700 dark:text-red-300'
                               : crewAlert
@@ -1223,67 +1184,147 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                                 : isStale
                                   ? 'border-amber-500/45 bg-amber-500/[0.06] hover:border-amber-500/70'
                                   : 'border-border bg-background/70 hover:border-accent/60'
-                          }`}
-                        >
-                          <CrewPillAvatar
-                            name={m.name}
-                            src={avatarSrc}
-                            dotCls={
-                              hasConnAlert
-                                ? 'bg-red-500 animate-pulse'
-                                : isStale
-                                  ? 'bg-amber-400'
-                                  : dotCls
-                            }
-                          />
-                          <span className="truncate max-w-[90px]">{m.name}</span>
-                          {isStale && hb && (
-                            <span className="text-[9px] font-mono font-normal text-amber-600 dark:text-amber-400">
-                              {hb.ageLabel}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                    <button
-                      type="button"
-                      onClick={() => setModal({ type: 'create_crew', defaultSet: 'new' })}
-                      className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-lg border border-border bg-background hover:border-accent text-[11px] text-muted-foreground hover:text-foreground"
-                    >
-                      <Plus className="w-3 h-3" />
-                      Add
-                    </button>
-                  </>
-                )}
-
-                <div className="hidden sm:flex items-center gap-2 pl-2 ml-0.5 border-l border-border/80 text-[11px] font-mono text-muted-foreground shrink-0">
-                  <span>
-                    In Flight:{' '}
-                    <span className="text-foreground font-medium">{rosterSummaryStats.inFlight}</span>
-                  </span>
-                  <span className="text-border">·</span>
-                  <span>
-                    Needs Asset:{' '}
-                    <span className="text-amber-600 dark:text-amber-400 font-medium">
-                      {rosterSummaryStats.needsAsset}
+                          }`
+                    }
+                  >
+                    <span className="inline-flex items-center gap-1.5 min-w-0">
+                      <CrewPillAvatar
+                        name={m.name}
+                        src={avatarSrc}
+                        dotCls={
+                          hasConnAlert
+                            ? 'bg-red-500 animate-pulse'
+                            : isStale
+                              ? 'bg-amber-400'
+                              : dotCls
+                        }
+                      />
+                      <span className="truncate max-w-[96px]">{m.name}</span>
                     </span>
-                  </span>
-                  <span className="text-border">·</span>
-                  <span>
-                    Blocked:{' '}
+                    {hb && hb.lastSeenMs !== null && (
+                      <span
+                        className={`text-[9px] font-mono font-normal shrink-0 ${
+                          isStale ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+                        }`}
+                      >
+                        {hb.ageLabel}
+                      </span>
+                    )}
+                  </button>
+                );
+              };
+
+              return (
+                <div className="flex flex-wrap items-center justify-between gap-2 min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                     <span
-                      className={`font-medium ${
-                        rosterSummaryStats.blocked > 0
-                          ? 'text-red-600 dark:text-red-400'
-                          : 'text-foreground'
+                      title={
+                        crewHeartbeat.staleCount > 0
+                          ? `24h+ without check-in: ${crewHeartbeat.staleNames.join(', ')}`
+                          : `${activeCrewCount} of ${crew.length} crew active`
+                      }
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-mono shrink-0 ${
+                        rosterSummaryStats.hasCrewAlert
+                          ? 'border-red-500/60 bg-red-500/15 text-red-700 dark:text-red-300'
+                          : 'border-border bg-background/70 text-foreground'
                       }`}
                     >
-                      {rosterSummaryStats.blocked}
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          rosterSummaryStats.hasCrewAlert ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'
+                        }`}
+                      />
+                      <span>Crew</span>
+                      <span className="px-1.5 py-0 rounded bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/35 text-[10px] font-normal">
+                        {activeCrewCount}/{crew.length}
+                      </span>
                     </span>
-                  </span>
+
+                    {coreCrew.map((m) => renderCrewPill(m))}
+
+                    {overflowCrew.length > 0 && (
+                      <div ref={crewMoreMenuRef} className="relative shrink-0">
+                        <button
+                          type="button"
+                          aria-expanded={crewMoreOpen}
+                          aria-haspopup="menu"
+                          onClick={() => setCrewMoreOpen((prev) => !prev)}
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[11px] font-medium transition-colors ${
+                            crewMoreOpen
+                              ? 'border-accent bg-accent/15 text-foreground'
+                              : 'border-border bg-background/70 text-muted-foreground hover:text-foreground hover:border-accent/60'
+                          }`}
+                        >
+                          <span>More ({overflowCrew.length})</span>
+                          <ChevronDown
+                            className={`w-3 h-3 transition-transform ${crewMoreOpen ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                        {crewMoreOpen && (
+                          <div
+                            role="menu"
+                            aria-label="Additional crew members"
+                            className="absolute left-0 top-full mt-1.5 z-30 w-52 rounded-xl border border-border bg-card shadow-xl py-1 max-h-64 overflow-y-auto ops-scroll"
+                          >
+                            {overflowCrew.map((m) => renderCrewPill(m, true))}
+                            <div className="border-t border-border/70 mt-1 pt-1 px-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCrewMoreOpen(false);
+                                  setModal({ type: 'create_crew', defaultSet: 'new' });
+                                }}
+                                className="w-full px-2 py-1 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 inline-flex items-center gap-1.5"
+                              >
+                                <Plus className="w-3 h-3" />
+                                Add crew member
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      title="Add crew member"
+                      aria-label="Add crew member"
+                      onClick={() => setModal({ type: 'create_crew', defaultSet: 'new' })}
+                      className="inline-flex items-center justify-center w-6 h-6 rounded-lg border border-border bg-background hover:border-accent text-muted-foreground hover:text-foreground shrink-0 transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
+
+                  <div className="hidden sm:flex items-center gap-2 pl-2.5 ml-auto border-l border-border/80 text-[11px] font-mono text-muted-foreground shrink-0">
+                    <span>
+                      In Flight:{' '}
+                      <span className="text-foreground font-medium">{rosterSummaryStats.inFlight}</span>
+                    </span>
+                    <span className="text-border">·</span>
+                    <span>
+                      Needs Asset:{' '}
+                      <span className="text-amber-600 dark:text-amber-400 font-medium">
+                        {rosterSummaryStats.needsAsset}
+                      </span>
+                    </span>
+                    <span className="text-border">·</span>
+                    <span>
+                      Blocked:{' '}
+                      <span
+                        className={`font-medium ${
+                          rosterSummaryStats.blocked > 0
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-foreground'
+                        }`}
+                      >
+                        {rosterSummaryStats.blocked}
+                      </span>
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ) : (
+              );
+            })() : (
               <div className="text-[11px] font-mono text-muted-foreground">
                 Shared crew audit board · {activeCrewCount}/{crew.length} crew active
               </div>
