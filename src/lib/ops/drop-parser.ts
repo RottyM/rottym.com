@@ -2430,15 +2430,34 @@ export function applyJobAssetPatch(
   return { ok: true, asset: next };
 }
 
+const EVENT_CARD_HINT_RE =
+  /\b(?:ride|rally|coat drive|toy run|charity run|poker run|bike night|swap meet|open house|track day|expo|festival|concert|tour|meet|meetup|grand prix|race weekend|gp weekend|conference|summit|webinar|workshop|clinic|championship|premiere)\b|\b(?:mon|tue|wed|thu|fri|sat|sun)\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b|\bKSU\b/i;
+
+export function isEventCard(
+  card?: Partial<Pick<PipelineCard, 'isEvent' | 'title' | 'note' | 'marleyNote'>> | null
+): boolean {
+  if (!card) return false;
+  if (typeof card.isEvent === 'boolean') return card.isEvent;
+  const hay = `${card.title || ''} ${card.note || ''} ${card.marleyNote || ''}`;
+  return EVENT_CARD_HINT_RE.test(hay);
+}
+
 export function applyEventDatePastFlag(
   existingFlags: string[] | undefined,
   eventDate: string | undefined,
-  stage: PipelineStage
+  stage: PipelineStage,
+  eventContext?: Partial<Pick<PipelineCard, 'isEvent' | 'title' | 'note' | 'marleyNote'>> | null
 ): string[] | undefined {
   const cleaned = (existingFlags || []).filter(
     (flag) => !flag.startsWith('FLAG: Past event date (')
   );
-  if (eventDate && stage !== 'posted' && stage !== 'archived' && eventDate < todayEasternYmd()) {
+  if (
+    eventDate &&
+    stage !== 'posted' &&
+    stage !== 'archived' &&
+    isEventCard(eventContext) &&
+    eventDate < todayEasternYmd()
+  ) {
     cleaned.push(`FLAG: Past event date (${eventDate}) — verify before publishing.`);
   }
   return cleaned.length > 0 ? cleaned : undefined;

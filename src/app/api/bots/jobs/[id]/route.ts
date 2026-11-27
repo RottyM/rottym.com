@@ -79,6 +79,7 @@ const ALLOWED_JOB_PATCH_FIELDS = new Set([
   'postFormat',
   'format',
   'eventDate',
+  'isEvent',
   'verdictTag',
 ]);
 
@@ -561,6 +562,12 @@ async function handleUpsertJobById(
       { status: 400, headers: NO_STORE_HEADERS }
     );
   }
+  const nextIsEvent =
+    body.isEvent === null
+      ? undefined
+      : typeof body.isEvent === 'boolean'
+        ? body.isEvent
+        : existing.isEvent;
   const nextVerdictTag =
     body.verdictTag !== undefined ? normalizeVerdictTag(body.verdictTag) : existing.verdictTag;
   if (typeof body.verdictTag === 'string' && body.verdictTag.trim() && !nextVerdictTag) {
@@ -613,6 +620,7 @@ async function handleUpsertJobById(
     assetSpec: effectiveAssetSpec,
     verdictTag: nextVerdictTag,
     eventDate: nextEventDate,
+    isEvent: nextIsEvent,
     photoStatus: nextPhotoStatus,
     noImageNeededBy:
       nextPhotoStatus === 'not_needed' && !effectiveAssetFile && !effectiveAssetUrl
@@ -630,7 +638,12 @@ async function handleUpsertJobById(
       body.unverifiedClaims !== undefined
         ? cleanBotStringList(body.unverifiedClaims)
         : existing.unverifiedClaims,
-    flaggedNotes: applyEventDatePastFlag(baseFlags, nextEventDate, nextStage),
+    flaggedNotes: applyEventDatePastFlag(baseFlags, nextEventDate, nextStage, {
+      isEvent: nextIsEvent,
+      title: nextTitle,
+      note: nextNote,
+      marleyNote: existing.marleyNote,
+    }),
     artifactsNeeded: syncVisualArtifactsNeeded(
       existing.artifactsNeeded,
       body.artifactsNeeded !== undefined ? cleanBotStringList(body.artifactsNeeded) : undefined,

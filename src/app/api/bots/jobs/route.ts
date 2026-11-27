@@ -82,6 +82,7 @@ const ALLOWED_JOB_ITEM_FIELDS = new Set([
   'postFormat',
   'format',
   'eventDate',
+  'isEvent',
   'verdictTag',
   'note',
   'draftCopy',
@@ -510,6 +511,12 @@ export async function POST(request: Request) {
         { status: 400, headers: NO_STORE_HEADERS }
       );
     }
+    const incomingIsEvent =
+      itemInput.isEvent === null
+        ? null
+        : typeof itemInput.isEvent === 'boolean'
+          ? itemInput.isEvent
+          : undefined;
     const verdictTag =
       itemInput.verdictTag !== undefined ? normalizeVerdictTag(itemInput.verdictTag) : undefined;
     if (typeof itemInput.verdictTag === 'string' && itemInput.verdictTag.trim() && !verdictTag) {
@@ -705,7 +712,14 @@ export async function POST(request: Request) {
       const effectiveAssetFile = syncedMergedAssets.assetFile;
       const effectiveAssetUrl = syncedMergedAssets.assetUrl;
       const effectiveAssetSpec = syncedMergedAssets.assetSpec;
-      const effectiveEventDate = eventDate || existing.eventDate;
+      const effectiveEventDate =
+        itemInput.eventDate !== undefined ? eventDate : existing.eventDate;
+      const effectiveIsEvent =
+        incomingIsEvent === null
+          ? undefined
+          : incomingIsEvent !== undefined
+            ? incomingIsEvent
+            : existing.isEvent;
       const effectiveDraftCopy = draftCopy.trim() ? draftCopy : existing.draftCopy;
       const requestedNotNeededMerge =
         itemInput.textOnly === true || normalizePhotoStatus(itemInput.photoStatus) === 'not_needed';
@@ -819,6 +833,7 @@ export async function POST(request: Request) {
         verdictTag: verdictTag || existing.verdictTag,
         postFormat: rawPostFormat !== undefined ? postFormat : existing.postFormat,
         eventDate: effectiveEventDate,
+        isEvent: effectiveIsEvent,
         photoStatus: nextPhotoStatus,
         noImageNeededBy:
           nextPhotoStatus === 'not_needed' && !effectiveAssetFile && !effectiveAssetUrl
@@ -845,7 +860,12 @@ export async function POST(request: Request) {
         note: refreshStaleCardNote(note || existing.note, nextStage),
         draftCopy: effectiveDraftCopy,
         links: combinedLinks,
-        flaggedNotes: applyEventDatePastFlag(cleanedFlags, effectiveEventDate, nextStage),
+        flaggedNotes: applyEventDatePastFlag(cleanedFlags, effectiveEventDate, nextStage, {
+          isEvent: effectiveIsEvent,
+          title: existing.title,
+          note: note || existing.note,
+          marleyNote: existing.marleyNote,
+        }),
         marleyStatus: nextStage === 'posted' ? 'approved' : existing.marleyStatus,
         approvedBy: nextStage === 'posted' ? existing.approvedBy || 'Rotty' : existing.approvedBy,
         updatedAt: now,
@@ -970,7 +990,11 @@ export async function POST(request: Request) {
       sourceUrl,
       note: refreshStaleCardNote(note, finalCreateStage),
       draftCopy,
-      flaggedNotes: applyEventDatePastFlag(baseFlags, eventDate, finalCreateStage),
+      flaggedNotes: applyEventDatePastFlag(baseFlags, eventDate, finalCreateStage, {
+        isEvent: incomingIsEvent === true ? true : incomingIsEvent === false ? false : undefined,
+        title,
+        note,
+      }),
       artifactsNeeded: syncVisualArtifactsNeeded(
         undefined,
         explicitArtifacts,
@@ -981,6 +1005,7 @@ export async function POST(request: Request) {
       unverifiedClaims: explicitClaims,
       verdictTag,
       eventDate,
+      isEvent: incomingIsEvent === true ? true : incomingIsEvent === false ? false : undefined,
       photoStatus: createdPhotoStatus,
       noImageNeededBy:
         createdPhotoStatus === 'not_needed' ? actor.actorName : undefined,

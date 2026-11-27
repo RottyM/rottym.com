@@ -194,6 +194,7 @@ export interface PipelineCard {
   noImageNeededBy?: string;
   noImageNeededAt?: string;
   eventDate?: string;
+  isEvent?: boolean;
   readyForRotty: boolean;
   approvedBy?: string;
   assignedTo?: string;

@@ -49,6 +49,7 @@ const ALLOWED_REVIEW_FIELDS = new Set([
   'photoStatus',
   'assetReviews',
   'eventDate',
+  'isEvent',
   'verdictTag',
   'verdict',
 ]);
@@ -141,13 +142,38 @@ export async function POST(
       ? cleanBotStringList(body.unverifiedClaims)
       : existing.unverifiedClaims;
 
-  const nextEventDate =
-    body.eventDate !== undefined ? normalizeEventDate(body.eventDate) : existing.eventDate;
-  if (typeof body.eventDate === 'string' && body.eventDate.trim() && !nextEventDate) {
-    return NextResponse.json(
-      { error: 'Invalid eventDate format. Expected YYYY-MM-DD.' },
-      { status: 400, headers: NO_STORE_HEADERS }
-    );
+  let nextEventDate = existing.eventDate;
+  if (body.eventDate !== undefined) {
+    if (body.eventDate === null || body.eventDate === '') {
+      nextEventDate = undefined;
+    } else if (typeof body.eventDate === 'string') {
+      const parsedDate = normalizeEventDate(body.eventDate);
+      if (!parsedDate) {
+        return NextResponse.json(
+          { error: 'Invalid eventDate format. Expected YYYY-MM-DD or null to clear.' },
+          { status: 400, headers: NO_STORE_HEADERS }
+        );
+      }
+      nextEventDate = parsedDate;
+    } else {
+      return NextResponse.json(
+        { error: 'eventDate must be YYYY-MM-DD, empty string, or null.' },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+  }
+  let nextIsEvent = existing.isEvent;
+  if (body.isEvent !== undefined) {
+    if (body.isEvent === null) {
+      nextIsEvent = undefined;
+    } else if (typeof body.isEvent === 'boolean') {
+      nextIsEvent = body.isEvent;
+    } else {
+      return NextResponse.json(
+        { error: 'isEvent must be a boolean or null.' },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
   }
 
   const nextStage = isValidated ? 'clearance' : 'pulled';
@@ -282,7 +308,13 @@ export async function POST(
       assetSpec: syncedAssets.assetSpec,
     }),
     eventDate: nextEventDate,
-    flaggedNotes: applyEventDatePastFlag(existing.flaggedNotes, nextEventDate, nextStage),
+    isEvent: nextIsEvent,
+    flaggedNotes: applyEventDatePastFlag(existing.flaggedNotes, nextEventDate, nextStage, {
+      isEvent: nextIsEvent,
+      title: existing.title,
+      note: existing.note,
+      marleyNote: explicitMarleyNote || existing.marleyNote,
+    }),
     readyForRotty: false, // Bot clearance NEVER marks readyForRotty or triggers publish
     postIt: false,
     postItAt: undefined,

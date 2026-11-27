@@ -25,6 +25,7 @@ import {
   getCardPublishedLinks,
   getEffectiveRequestStatus,
   getUpdateAlertMeta,
+  isEventCard,
   POST_FORMAT_LABELS,
   resolveVisualPreviewUrl,
   splitTextWithUrls,
@@ -936,7 +937,9 @@ export default function OpsDecisionDesk({
                             </span>
                           )}
                         {selectedCard.eventDate && (
-                          <span className="text-muted-foreground">Event: {selectedCard.eventDate}</span>
+                          <span className="text-muted-foreground">
+                            {isEventCard(selectedCard) ? 'Event' : 'Date'}: {selectedCard.eventDate}
+                          </span>
                         )}
                       </div>
                     );
