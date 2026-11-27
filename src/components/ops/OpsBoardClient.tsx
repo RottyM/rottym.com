@@ -12,7 +12,6 @@ import {
   ChevronRight,
   ChevronUp,
   Clock,
-  Columns3,
   Copy,
   CornerUpLeft,
   ExternalLink,
@@ -1125,36 +1124,28 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
         />
       ) : (
         <main className="max-w-[1440px] mx-auto px-3 sm:px-5 pt-3 space-y-3">
-          {/* View Switcher (Decision Desk vs Audit Board) + Inline Crew Strip */}
+          {/* Inline Crew Strip (plus back-to-desk switcher when in board view) */}
           <section className="rounded-xl border border-border bg-card px-3 py-2 flex flex-wrap items-center justify-between gap-2.5">
-            <div className="inline-flex items-center rounded-lg border border-border bg-background p-0.5 shrink-0">
-              <button
-                type="button"
-                onClick={() => setOpsView('desk')}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-accent text-accent-foreground"
-              >
-                <Inbox className="w-3.5 h-3.5" />
-                Decision Desk
-                {needsYouCount > 0 && (
-                  <span className="px-1.5 py-0 rounded-lg text-[10px] font-mono bg-background/20 text-accent-foreground">
-                    {needsYouCount}
-                  </span>
-                )}
-              </button>
-              <button
-                type="button"
-                aria-hidden="true"
-                tabIndex={-1}
-                onClick={() => setOpsView('board')}
-                className="hidden"
-              >
-                <Columns3 className="w-3.5 h-3.5" />
-                Board
-              </button>
-            </div>
+            {opsView !== 'desk' && (
+              <div className="inline-flex items-center rounded-lg border border-border bg-background p-0.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setOpsView('desk')}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-accent text-accent-foreground"
+                >
+                  <Inbox className="w-3.5 h-3.5" />
+                  Decision Desk
+                  {needsYouCount > 0 && (
+                    <span className="px-1.5 py-0 rounded-lg text-[10px] font-mono bg-background/20 text-accent-foreground">
+                      {needsYouCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
 
             {opsView === 'desk' ? (
-              <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1 justify-end">
+              <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1 justify-start">
                 <button
                   type="button"
                   aria-expanded={crewExpanded}
