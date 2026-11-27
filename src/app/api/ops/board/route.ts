@@ -10,12 +10,15 @@ import {
   cleanBotStringList,
   extractChatMentions,
   FIELD_MAX_LENGTHS,
+  formatPlatformShortLabel,
   getCardAssets,
   getCardCompleteness,
+  getPendingPlatforms,
   laneToChannel,
   normalizeAssignedTo,
   normalizeLane,
   normalizePhotoStatus,
+  normalizePlatformKey,
   normalizePlatformList,
   normalizePostFormat,
   parseAdminPasteBlock,
@@ -54,6 +57,7 @@ import type {
   PipelineLane,
   PipelineLinks,
   PipelineStage,
+  PlatformKey,
 } from '@/lib/ops/types';
 
 const VALID_STAGES = new Set<PipelineStage>(['pulled', 'clearance', 'drafted', 'approved', 'posted', 'archived']);
@@ -649,6 +653,29 @@ export async function POST(request: Request) {
       ...(linksInput.x !== undefined ? { x: sanitizeUrl(linksInput.x) } : {}),
     };
 
+    const nextTargetPlatforms =
+      body.targetPlatforms !== undefined
+        ? normalizePlatformList(body.targetPlatforms)
+        : existing.targetPlatforms;
+    const pendingAfterUpdate =
+      nextTargetPlatforms && nextTargetPlatforms.length > 0
+        ? getPendingPlatforms(nextTargetPlatforms, mergedLinks)
+        : [];
+    const hasLandedAfterUpdate = Boolean(
+      nextTargetPlatforms?.some((p) => Boolean(mergedLinks[p]))
+    );
+    const autoPromotePosted =
+      body.targetPlatforms !== undefined &&
+      body.stage === undefined &&
+      nextStage !== 'posted' &&
+      nextStage !== 'archived' &&
+      hasLandedAfterUpdate &&
+      pendingAfterUpdate.length === 0;
+    const effectiveStage: PipelineStage = autoPromotePosted ? 'posted' : nextStage;
+    if (autoPromotePosted) {
+      readyForRotty = false;
+    }
+
     const isNoImageException =
       nextPhotoStatus === 'not_needed' && syncedUpdateAssets.assets.length === 0 && !effectiveAssetFile && !effectiveAssetUrl;
 
@@ -674,19 +701,20 @@ export async function POST(request: Request) {
           ? normalizePostFormat(body.postFormat)
           : existing.postFormat;
 
+    const cleanedNote = autoPromotePosted
+      ? nextNote?.replace(/;\s*awaiting:[^.\n]*/i, '').trim() || undefined
+      : nextNote;
+
     const updated: PipelineCard = {
       ...existing,
       title: nextTitle,
       lane: nextLane,
       channel: laneToChannel(nextLane),
       postFormat: nextPostFormat,
-      stage: nextStage,
+      stage: effectiveStage,
       assignedTo:
         body.assignedTo !== undefined ? normalizeAssignedTo(body.assignedTo) : existing.assignedTo,
-      targetPlatforms:
-        body.targetPlatforms !== undefined
-          ? normalizePlatformList(body.targetPlatforms)
-          : existing.targetPlatforms,
+      targetPlatforms: nextTargetPlatforms,
       source: nextSource,
       sourceUrl: nextSourceUrl,
       assets: syncedUpdateAssets.assets,
@@ -705,31 +733,33 @@ export async function POST(request: Request) {
       discrepancies: nextDiscrepancies,
       unverifiedClaims: nextUnverifiedClaims,
       flaggedNotes: nextFlaggedNotes,
-      note: refreshStaleCardNote(nextNote, nextStage),
+      note: refreshStaleCardNote(cleanedNote, effectiveStage),
       draftCopy: nextDraftCopy,
       marleyStatus:
         body.marleyStatus === 'pending' ||
         body.marleyStatus === 'approved' ||
         body.marleyStatus === 'rejected'
           ? body.marleyStatus
-          : nextStage === 'approved' || nextStage === 'posted'
+          : effectiveStage === 'approved' || effectiveStage === 'posted'
             ? 'approved'
             : existing.marleyStatus,
       readyForRotty,
       postIt:
-        nextStage === 'posted' || nextStage === 'archived' || (!readyForRotty && nextStage !== 'approved')
+        effectiveStage === 'posted' || effectiveStage === 'archived' || (!readyForRotty && effectiveStage !== 'approved')
           ? false
           : existing.postIt,
       postItAt:
-        nextStage === 'archived' || (!readyForRotty && nextStage !== 'approved' && nextStage !== 'posted')
+        effectiveStage === 'posted' || effectiveStage === 'archived' || (!readyForRotty && effectiveStage !== 'approved')
           ? undefined
           : existing.postItAt,
       postItBy:
-        nextStage === 'archived' || (!readyForRotty && nextStage !== 'approved' && nextStage !== 'posted')
+        effectiveStage === 'posted' || effectiveStage === 'archived' || (!readyForRotty && effectiveStage !== 'approved')
           ? undefined
           : existing.postItBy,
+      claimedBy: effectiveStage === 'posted' || effectiveStage === 'archived' ? undefined : existing.claimedBy,
+      leaseExpiresAt: effectiveStage === 'posted' || effectiveStage === 'archived' ? undefined : existing.leaseExpiresAt,
       approvedBy:
-        nextStage === 'approved' || readyForRotty
+        effectiveStage === 'approved' || readyForRotty
           ? existing.approvedBy || user.name
           : existing.approvedBy,
       links: Object.values(mergedLinks).some(Boolean) ? mergedLinks : undefined,
@@ -770,9 +800,9 @@ export async function POST(request: Request) {
       ? `returned to Approved crew queue (${completeness.buttonReason || 'incomplete'})`
       : readyForRotty && !existing.readyForRotty
         ? 'marked Ready for Rotty'
-        : nextStage === 'approved' && existing.stage !== 'approved'
+        : effectiveStage === 'approved' && existing.stage !== 'approved'
           ? 'approved (sent to crew queue)'
-          : nextStage === 'posted' && existing.stage !== 'posted'
+          : effectiveStage === 'posted' && existing.stage !== 'posted'
             ? 'marked posted'
             : isNoImageException && existing.photoStatus !== 'not_needed'
               ? 'marked no image needed'
@@ -1149,15 +1179,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, deletedId: id }, { status: 200 });
   }
 
-  if (action === 'post_it' || action === 'cancel_post_it') {
-    const id = typeof body.id === 'string' ? body.id.trim() : '';
-    const existing = id ? await opsGetDoc<PipelineCard>('ops_pipeline', id) : null;
-    if (!existing || existing.clientId !== clientId) {
-      return NextResponse.json({ error: 'Pipeline card not found' }, { status: 404 });
-    }
-
-    const assigned = normalizeAssignedTo(existing.assignedTo);
-    const ownerAgentId = assigned || (existing.lane === 'x' ? 'sovereign' : 'marley');
+  const resolveCardOwner = (card: PipelineCard) => {
+    const assigned = normalizeAssignedTo(card.assignedTo);
+    const ownerAgentId = assigned || (card.lane === 'x' ? 'sovereign' : 'marley');
     const handleMap: Record<string, string> = {
       sovereign: '@Sovereign',
       marley: '@Marley',
@@ -1170,7 +1194,20 @@ export async function POST(request: Request) {
       gemini: '@Gemini',
       antigravity: '@Antigravity',
     };
-    const ownerHandle = handleMap[ownerAgentId] || `@${ownerAgentId}`;
+    return {
+      ownerAgentId,
+      ownerHandle: handleMap[ownerAgentId] || `@${ownerAgentId}`,
+    };
+  };
+
+  if (action === 'post_it' || action === 'cancel_post_it') {
+    const id = typeof body.id === 'string' ? body.id.trim() : '';
+    const existing = id ? await opsGetDoc<PipelineCard>('ops_pipeline', id) : null;
+    if (!existing || existing.clientId !== clientId) {
+      return NextResponse.json({ error: 'Pipeline card not found' }, { status: 404 });
+    }
+
+    const { ownerAgentId, ownerHandle } = resolveCardOwner(existing);
 
     if (action === 'post_it') {
       if (existing.stage === 'posted' || existing.stage === 'archived') {
@@ -1299,6 +1336,114 @@ export async function POST(request: Request) {
     await opsSetDoc('ops_chat', cancelMsg.id, cancelMsg as unknown as Record<string, unknown>);
     await appendOpsActivity(clientId, user.name, 'cancelled Post it', existing.title);
     return NextResponse.json({ ok: true, card: updated, chatMessage: cancelMsg }, { status: 200 });
+  }
+
+  if (action === 'cancel_platform') {
+    const id = typeof body.id === 'string' ? body.id.trim() : '';
+    const platform = normalizePlatformKey(body.platform);
+    if (!platform) {
+      return NextResponse.json({ error: 'Valid platform (fb, ig, linkedin, x) is required' }, { status: 400 });
+    }
+    const existing = id ? await opsGetDoc<PipelineCard>('ops_pipeline', id) : null;
+    if (!existing || existing.clientId !== clientId) {
+      return NextResponse.json({ error: 'Pipeline card not found' }, { status: 404 });
+    }
+    if (existing.stage === 'posted' || existing.stage === 'archived') {
+      return NextResponse.json(
+        { error: 'Card is already posted or archived.' },
+        { status: 409 }
+      );
+    }
+
+    const currentTargets = existing.targetPlatforms || [];
+    const cancelledLabel = formatPlatformShortLabel(platform);
+    if (!currentTargets.includes(platform)) {
+      return NextResponse.json({ ok: true, card: existing }, { status: 200 });
+    }
+    if (existing.links?.[platform]) {
+      return NextResponse.json(
+        { error: `${cancelledLabel} is already posted — cannot cancel a published platform.` },
+        { status: 409 }
+      );
+    }
+
+    const nextTargets: PlatformKey[] = currentTargets.filter((p) => p !== platform);
+    if (nextTargets.length === 0) {
+      return NextResponse.json(
+        {
+          error: `Cannot cancel the only remaining platform (${cancelledLabel}) — use Kill or Cancel Post it instead.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    const remainingPending = getPendingPlatforms(nextTargets, existing.links);
+    const landedPlatforms = nextTargets.filter((p) => Boolean(existing.links?.[p]));
+    const allRemainingLanded = landedPlatforms.length > 0 && remainingPending.length === 0;
+    const landedLabels = landedPlatforms.map(formatPlatformShortLabel).join(', ');
+    const remainingLabels = nextTargets.map(formatPlatformShortLabel).join(' + ');
+
+    let nextNote = existing.note;
+    if (allRemainingLanded) {
+      const stripped = nextNote?.replace(/;\s*awaiting:[^.\n]*/i, '').trim();
+      nextNote = stripped
+        ? `${stripped} (${cancelledLabel} cancelled)`
+        : `Posted ${landedLabels} (${cancelledLabel} cancelled by ${user.name})`;
+    } else if (nextNote && /;\s*awaiting:[^.\n]*/i.test(nextNote)) {
+      nextNote = nextNote.replace(
+        /;\s*awaiting:[^.\n]*/i,
+        `; awaiting: ${remainingPending.join(', ')}`
+      );
+    }
+
+    const updated: PipelineCard = {
+      ...existing,
+      targetPlatforms: nextTargets,
+      stage: allRemainingLanded ? 'posted' : existing.stage,
+      readyForRotty: allRemainingLanded ? false : existing.readyForRotty,
+      postIt: allRemainingLanded ? false : existing.postIt,
+      postItAt: allRemainingLanded ? undefined : existing.postItAt,
+      postItBy: allRemainingLanded ? undefined : existing.postItBy,
+      claimedBy: allRemainingLanded ? undefined : existing.claimedBy,
+      leaseExpiresAt: allRemainingLanded ? undefined : existing.leaseExpiresAt,
+      note: nextNote,
+      updatedAt: now,
+    };
+    await opsSetDoc('ops_pipeline', id, updated as unknown as Record<string, unknown>);
+
+    let chatMessage: ChatMessage | undefined;
+    if (existing.postIt || existing.claimedBy || allRemainingLanded) {
+      const { ownerAgentId, ownerHandle } = resolveCardOwner(existing);
+      chatMessage = {
+        id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        clientId,
+        senderId: 'rotty',
+        senderName: 'Rotty',
+        senderKind: 'operator',
+        text: allRemainingLanded
+          ? `${ownerHandle} Cancelled ${cancelledLabel} on "${existing.title}" — ${landedLabels} already live, marked Posted.`
+          : `${ownerHandle} Cancelled ${cancelledLabel} on "${existing.title}" — still targeting ${remainingLabels}.`,
+        mentions: [ownerAgentId],
+        jobId: existing.id,
+        jobTitle: existing.title,
+        createdAt: now,
+      };
+      await opsSetDoc('ops_chat', chatMessage.id, chatMessage as unknown as Record<string, unknown>);
+    }
+
+    await appendOpsActivity(
+      clientId,
+      user.name,
+      allRemainingLanded
+        ? `cancelled ${cancelledLabel} (${landedLabels} posted)`
+        : `cancelled ${cancelledLabel} (${remainingLabels} remaining)`,
+      existing.title
+    );
+
+    return NextResponse.json(
+      { ok: true, card: updated, chatMessage, completed: allRemainingLanded },
+      { status: 200 }
+    );
   }
 
   if (action === 'decide_request') {

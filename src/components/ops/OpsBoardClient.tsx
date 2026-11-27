@@ -55,6 +55,7 @@ import type {
   PipelineCard,
   PipelineLane,
   PipelineStage,
+  PlatformKey,
 } from '@/lib/ops/types';
 import {
   formatCardPlatformBadge,
@@ -1523,6 +1524,13 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                       `Cancelled Post it: ${card.title}`
                     );
                   }}
+                  onCancelPlatform={async (card, platform) => {
+                    const label = formatPlatformShortLabel(platform);
+                    await postAction(
+                      { action: 'cancel_platform', id: card.id, platform },
+                      `Cancelled ${label} on: ${card.title}`
+                    );
+                  }}
                   onKillCard={async (card) => {
                     await postAction(
                       { action: 'update_card', id: card.id, stage: 'archived', readyForRotty: false },
@@ -1762,6 +1770,12 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                                       `Cancelled Post it: ${card.title}`
                                     )
                                   }
+                                  onCancelPlatform={(platform) =>
+                                    postAction(
+                                      { action: 'cancel_platform', id: card.id, platform },
+                                      `Cancelled ${formatPlatformShortLabel(platform)} on: ${card.title}`
+                                    )
+                                  }
                                   onApproveAssets={() => approveCardAssets(card)}
                                   onClearFlags={() => clearCardFlags(card)}
                                   onPreviewAsset={(asset) => setLightboxAsset(asset)}
@@ -1805,6 +1819,12 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                           postAction(
                             { action: 'cancel_post_it', id: card.id },
                             `Cancelled Post it: ${card.title}`
+                          )
+                        }
+                        onCancelPlatform={(platform) =>
+                          postAction(
+                            { action: 'cancel_platform', id: card.id, platform },
+                            `Cancelled ${formatPlatformShortLabel(platform)} on: ${card.title}`
                           )
                         }
                         onApproveAssets={() => approveCardAssets(card)}
@@ -2063,6 +2083,7 @@ function PipelineCardTile({
   onReadyForRotty,
   onPostIt,
   onCancelPostIt,
+  onCancelPlatform,
   onApproveAssets,
   onClearFlags,
   onPreviewAsset,
@@ -2076,6 +2097,7 @@ function PipelineCardTile({
   onReadyForRotty: () => void;
   onPostIt: () => void;
   onCancelPostIt: () => void;
+  onCancelPlatform?: (platform: PlatformKey) => Promise<unknown> | void;
   onApproveAssets?: () => Promise<void> | void;
   onClearFlags?: () => Promise<void> | void;
   onPreviewAsset?: (asset: JobAsset) => void;
@@ -2318,8 +2340,13 @@ function PipelineCardTile({
               </span>
             ))}
           {card.targetPlatforms?.map((p) => {
-            const label = p === 'linkedin' ? 'LI' : p.toUpperCase();
+            const label = formatPlatformShortLabel(p);
             const href = card.links?.[p];
+            const canCancel =
+              !href &&
+              canQuickModify &&
+              Boolean(onCancelPlatform) &&
+              (card.targetPlatforms?.length || 0) > 1;
             return href ? (
               <a
                 key={`tp-${p}`}
@@ -2333,9 +2360,21 @@ function PipelineCardTile({
             ) : (
               <span
                 key={`tp-${p}`}
-                className="px-1.5 py-0.5 rounded border border-amber-500/35 bg-amber-500/10 text-[10px] font-mono text-amber-700 dark:text-amber-300"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-amber-500/35 bg-amber-500/10 text-[10px] font-mono text-amber-700 dark:text-amber-300"
               >
-                {label} ○
+                <span>{label} ○</span>
+                {canCancel && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void onCancelPlatform!(p)}
+                    aria-label={`Cancel ${label} post`}
+                    title={`Cancel ${label} from this post`}
+                    className="inline-flex items-center justify-center w-3 h-3 -mr-0.5 rounded hover:bg-red-500/20 text-amber-700/80 dark:text-amber-300/80 hover:text-red-700 dark:hover:text-red-300 transition-colors disabled:opacity-50"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                )}
               </span>
             );
           })}

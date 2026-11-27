@@ -58,6 +58,7 @@ import type {
   OpsRequest,
   PipelineCard,
   PipelineLane,
+  PlatformKey,
   PostFormat,
   RequestStatus,
 } from '@/lib/ops/types';
@@ -231,6 +232,7 @@ export default function OpsDecisionDesk({
   onPreviewAsset,
   onPostIt,
   onCancelPostIt,
+  onCancelPlatform,
   onKillCard,
   onClearFlags,
   onDecideRequest,
@@ -261,6 +263,7 @@ export default function OpsDecisionDesk({
   onPreviewAsset: (asset: JobAsset) => void;
   onPostIt: (card: PipelineCard) => Promise<void>;
   onCancelPostIt: (card: PipelineCard) => Promise<void>;
+  onCancelPlatform?: (card: PipelineCard, platform: PlatformKey) => Promise<void>;
   onKillCard: (card: PipelineCard) => Promise<void>;
   onClearFlags?: (
     card: PipelineCard,
@@ -1042,14 +1045,51 @@ export default function OpsDecisionDesk({
                               Preview {l.label} <ExternalLink className="w-3 h-3" />
                             </a>
                           ))}
-                          {selectedPendingPlatforms.map((p) => (
-                            <span
-                              key={`top-pending-${p}`}
-                              className="inline-flex items-center px-2.5 py-1 rounded-md border border-amber-500/50 bg-amber-500/15 text-xs font-mono font-medium text-amber-800 dark:text-amber-200"
-                            >
-                              {formatPlatformShortLabel(p)} pending
-                            </span>
-                          ))}
+                          {selectedPendingPlatforms.map((p) => {
+                            const label = formatPlatformShortLabel(p);
+                            const canCancel =
+                              Boolean(onCancelPlatform) &&
+                              selectedCard.stage !== 'posted' &&
+                              selectedCard.stage !== 'archived' &&
+                              (selectedCard.targetPlatforms?.length || 0) > 1;
+                            const willComplete =
+                              selectedPublishedLinks.length > 0 &&
+                              selectedPendingPlatforms.length === 1;
+                            return (
+                              <span
+                                key={`top-pending-${p}`}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-500/50 bg-amber-500/15 text-xs font-mono font-medium text-amber-800 dark:text-amber-200"
+                              >
+                                <span>{label} pending</span>
+                                {canCancel && (
+                                  <button
+                                    type="button"
+                                    disabled={busy}
+                                    onClick={async () => {
+                                      const nextKey =
+                                        willComplete && tab !== 'all' && tab !== 'posted'
+                                          ? nextItemKeyAfter(`post:${selectedCard.id}`)
+                                          : null;
+                                      await onCancelPlatform!(selectedCard, p);
+                                      if (nextKey) {
+                                        setSelectedKey(nextKey);
+                                        setFocusedAssetId(null);
+                                      }
+                                    }}
+                                    aria-label={`Cancel ${label} post`}
+                                    title={
+                                      willComplete
+                                        ? `Cancel ${label} and mark card Posted with remaining live link`
+                                        : `Cancel ${label} from this post`
+                                    }
+                                    className="inline-flex items-center justify-center w-4 h-4 -mr-1 rounded hover:bg-red-500/20 text-amber-800/80 dark:text-amber-200/80 hover:text-red-700 dark:hover:text-red-300 transition-colors disabled:opacity-50"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </span>
+                            );
+                          })}
                         </div>
                       ) : (
                         <span className="text-[11px] text-muted-foreground">
@@ -1779,7 +1819,15 @@ export default function OpsDecisionDesk({
                           </span>
                           {selectedCard.targetPlatforms.map((p) => {
                             const url = selectedCard.links?.[p];
-                            const label = p === 'linkedin' ? 'LI' : p.toUpperCase();
+                            const label = formatPlatformShortLabel(p);
+                            const canCancel =
+                              Boolean(onCancelPlatform) &&
+                              selectedCard.stage !== 'posted' &&
+                              selectedCard.stage !== 'archived' &&
+                              (selectedCard.targetPlatforms?.length || 0) > 1;
+                            const willComplete =
+                              selectedPublishedLinks.length > 0 &&
+                              selectedPendingPlatforms.length === 1;
                             return url ? (
                               <a
                                 key={p}
@@ -1793,9 +1841,35 @@ export default function OpsDecisionDesk({
                             ) : (
                               <span
                                 key={p}
-                                className="px-2 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-[11px] font-mono text-amber-700 dark:text-amber-300"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-[11px] font-mono text-amber-700 dark:text-amber-300"
                               >
-                                {label} pending
+                                <span>{label} pending</span>
+                                {canCancel && (
+                                  <button
+                                    type="button"
+                                    disabled={busy}
+                                    onClick={async () => {
+                                      const nextKey =
+                                        willComplete && tab !== 'all' && tab !== 'posted'
+                                          ? nextItemKeyAfter(`post:${selectedCard.id}`)
+                                          : null;
+                                      await onCancelPlatform!(selectedCard, p);
+                                      if (nextKey) {
+                                        setSelectedKey(nextKey);
+                                        setFocusedAssetId(null);
+                                      }
+                                    }}
+                                    aria-label={`Cancel ${label} post`}
+                                    title={
+                                      willComplete
+                                        ? `Cancel ${label} and mark card Posted with remaining live link`
+                                        : `Cancel ${label} from this post`
+                                    }
+                                    className="inline-flex items-center justify-center w-3.5 h-3.5 -mr-0.5 rounded hover:bg-red-500/20 text-amber-700/80 dark:text-amber-300/80 hover:text-red-700 dark:hover:text-red-300 transition-colors disabled:opacity-50"
+                                  >
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                )}
                               </span>
                             );
                           })}

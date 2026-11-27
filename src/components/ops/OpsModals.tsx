@@ -965,12 +965,33 @@ function CardEditorForm({
             ] as Array<{ id: PlatformKey; label: string }>
           ).map((p) => {
             const active = targetPlatforms.includes(p.id);
+            const liveUrl =
+              p.id === 'fb'
+                ? fbLink
+                : p.id === 'ig'
+                  ? igLink
+                  : p.id === 'linkedin'
+                    ? liLink
+                    : xLink;
+            const hasLiveLink = Boolean(liveUrl.trim());
+            const isOnlyActive = active && targetPlatforms.length <= 1;
+            const locked = active && (hasLiveLink || isOnlyActive);
             return (
               <button
                 key={p.id}
                 type="button"
+                disabled={locked}
                 onClick={() => togglePlatform(p.id)}
-                className={`px-2.5 py-1 rounded-md text-xs font-mono border transition-colors ${
+                title={
+                  hasLiveLink
+                    ? `${p.label} already has a live post URL`
+                    : isOnlyActive
+                      ? 'At least one target platform is required'
+                      : active
+                        ? `Remove ${p.label} from target platforms`
+                        : `Add ${p.label} to target platforms`
+                }
+                className={`px-2.5 py-1 rounded-md text-xs font-mono border transition-colors disabled:opacity-65 disabled:cursor-not-allowed ${
                   active
                     ? 'border-accent bg-accent/15 text-foreground font-medium'
                     : 'border-border bg-background text-muted-foreground hover:text-foreground'
@@ -978,6 +999,7 @@ function CardEditorForm({
               >
                 {active ? '✓ ' : ''}
                 {p.label}
+                {hasLiveLink ? ' (Live)' : ''}
               </button>
             );
           })}
