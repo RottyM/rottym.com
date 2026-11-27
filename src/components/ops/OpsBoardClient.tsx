@@ -1378,25 +1378,30 @@ export default function OpsBoardClient({ mode }: { mode: 'board' | 'admin' | 'de
                   </div>
 
                   <div className="hidden sm:flex items-center gap-2 pl-2.5 ml-auto border-l border-border/80 text-[11px] font-mono text-muted-foreground shrink-0">
-                    <span
-                      title={`Published today (ET) — FB: ${todayPublishedCounts.fb} · IG: ${todayPublishedCounts.ig}/${IG_DAILY_CAUTION_THRESHOLD} caution · X: ${todayPublishedCounts.x} · LI: ${todayPublishedCounts.linkedin}`}
-                    >
-                      IG Today:{' '}
-                      <span
-                        className={`font-medium ${
-                          igCrewAlert?.status === 'rate_limit'
-                            ? 'text-red-600 dark:text-red-400'
-                            : todayPublishedCounts.ig >= IG_DAILY_CAUTION_THRESHOLD ||
-                                igCrewAlert?.status === 'caution'
-                              ? 'text-amber-600 dark:text-amber-400'
-                              : todayPublishedCounts.ig >= 12
-                                ? 'text-amber-600 dark:text-amber-400'
-                                : 'text-foreground'
-                        }`}
-                      >
-                        {todayPublishedCounts.ig}/{IG_DAILY_CAUTION_THRESHOLD}
-                      </span>
-                    </span>
+                    {(() => {
+                      const igToday = Math.max(todayPublishedCounts.ig, igCrewAlert?.count ?? 0);
+                      return (
+                        <span
+                          title={`Published today (ET) — FB: ${todayPublishedCounts.fb} · IG: ${igToday}/${IG_DAILY_CAUTION_THRESHOLD} caution · X: ${todayPublishedCounts.x} · LI: ${todayPublishedCounts.linkedin}`}
+                        >
+                          IG Today:{' '}
+                          <span
+                            className={`font-medium ${
+                              igCrewAlert?.status === 'rate_limit'
+                                ? 'text-red-600 dark:text-red-400'
+                                : igToday >= IG_DAILY_CAUTION_THRESHOLD ||
+                                    igCrewAlert?.status === 'caution'
+                                  ? 'text-amber-600 dark:text-amber-400'
+                                  : igToday >= 12
+                                    ? 'text-amber-600 dark:text-amber-400'
+                                    : 'text-foreground'
+                            }`}
+                          >
+                            {igToday}/{IG_DAILY_CAUTION_THRESHOLD}
+                          </span>
+                        </span>
+                      );
+                    })()}
                     <span className="text-border">·</span>
                     <span>
                       In Flight:{' '}
