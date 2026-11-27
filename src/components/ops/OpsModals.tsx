@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   X,
   Check,
@@ -20,6 +20,7 @@ import {
   getCardAssets,
   getCardCompleteness,
   getCardPublishedLinks,
+  parseAdminPasteBlock,
   POST_FORMAT_LABELS,
   resolveAvatarRenderUrl,
   syncCardWithAssets,
@@ -204,7 +205,7 @@ export function OpsModalHost({
             />
           )}
           {state.type === 'desk_paste' && (
-            <DeskPasteForm busy={busy} onSubmit={onDeskPaste} />
+            <DeskPasteForm clientId={clientId} busy={busy} onSubmit={onDeskPaste} />
           )}
         </div>
       </div>
@@ -1367,20 +1368,145 @@ function CrewEditorForm({
   );
 }
 
+function htmlClipboardToDeskText(html: string): string | null {
+  if (!html || typeof DOMParser === 'undefined') return null;
+  if (!/<(?:a|ol|ul|li)\b/i.test(html)) return null;
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const lines: string[] = [];
+
+    const inlineText = (node: Node): string => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return (node.textContent || '').replace(/\s+/g, ' ');
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return '';
+      const el = node as HTMLElement;
+      const tag = el.tagName.toLowerCase();
+      if (tag === 'img' || tag === 'svg' || tag === 'button' || tag === 'style' || tag === 'script') {
+        return '';
+      }
+      if (tag === 'a') {
+        const href = el.getAttribute('href') || '';
+        const text = (el.textContent || '').replace(/\s*↗\s*/g, '').replace(/\s+/g, ' ').trim();
+        if (
+          href &&
+          /^https?:\/\//i.test(href) &&
+          !href.includes('images.openai.com') &&
+          text
+        ) {
+          return `[${text}](${href})`;
+        }
+        return text;
+      }
+      let buf = '';
+      el.childNodes.forEach((child) => {
+        buf += inlineText(child);
+      });
+      return buf;
+    };
+
+    const walk = (el: Element, nestedList = false) => {
+      const tag = el.tagName.toLowerCase();
+      if (tag === 'img' || tag === 'svg' || tag === 'button' || tag === 'style' || tag === 'script') {
+        return;
+      }
+      if (tag === 'ol') {
+        let idx = Number(el.getAttribute('start') || '1') || 1;
+        Array.from(el.children).forEach((child) => {
+          if (child.tagName.toLowerCase() !== 'li') {
+            walk(child, nestedList);
+            return;
+          }
+          const directParts: string[] = [];
+          const subLists: Element[] = [];
+          child.childNodes.forEach((cn) => {
+            if (
+              cn.nodeType === Node.ELEMENT_NODE &&
+              ((cn as Element).tagName.toLowerCase() === 'ul' ||
+                (cn as Element).tagName.toLowerCase() === 'ol')
+            ) {
+              subLists.push(cn as Element);
+            } else {
+              const txt = inlineText(cn).trim();
+              if (txt) directParts.push(txt);
+            }
+          });
+          const headLine = directParts.join(' ').replace(/\s+/g, ' ').trim();
+          if (headLine) lines.push(`${idx}. ${headLine}`);
+          subLists.forEach((sl) => walk(sl, true));
+          idx += 1;
+        });
+        return;
+      }
+      if (tag === 'ul') {
+        Array.from(el.children).forEach((child) => {
+          if (child.tagName.toLowerCase() !== 'li') {
+            walk(child, nestedList);
+            return;
+          }
+          const txt = inlineText(child).replace(/\s+/g, ' ').trim();
+          if (txt && !/^\d{1,3}$/.test(txt)) {
+            lines.push(nestedList ? `- ${txt}` : `- ${txt}`);
+          }
+        });
+        return;
+      }
+      if (/^h[1-4]$/.test(tag)) {
+        const txt = inlineText(el).replace(/\s+/g, ' ').trim();
+        if (txt) lines.push(`## ${txt}`);
+        return;
+      }
+      if (tag === 'p' || tag === 'div') {
+        const hasBlockChildren = Array.from(el.children).some((c) =>
+          /^(p|div|ol|ul|h[1-6]|section|article)$/i.test(c.tagName)
+        );
+        if (!hasBlockChildren) {
+          const txt = inlineText(el).replace(/\s+/g, ' ').trim();
+          if (txt && !/^\d{1,3}$/.test(txt)) lines.push(txt);
+          return;
+        }
+      }
+      Array.from(el.children).forEach((c) => walk(c, nestedList));
+    };
+
+    Array.from(doc.body.children).forEach((c) => walk(c, false));
+    const joined = lines.join('\n').trim();
+    return joined && /https?:\/\//i.test(joined) ? joined : null;
+  } catch {
+    return null;
+  }
+}
+
 function DeskPasteForm({
+  clientId,
   busy,
   onSubmit,
 }: {
+  clientId: string;
   busy: boolean;
   onSubmit: (raw: string, defaultLane?: PipelineLane) => Promise<void>;
 }) {
   const [raw, setRaw] = useState('');
   const [defaultLane, setDefaultLane] = useState<PipelineLane>('fb-ig');
 
+  const preview = useMemo(
+    () => (raw.trim() ? parseAdminPasteBlock(raw, clientId, defaultLane) : null),
+    [raw, clientId, defaultLane]
+  );
+
+  const previewCount =
+    preview?.kind === 'desk_list'
+      ? preview.deskList?.length || 0
+      : preview?.kind === 'clearance'
+        ? preview.clearance?.length || 0
+        : preview
+          ? 1
+          : 0;
+
   return (
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground leading-relaxed">
-        Paste any numbered/bulleted list from Gemini, Grok, or another chat tab—or paste a YAML drop or Marley clearance block. Multi-item lists split automatically into cards queued for Marley clearance.
+        Paste any numbered/bulleted list from ChatGPT, Gemini, or Grok—or paste a YAML drop or Marley clearance block. Section headers, image badges, Date lines, summaries, and Source links stay grouped onto each story card.
       </p>
 
       <div>
@@ -1399,12 +1525,69 @@ function DeskPasteForm({
       <div>
         <label className={LABEL_CLS}>Paste List / Drop / Clearance</label>
         <textarea
-          className={`${INPUT_CLS} min-h-[190px] font-mono text-xs`}
+          className={`${INPUT_CLS} min-h-[180px] max-h-[280px] font-mono text-xs ops-scroll`}
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
-          placeholder={`1. Story headline - https://example.com/news\n2. Second idea - https://example.com/release`}
+          onPaste={(e) => {
+            const html = e.clipboardData?.getData('text/html') || '';
+            const converted = htmlClipboardToDeskText(html);
+            if (!converted) return;
+            e.preventDefault();
+            const target = e.currentTarget;
+            const start = target.selectionStart ?? raw.length;
+            const end = target.selectionEnd ?? raw.length;
+            const sepBefore = start > 0 && !/\n$/.test(raw.slice(0, start)) ? '\n' : '';
+            const next = `${raw.slice(0, start)}${sepBefore}${converted}${raw.slice(end)}`;
+            setRaw(next);
+          }}
+          placeholder={`1. Story headline\nDate: Nov 26, 2026\nSummary sentence...\nSource: [Outlet](https://example.com/news)`}
         />
       </div>
+
+      {preview && (
+        <div className="rounded-lg border border-border bg-background/70 p-2.5 space-y-1.5">
+          <div className="flex items-center justify-between gap-2 text-[11px] font-mono">
+            <span className="text-foreground">
+              {preview.kind === 'desk_list'
+                ? `Preview: ${previewCount} story card${previewCount === 1 ? '' : 's'} detected`
+                : preview.kind === 'clearance'
+                  ? `Preview: Marley clearance (${previewCount} verdicts)`
+                  : preview.kind === 'crew'
+                    ? 'Preview: Crew status update'
+                    : 'Preview: Single drop card'}
+            </span>
+            {preview.kind === 'desk_list' && preview.deskList && (
+              <span className="text-muted-foreground">
+                {preview.deskList.filter((d) => Boolean(d.sourceUrl)).length}/{previewCount} with Source URL
+              </span>
+            )}
+          </div>
+          {preview.kind === 'desk_list' && preview.deskList && (
+            <div className="max-h-32 overflow-y-auto ops-scroll space-y-1 pr-1">
+              {preview.deskList.map((d, i) => (
+                <div
+                  key={`prev-${i}-${d.title.slice(0, 20)}`}
+                  className="flex items-center justify-between gap-2 text-[11px] px-2 py-1 rounded border border-border/70 bg-card/60"
+                >
+                  <span className="truncate text-foreground">
+                    <span className="font-mono text-muted-foreground mr-1">{i + 1}.</span>
+                    {d.title}
+                  </span>
+                  <span
+                    className={`font-mono text-[10px] shrink-0 ${
+                      d.sourceUrl
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-amber-600 dark:text-amber-400'
+                    }`}
+                  >
+                    {d.sourceUrl ? d.source || 'URL ✓' : 'No URL'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex justify-end pt-2 border-t border-border">
         <button
@@ -1414,7 +1597,9 @@ function DeskPasteForm({
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          Parse &amp; Land on Board
+          {preview?.kind === 'desk_list' && previewCount > 0
+            ? `Parse & Land ${previewCount} Card${previewCount === 1 ? '' : 's'}`
+            : 'Parse & Land on Board'}
         </button>
       </div>
     </div>

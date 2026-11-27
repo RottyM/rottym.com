@@ -20,7 +20,6 @@ import {
   normalizePostFormat,
   parseAdminPasteBlock,
   parseConnectorAlert,
-  parseMultiItemDeskList,
   parseNewJobAssetInput,
   refreshStaleCardNote,
   resolveEffectivePhotoStatus,
@@ -848,7 +847,8 @@ export async function POST(request: Request) {
     const raw = typeof body.raw === 'string' ? body.raw : '';
     if (!raw.trim()) return NextResponse.json({ error: 'Paste text is empty' }, { status: 400 });
 
-    const parsed = parseAdminPasteBlock(raw, clientId);
+    const defaultLane = typeof body.defaultLane === 'string' ? normalizeLane(body.defaultLane) : undefined;
+    const parsed = parseAdminPasteBlock(raw, clientId, defaultLane);
 
     if (parsed.kind === 'crew' && parsed.crewUpdate) {
       const docId = `${clientId}__${parsed.crewUpdate.agentId}`;
@@ -958,12 +958,8 @@ export async function POST(request: Request) {
     }
 
     if (parsed.kind === 'desk_list' && parsed.deskList) {
-      const defaultLane = typeof body.defaultLane === 'string' ? normalizeLane(body.defaultLane) : undefined;
-      const items = defaultLane
-        ? parseMultiItemDeskList(raw, clientId, defaultLane)
-        : parsed.deskList;
       const createdCards: PipelineCard[] = [];
-      for (const d of items) {
+      for (const d of parsed.deskList) {
         const card: PipelineCard = {
           id: `${clientId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           clientId,
@@ -975,6 +971,7 @@ export async function POST(request: Request) {
           agentId: d.agentId,
           source: d.source,
           sourceUrl: d.sourceUrl,
+          note: d.note,
           draftCopy: d.draftCopy,
           flaggedNotes: d.flaggedNotes,
           marleyStatus: 'pending',

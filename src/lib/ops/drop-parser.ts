@@ -35,6 +35,7 @@ export interface ParsedDropDocument {
   source: string;
   sourceUrl?: string;
   sourceUrlMissing: boolean;
+  note?: string;
   statusTag: string;
   marleyStatus: 'pending' | 'approved' | 'rejected';
   readyForRotty: boolean;
@@ -476,7 +477,11 @@ export function parseBatchClearanceMarkdown(raw: string, filename = 'clearance.m
   return verdicts;
 }
 
-export function parseAdminPasteBlock(raw: string, clientId = 'rottym'): ParsedPasteCommand {
+export function parseAdminPasteBlock(
+  raw: string,
+  clientId = 'rottym',
+  defaultLane?: PipelineLane
+): ParsedPasteCommand {
   const text = raw.replace(/\r\n/g, '\n').trim();
   const { meta, body } = parseYamlFrontmatter(text);
 
@@ -557,8 +562,11 @@ export function parseAdminPasteBlock(raw: string, clientId = 'rottym'): ParsedPa
     };
   }
 
-  const multiItems = parseMultiItemDeskList(text, clientId);
-  if (multiItems.length > 1) {
+  const multiItems = parseMultiItemDeskList(text, clientId, defaultLane);
+  if (
+    multiItems.length > 1 ||
+    (multiItems.length === 1 && /^\s*(?:\d+[.)]|#{1,4}\s+)/m.test(text))
+  ) {
     return {
       kind: 'desk_list',
       deskList: multiItems,
@@ -571,68 +579,288 @@ export function parseAdminPasteBlock(raw: string, clientId = 'rottym'): ParsedPa
   };
 }
 
+function cleanDeskUrl(rawUrl: string): string | undefined {
+  const trimmed = rawUrl.trim().replace(/[.,;:!?)'"\]]+$/, '');
+  if (!trimmed) return undefined;
+  try {
+    const u = new URL(trimmed);
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return undefined;
+    if (u.hostname.toLowerCase() === 'images.openai.com') return undefined;
+    if (u.searchParams.get('utm_source') === 'chatgpt.com') {
+      u.searchParams.delete('utm_source');
+    }
+    return u.toString().slice(0, FIELD_MAX_LENGTHS.sourceUrl);
+  } catch {
+    return undefined;
+  }
+}
+
+function isCarouselOrBadgeNoise(line: string): boolean {
+  const t = line.trim();
+  if (!t) return false;
+  if (/^\d{1,3}$/.test(t)) return true;
+  if (/^[↗↘↗️•|]+$/.test(t)) return true;
+  if (/^!\[[^\]]*\]\(https?:\/\/[^)]+\)$/i.test(t)) return true;
+  if (/^\[[^\]]+\]\(https?:\/\/images\.openai\.com\/[^)]+\)$/i.test(t)) return true;
+  if (/^\[[^\]]+\]\(https?:\/\/[^)]*[?&]purpose=inline[^)]*\)$/i.test(t)) return true;
+  return false;
+}
+
+function extractFirstValidDeskLink(raw: string): { label?: string; url?: string } {
+  const mdRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi;
+  let m: RegExpExecArray | null;
+  while ((m = mdRegex.exec(raw)) !== null) {
+    const url = cleanDeskUrl(m[2]);
+    if (url) {
+      return {
+        label: m[1].replace(/\s*↗\s*/g, '').trim(),
+        url,
+      };
+    }
+  }
+  const urlRegex = /https?:\/\/[^\s)>"',]+/gi;
+  while ((m = urlRegex.exec(raw)) !== null) {
+    const url = cleanDeskUrl(m[0]);
+    if (url) return { url };
+  }
+  return {};
+}
+
+function stripMarkdownLinksToText(raw: string): string {
+  return raw
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi, '$1')
+    .replace(/https?:\/\/[^\s)>"',]+/gi, '')
+    .replace(/\s*↗\s*/g, ' ')
+    .replace(/\*\*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isMetadataDebrisTitle(title: string): boolean {
+  const clean = title.trim();
+  if (!clean) return true;
+  if (/^\d{1,3}$/.test(clean)) return true;
+  if (/^(?:date|source|published|updated|category|topic|link|url|credit|tags?|note|summary|angle|why)\s*:/i.test(clean)) {
+    return true;
+  }
+  return false;
+}
+
 /**
- * Splits a raw numbered or bulleted list pasted from Gemini, Grok, or any chat window
- * into individual pulled items ready for Marley clearance.
+ * Splits a raw numbered or bulleted list pasted from Gemini, Grok, ChatGPT, or any chat window
+ * into individual pulled items ready for Marley clearance, keeping sub-bullets (`Date:`,
+ * summary sentences, `Source:`) nested under each headline and ignoring section headers
+ * or image-carousel noise.
  */
 export function parseMultiItemDeskList(
   raw: string,
   clientId = 'rottym',
   defaultLane?: PipelineLane
 ): ParsedDropDocument[] {
-  const lines = raw.replace(/\r\n/g, '\n').split('\n');
-  const chunks: string[] = [];
-  let current: string[] = [];
+  const rawLines = raw.replace(/\r\n/g, '\n').split('\n');
+  const lines = rawLines.filter((l) => !isCarouselOrBadgeNoise(l));
+
+  const numberedLineCount = lines.filter((l) => /^\s*\d+[.)]\s+\S+/.test(l)).length;
+  const hasNumberedHierarchy = numberedLineCount >= 2;
+  const isMetadataLine = (line: string) =>
+    /^\s*(?:[-*•]\s+)?(?:date|source|published|updated|category|summary|why|note|angle|link|url)\s*:/i.test(
+      line
+    );
+
+  interface RawDeskBlock {
+    kind: 'heading' | 'item';
+    numStr?: string;
+    numVal?: number;
+    headerText: string;
+    bodyLines: string[];
+  }
+
+  const blocks: RawDeskBlock[] = [];
+  let activeItem: RawDeskBlock | null = null;
+
+  const pushActive = () => {
+    if (activeItem) {
+      blocks.push(activeItem);
+      activeItem = null;
+    }
+  };
 
   for (const line of lines) {
-    const isItemStart = /^\s*(?:\d+[.)]|[-*•])\s+\S+/.test(line);
-    if (isItemStart && current.length > 0) {
-      chunks.push(current.join('\n').trim());
-      current = [line];
-    } else if (line.trim() || current.length > 0) {
-      current.push(line);
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    const mdHeading = trimmed.match(/^#{1,4}\s+(.+)$/);
+    if (mdHeading) {
+      pushActive();
+      const headingClean = mdHeading[1].replace(/^\d+[.)]\s+/, '').replace(/\*\*/g, '').trim();
+      if (headingClean) {
+        blocks.push({ kind: 'heading', headerText: headingClean, bodyLines: [] });
+      }
+      continue;
+    }
+
+    const numberedMatch = line.match(/^\s*(\d+)[.)]\s+(.+)$/);
+    if (numberedMatch) {
+      pushActive();
+      activeItem = {
+        kind: 'item',
+        numStr: numberedMatch[1],
+        numVal: Number(numberedMatch[1]),
+        headerText: numberedMatch[2].trim(),
+        bodyLines: [],
+      };
+      continue;
+    }
+
+    if (!hasNumberedHierarchy) {
+      const bulletMatch = line.match(/^\s*[-*•]\s+(.+)$/);
+      if (bulletMatch && !isMetadataLine(line)) {
+        pushActive();
+        activeItem = {
+          kind: 'item',
+          headerText: bulletMatch[1].trim(),
+          bodyLines: [],
+        };
+        continue;
+      }
+    }
+
+    if (activeItem) {
+      activeItem.bodyLines.push(trimmed);
+    } else {
+      // Top-level plain header before first numbered item (e.g., "Motorcycles" or "**Tattoos**")
+      const plainHeading = trimmed.replace(/\*\*/g, '').replace(/^\d+[.)]\s+/, '').trim();
+      if (plainHeading && plainHeading.split(/\s+/).length <= 6 && !cleanDeskUrl(plainHeading)) {
+        blocks.push({ kind: 'heading', headerText: plainHeading, bodyLines: [] });
+      }
     }
   }
-  if (current.length > 0) {
-    const tail = current.join('\n').trim();
-    if (tail) chunks.push(tail);
-  }
+  pushActive();
 
-  if (chunks.length <= 1) return [];
+  const anyBlockHasBodyOrUrl = blocks.some(
+    (b) =>
+      b.kind === 'item' &&
+      (b.bodyLines.length > 0 || Boolean(extractFirstValidDeskLink(b.headerText).url))
+  );
 
+  // Convert category headings (`01. Motorcycles` followed by `1. ...` or empty short labels)
+  const itemBlocks = blocks.filter((b) => b.kind === 'item');
   const today = todayDateTag();
-  return chunks.map((chunk, idx) => {
-    const stripped = chunk.replace(/^\s*(?:\d+[.)]|[-*•])\s+/, '').trim();
-    const firstLine = stripped.split('\n')[0] || `Item ${idx + 1}`;
-    const url = extractFirstUrl(stripped);
-    const titlePart = firstLine
-      .replace(/https?:\/\/[^\s)>"',]+/gi, '')
-      .replace(/^\*\*|\*\*$/g, '')
+  let currentCategory = '';
+  const results: ParsedDropDocument[] = [];
+
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    if (block.kind === 'heading') {
+      currentCategory = block.headerText.slice(0, 60);
+      continue;
+    }
+
+    const nextItem = blocks.slice(i + 1).find((b) => b.kind === 'item');
+    const headerLink = extractFirstValidDeskLink(block.headerText);
+    const wordCount = stripMarkdownLinksToText(block.headerText).split(/\s+/).filter(Boolean).length;
+    const isZeroPaddedHeader = Boolean(block.numStr && /^0\d+$/.test(block.numStr));
+    const listResetsAfter = Boolean(
+      nextItem &&
+        block.numVal !== undefined &&
+        nextItem.numVal !== undefined &&
+        nextItem.numVal <= block.numVal
+    );
+    const looksLikeSectionHeader =
+      block.bodyLines.length === 0 &&
+      !headerLink.url &&
+      (isZeroPaddedHeader ||
+        listResetsAfter ||
+        (anyBlockHasBodyOrUrl && wordCount <= 5 && itemBlocks.length > 2));
+
+    if (looksLikeSectionHeader) {
+      currentCategory = stripMarkdownLinksToText(block.headerText).slice(0, 60);
+      continue;
+    }
+
+    const cleanedTitle = stripMarkdownLinksToText(block.headerText)
       .replace(/\s+[—–-]\s*$/, '')
-      .trim()
       .slice(0, 120);
 
-    const lane = defaultLane || normalizeLane(stripped);
-    return {
+    if (isMetadataDebrisTitle(cleanedTitle)) {
+      continue;
+    }
+    if (anyBlockHasBodyOrUrl && block.bodyLines.length === 0 && !headerLink.url && wordCount <= 2) {
+      continue;
+    }
+
+    let dateText = '';
+    let sourceLabel = '';
+    let sourceUrl = headerLink.url;
+    const summaryLines: string[] = [];
+
+    for (const rawLine of block.bodyLines) {
+      const cleanLine = rawLine.replace(/^\s*[-*•]\s+/, '').trim();
+      if (!cleanLine) continue;
+
+      const dateMatch = cleanLine.match(/^(?:date|published)\s*:\s*(.+)$/i);
+      if (dateMatch) {
+        dateText = stripMarkdownLinksToText(dateMatch[1]).slice(0, 80);
+        continue;
+      }
+
+      const sourceMatch = cleanLine.match(/^source\s*:\s*(.+)$/i);
+      if (sourceMatch) {
+        const srcLink = extractFirstValidDeskLink(sourceMatch[1]);
+        if (srcLink.url) sourceUrl = srcLink.url;
+        const lbl = (srcLink.label || stripMarkdownLinksToText(sourceMatch[1]))
+          .replace(/[.\s]+$/, '')
+          .trim();
+        if (lbl) sourceLabel = lbl.slice(0, FIELD_MAX_LENGTHS.source);
+        continue;
+      }
+
+      const summaryMatch = cleanLine.match(/^(?:summary|note|why|angle)\s*:\s*(.+)$/i);
+      const lineBody = summaryMatch ? summaryMatch[1].trim() : cleanLine;
+      const lineLink = extractFirstValidDeskLink(lineBody);
+      if (!sourceUrl && lineLink.url) sourceUrl = lineLink.url;
+      const cleanedSummary = lineBody
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi, '$1')
+        .replace(/\s*↗\s*/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (cleanedSummary) summaryLines.push(cleanedSummary);
+    }
+
+    const noteParts = [
+      currentCategory ? `Category: ${currentCategory}` : '',
+      dateText ? `Date: ${dateText}` : '',
+    ].filter(Boolean);
+    const note = noteParts.length > 0 ? noteParts.join(' · ').slice(0, FIELD_MAX_LENGTHS.note) : undefined;
+    const draftCopy = (summaryLines.join('\n').trim() || cleanedTitle).slice(0, 2400);
+    const lane = defaultLane || normalizeLane(`${currentCategory}\n${cleanedTitle}\n${draftCopy}`);
+    const cardIdx = results.length + 1;
+
+    results.push({
       clientId,
-      title: titlePart || `Desk Item ${idx + 1}`,
+      title: cleanedTitle || `Desk Item ${cardIdx}`,
       lane,
       channel: laneToChannel(lane),
       contentType: 'pull',
       stage: 'pulled',
       agentId: 'marley',
-      source: 'Desk quick-paste list',
-      sourceUrl: url,
-      sourceUrlMissing: !url,
+      source: sourceLabel || 'Desk quick-paste list',
+      sourceUrl,
+      sourceUrlMissing: !sourceUrl,
+      note,
       statusTag: 'pending',
       marleyStatus: 'pending',
       readyForRotty: false,
-      draftCopy: stripped.slice(0, 2400),
-      flaggedNotes: url ? [] : ['FLAG: Missing verified source URL — required before clearance.'],
+      draftCopy,
+      flaggedNotes: sourceUrl
+        ? []
+        : ['FLAG: Missing verified source URL — required before clearance.'],
       jobDate: today,
-      sourceFile: `desk-list-${today}-${idx + 1}.md`,
-    };
-  });
+      sourceFile: `desk-list-${today}-${cardIdx}.md`,
+    });
+  }
+
+  return results;
 }
 
 function parseKeyValueLines(text: string): Record<string, string> {
